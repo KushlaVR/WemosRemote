@@ -29,6 +29,7 @@ class Blinker
 
 public:
 	bool debug = false;
+	bool repeat = true;
 	Blinker(String name);
 	~Blinker();
 	void loop();

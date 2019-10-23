@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wemos WIFI reote controll</title>
+</head>
+<body>
+    <h1>Config</h1>
+    <form action="/config" method="post">
+
+        <div class="form-group">
+            <label>SSID</label>
+            <input type="text" maxlength="5" name="ssid" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label>password</label>
+            <input type="text" maxlength="5" name="password" class="form-control" />
+        </div>
+
+        <h2>Servo</h2>
+        <div class="form-group">
+            <label>Center</label>
+            <input type="text" maxlength="5" name="center" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label>Left</label>
+            <input type="text" maxlength="5" name="left" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label>Right</label>
+            <input type="text" maxlength="5" name="right" class="form-control" />
+        </div>
+
+        <h2>Engine</h2>
+        <div class="form-group">
+            <label>Minimum PWM speed</label>
+            <input type="text" maxlength="5" name="speed" class="form-control" />
+        </div>
+
+        <button>Save</button>
+    </form>
+
+</body>
+</html>

@@ -13,6 +13,10 @@
 // определение режима соединения и подключение библиотеки RemoteXY  
 #define REMOTEXY_MODE__ESP8266WIFI_LIB_POINT
 #include <ESP8266WiFi.h> 
+#include <ESP8266WebServer.h> 
+#include <DNSServer.h>
+#include <ESP8266mDNS.h>
+
 #include <FS.h>
 #include <Servo.h>
 
@@ -21,6 +25,7 @@
 #include "SerialController.h"
 #include "Blinker.h"
 #include <RemoteXY.h> 
+#include "WebUIController.h"
 
 
 
@@ -28,12 +33,12 @@
 // RemoteXY configurate   
 #pragma pack(push, 1) 
 uint8_t RemoteXY_CONF[] = {
-	255,6,0,0,0,56,0,8,25,0,
-  5,43,2,10,43,43,2,26,31,1,
+  255,6,0,0,0,56,0,8,25,0,
+  5,43,-9,9,43,43,2,26,31,1,
   0,57,4,18,18,132,16,72,76,0,
   2,0,57,39,18,9,2,26,31,31,
   69,109,0,79,70,70,0,3,130,55,
-  50,22,12,2,26,4,0,82,2,17,
+  50,22,12,2,26,4,0,88,2,17,
   60,2,26
 };
 
@@ -76,6 +81,7 @@ char SSID[20];
 char SSID_password[20];
 bool connected = false;
 
+
 RoboEffects motorEffect = RoboEffects();
 RoboMotor motor = RoboMotor("motor", D7, D8, &motorEffect);
 
@@ -87,8 +93,11 @@ SerialController serialController = SerialController();
 
 Blinker leftLight = Blinker("Left light");
 Blinker rightLight = Blinker("Right light");
-Blinker siren1 = Blinker("Siren");
+//Blinker siren1 = Blinker("Siren");
 Blinker buildinLed = Blinker("Build in led");
+Blinker alarmOn = Blinker("Alarm on");
+Blinker alarmOff = Blinker("Alarm of");
+
 
 int FrontLightPin = D4;
 
@@ -159,10 +168,10 @@ void setup()
 		cfg.AddValue("ssid", "WEMOS");
 		cfg.AddValue("password", "12345678");
 		cfg.AddValue("mode", "debug");
-		cfg.AddValue("center", "100");
-		cfg.AddValue("max_left", "20");
-		cfg.AddValue("max_right", "180");
-		cfg.AddValue("min_speed", "50");
+		cfg.AddValue("center", "90");
+		cfg.AddValue("max_left", "150");
+		cfg.AddValue("max_right", "60");
+		cfg.AddValue("min_speed", "10");
 		cfg.endObject();
 
 		cfgFile = SPIFFS.open("/config.json", "w");
@@ -226,24 +235,21 @@ void setup()
 		->Add(D1, 500, 0)
 		->Add(D1, 1000, 0);
 	serialController.rightLight = &rightLight;
-	//Налаштування сирени
-	siren1
-		.Add(D3, 0, 0)
 
-		->Add(D0, 0, 255)
-		->Add(D0, 100, 0)
-		->Add(D0, 200, 255)
-		->Add(D0, 300, 0)
-		->Add(D0, 400, 255)
-		->Add(D0, 600, 0)
+	alarmOff
+		.Add(D3, 0, 255)
+		->Add(D3, 200, 0)
+		->Add(D3, 400, 255)
+		->Add(D3, 600, 0)
+		->repeat = false;
+	alarmOff.debug = true;
 
-		->Add(D3, 700, 255)
-		->Add(D3, 800, 0)
-		->Add(D3, 900, 255)
-		->Add(D3, 1000, 0)
-		->Add(D3, 1100, 255)
-		->Add(D3, 1200, 0);
-	serialController.siren1 = &siren1;
+	alarmOn
+		.Add(D3, 0, 255)
+		->Add(D3, 200, 0)
+		->repeat = false;
+	alarmOn.debug = true;
+
 	//Налаштування фар
 	pinMode(FrontLightPin, OUTPUT);
 	digitalWrite(FrontLightPin, LOW);
@@ -252,14 +258,15 @@ void setup()
 		->Add(BUILTIN_LED, 500, 255)
 		->Add(BUILTIN_LED, 1000, 0);
 	buildinLed.begin();
-	//leftLight.begin();
-	//rightLight.begin();
 
 	remotexy = new CRemoteXY(RemoteXY_CONF_PROGMEM, &RemoteXY, REMOTEXY_ACCESS_PASSWORD, SSID, SSID_password, REMOTEXY_SERVER_PORT);//RemoteXY_Init();
 	RemoteXY.drive_mode = 1;
 	// TODO you setup code 
 	Serial.println("Start");
+	webServer.setup();
+	webServer.apName = String(SSID);
 }
+
 
 int mapSpeed(int speed) {
 	int corectedSpeed = (speed * speed) / 100;
@@ -294,6 +301,9 @@ void loop()
 				buildinLed.end();
 				leftLight.end();
 				rightLight.end();
+				motor.reset();
+				stearingParams.changed = (stearingParams.position!=stearingParams.center);
+				stearingParams.position = stearingParams.center;
 				connected = true;
 			}
 			int pos;
@@ -333,11 +343,10 @@ void loop()
 				digitalWrite(FrontLightPin, LOW);
 				connected = false;
 				buildinLed.begin();
-				//leftLight.begin();
-				//rightLight.begin();
+				motor.reset();
+				stearingParams.changed = (stearingParams.position != stearingParams.center);
+				stearingParams.position = stearingParams.center;
 			}
-			motor.reset();
-			stearingParams.position = stearingParams.center;
 		}
 	}
 	serialController.loop();
@@ -349,6 +358,8 @@ void loop()
 	}
 	leftLight.loop();
 	rightLight.loop();
-	siren1.loop();
+	alarmOff.loop();
+	alarmOn.loop();
 	buildinLed.loop();
+	webServer.loop();
 }

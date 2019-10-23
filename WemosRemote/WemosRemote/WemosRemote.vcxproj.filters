@@ -17,6 +17,7 @@
   <ItemGroup>
     <None Include="WemosRemote.ino" />
     <None Include="data\config.json" />
+    <None Include="data\html\index.html" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.WemosRemote.vsarduino.h">
@@ -34,6 +35,9 @@
     <ClInclude Include="SerialController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="WebUIController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Blinker.cpp">
@@ -46,6 +50,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SerialController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WebUIController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

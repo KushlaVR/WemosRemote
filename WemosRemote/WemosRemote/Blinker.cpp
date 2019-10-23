@@ -27,9 +27,11 @@ void Blinker::loop()
 		Serial.printf(": %i->%i\n", item->pin, item->value);
 	}
 	current = item->next;//Переходимо до наступного елемента
-	if (current == nullptr) {//кінець списку, починаємо з початку
-		current = first;
-		startTime = millis();
+	if (repeat) {
+		if (current == nullptr) {//кінець списку, починаємо з початку
+			current = first;
+			startTime = millis();
+		}
 	}
 }
 
@@ -56,7 +58,7 @@ Blinker * Blinker::end()
 	current = nullptr;
 	startTime = 0;
 	BlinkerItem * item = first;
-	while (item!=nullptr)
+	while (item != nullptr)
 	{
 		analogWrite(item->pin, 0);
 		item = item->next;

@@ -93,7 +93,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(ProjectDir)..\WemosRemote;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\libraries\ESP8266WiFi\src;$(ProjectDir)..\..\..\..\..\vs\IDS\Arduino\libraries\RemoteXY;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\libraries\Servo\src;C:\Program Files (x86)\Arduino\libraries;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\libraries;$(ProjectDir)..\..\..\..\..\vs\IDS\Arduino\libraries;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\cores\esp8266;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\cores\esp8266\avr;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\cores\esp8266\libb64;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\cores\esp8266\spiffs;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\cores\esp8266\umm_malloc;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\variants\d1_mini;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\tools\sdk\include;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\tools\sdk\lwip2\include;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\tools\sdk\libc\xtensa-lx106-elf\include;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include\c++\4.8.2;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include\c++\4.8.2\xtensa-lx106-elf;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\lib\gcc\xtensa-lx106-elf\4.8.2\include;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\tools\sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\WemosRemote;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\libraries\ESP8266WiFi\src;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\libraries\Servo\src;$(ProjectDir)..\..\..\..\..\vs\IDS\Arduino\libraries\RemoteXY;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\libraries\ESP8266WebServer\src;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\libraries\DNSServer\src;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\libraries\ESP8266mDNS;C:\Program Files (x86)\Arduino\libraries;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\libraries;$(ProjectDir)..\..\..\..\..\vs\IDS\Arduino\libraries;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\cores\esp8266;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\cores\esp8266\avr;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\cores\esp8266\libb64;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\cores\esp8266\spiffs;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\cores\esp8266\umm_malloc;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\variants\d1_mini;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\tools\sdk\include;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\tools\sdk\lwip2\include;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\tools\sdk\libc\xtensa-lx106-elf\include;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include\c++\4.8.2;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include\c++\4.8.2\xtensa-lx106-elf;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\lib\gcc\xtensa-lx106-elf\4.8.2\include;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\tools\sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ForcedIncludeFiles>$(ProjectDir)__vm\.WemosRemote.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <PreprocessorDefinitions>__ESP8266_ESp8266__;__ESP8266_ESP8266__;__ets__;ICACHE_FLASH;F_CPU=160000000L;LWIP_OPEN_SRC;TCP_MSS=536;ARDUINO=106013;ARDUINO_ESP8266_WEMOS_D1MINI;ARDUINO_ARCH_ESP8266;ESP8266;__cplusplus=201103L;_VMICRO_INTELLISENSE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -112,6 +112,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="data\config.json" />
+    <None Include="data\html\index.html" />
     <None Include="WemosRemote.ino">
       <FileType>CppCode</FileType>
     </None>
@@ -121,6 +122,7 @@
     <ClInclude Include="Json.h" />
     <ClInclude Include="RoboconMotor.h" />
     <ClInclude Include="SerialController.h" />
+    <ClInclude Include="WebUIController.h" />
     <ClInclude Include="__vm\.WemosRemote.vsarduino.h" />
   </ItemGroup>
   <ItemGroup>
@@ -128,6 +130,7 @@
     <ClCompile Include="Json.cpp" />
     <ClCompile Include="RoboconMotor.cpp" />
     <ClCompile Include="SerialController.cpp" />
+    <ClCompile Include="WebUIController.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="data\intro.txt" />
