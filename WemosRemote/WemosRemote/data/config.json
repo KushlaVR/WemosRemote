@@ -1,0 +1,9 @@
+﻿{
+  "ssid": "WEMOS",
+  "password": "12345678",
+  "mode": "debug",
+  "center": "90",
+  "max_left": "150",
+  "max_right": "60",
+  "min_speed": "50"
+}

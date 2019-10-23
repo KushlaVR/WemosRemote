@@ -1,0 +1,138 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{C5F80730-F44F-4478-BDAE-6634EFC2CA88}</ProjectGuid>
+    <RootNamespace>WemosRemote</RootNamespace>
+    <ProjectName>WemosRemote</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>
+    </PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>
+    </PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>
+    </PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>
+    </PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v141</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\WemosRemote;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\libraries\ESP8266WiFi\src;$(ProjectDir)..\..\..\..\..\vs\IDS\Arduino\libraries\RemoteXY;C:\Program Files (x86)\Arduino\libraries;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\libraries;$(ProjectDir)..\..\..\..\..\vs\IDS\Arduino\libraries;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\cores\esp8266;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\cores\esp8266\avr;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\cores\esp8266\libb64;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\cores\esp8266\spiffs;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\cores\esp8266\umm_malloc;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\variants\d1_mini;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\tools\sdk\include;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\tools\sdk\lwip2\include;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\tools\sdk\libc\xtensa-lx106-elf\include;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include\c++\4.8.2;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include\c++\4.8.2\xtensa-lx106-elf;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\lib\gcc\xtensa-lx106-elf\4.8.2\include;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\tools\sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>$(ProjectDir)__vm\.WemosRemote.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+      <PreprocessorDefinitions>__ESP8266_ESp8266__;__ESP8266_ESP8266__;_VMDEBUG=1;__ets__;ICACHE_FLASH;F_CPU=160000000L;LWIP_OPEN_SRC;TCP_MSS=536;ARDUINO=106013;ARDUINO_ESP8266_WEMOS_D1MINI;ARDUINO_ARCH_ESP8266;ESP8266;__cplusplus=201103L;_VMICRO_INTELLISENSE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\WemosRemote;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\libraries\ESP8266WiFi\src;$(ProjectDir)..\..\..\..\..\vs\IDS\Arduino\libraries\RemoteXY;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\libraries\Servo\src;C:\Program Files (x86)\Arduino\libraries;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\libraries;$(ProjectDir)..\..\..\..\..\vs\IDS\Arduino\libraries;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\cores\esp8266;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\cores\esp8266\avr;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\cores\esp8266\libb64;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\cores\esp8266\spiffs;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\cores\esp8266\umm_malloc;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\variants\d1_mini;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\tools\sdk\include;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\tools\sdk\lwip2\include;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\tools\sdk\libc\xtensa-lx106-elf\include;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include\c++\4.8.2;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include\c++\4.8.2\xtensa-lx106-elf;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\xtensa-lx106-elf\include;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\tools\xtensa-lx106-elf-gcc\1.20.0-26-gb404fb9-2\lib\gcc\xtensa-lx106-elf\4.8.2\include;C:\Users\Віталік\AppData\Local\arduino15\packages\esp8266\hardware\esp8266\2.4.2\tools\sdk\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>$(ProjectDir)__vm\.WemosRemote.vsarduino.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <PreprocessorDefinitions>__ESP8266_ESp8266__;__ESP8266_ESP8266__;__ets__;ICACHE_FLASH;F_CPU=160000000L;LWIP_OPEN_SRC;TCP_MSS=536;ARDUINO=106013;ARDUINO_ESP8266_WEMOS_D1MINI;ARDUINO_ARCH_ESP8266;ESP8266;__cplusplus=201103L;_VMICRO_INTELLISENSE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="VisualMicro" />
+  </ItemGroup>
+  <PropertyGroup>
+    <DebuggerFlavor>VisualMicroDebugger</DebuggerFlavor>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="data\config.json" />
+    <None Include="WemosRemote.ino">
+      <FileType>CppCode</FileType>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Blinker.h" />
+    <ClInclude Include="Json.h" />
+    <ClInclude Include="RoboconMotor.h" />
+    <ClInclude Include="SerialController.h" />
+    <ClInclude Include="__vm\.WemosRemote.vsarduino.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Blinker.cpp" />
+    <ClCompile Include="Json.cpp" />
+    <ClCompile Include="RoboconMotor.cpp" />
+    <ClCompile Include="SerialController.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="data\intro.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
