@@ -23,8 +23,8 @@ void Blinker::loop()
 	if (offset < item->offset) return;//Якщо час ще не настав - виходимо
 	analogWrite(item->pin, item->value);//Час настав
 	if (debug) {
-		Serial.print(name);
-		Serial.printf(": %i->%i\n", item->pin, item->value);
+		console.print(name);
+		console.printf(": %i->%i\n", item->pin, item->value);
 	}
 	current = item->next;//Переходимо до наступного елемента
 	if (repeat) {
@@ -33,6 +33,7 @@ void Blinker::loop()
 			startTime = millis();
 		}
 	}
+	if (current == nullptr) end();
 }
 
 Blinker * Blinker::Add(int pin, unsigned long offset, uint8_t value)

@@ -26,7 +26,7 @@ void WebUIController::setup()
 	collectHeaders(headerkeys, headerkeyssize);
 
 	begin(); // Web server start
-	Serial.println("HTTP server started");
+	console.println("HTTP server started");
 }
 
 void WebUIController::loop()
@@ -58,7 +58,7 @@ void WebUIController::sendFile(File file, char * contenttype, bool addGzHeader)
 {
 	String header;
 	size_t size_to_send = file.size();
-	Serial.println("file=" + String(file.name()) + " filesize=" + String(size_to_send));
+	console.println("file=" + String(file.name()) + " filesize=" + String(size_to_send));
 	if (addGzHeader) {
 		sendHeader("Content-Encoding", "gzip"); // console.print("Header1 ");
 		//sendHeader("Cache-Control", "max-age=31536000", true);
@@ -108,7 +108,7 @@ String WebUIController::ipToString(IPAddress ip)
 boolean WebUIController::captivePortal()
 {
 	if (!WebUIController::isIp(webServer.hostHeader()) && webServer.hostHeader() != (webServer.apName + ".local")) {
-		Serial.println("Request redirected to captive portal");
+		console.println("Request redirected to captive portal");
 		webServer.sendHeader("Location", String("http://") + WebUIController::ipToString(webServer.client().localIP()), true);
 		webServer.send(302, "text/plain", "");   // Empty content inhibits Content-length header so we have to close the socket ourselves.
 		webServer.client().stop(); // Stop is needed because we sent no content length
@@ -125,7 +125,7 @@ void WebUIController::handleRoot()
 
 void WebUIController::handleNotFound()
 {
-	Serial.println(webServer.uri());
+	console.println(webServer.uri());
 	if (captivePortal()) { // If caprive portal redirect instead of displaying the error page.
 		return;
 	}
@@ -158,14 +158,14 @@ bool WebUIController::handleFileRead(String path, bool html)
 	char* contentType = webServer.getContentType(path);
 	String minimized = webServer.getMinimizedPath(path);
 	if (SPIFFS.exists(minimized)) path = minimized;
-	Serial.println("path=" + path);
+	console.println("path=" + path);
 	if (SPIFFS.exists(path)) {
 		File file = SPIFFS.open(path, "r");
 		webServer.sendFile(file, contentType, false);
 		file.close();
 		return true;
 	}
-	Serial.println("Not found!!! " + path);
+	console.println("Not found!!! " + path);
 	return false;
 }
 

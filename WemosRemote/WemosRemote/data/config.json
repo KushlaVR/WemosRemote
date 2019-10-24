@@ -5,5 +5,8 @@
   "center": "90",
   "max_left": "150",
   "max_right": "60",
-  "min_speed": "50"
+  "min_speed": "50",
+  "front_light_on": "100",
+  "parking_light_on": "50",
+  "stop_light_duration": "2000"
 }

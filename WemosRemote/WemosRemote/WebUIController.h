@@ -7,7 +7,7 @@
 #include <ESP8266mDNS.h>
 #include <FS.h>
 #include "Json.h"
-
+#include "Console.h"
 
 class WebUIController :public ESP8266WebServer
 {
@@ -15,7 +15,7 @@ public:
 	WebUIController();
 	~WebUIController();
 
-	String apName = "webui";
+	String apName = "config";
 
 	void setup();
 	void loop();

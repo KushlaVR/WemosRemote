@@ -19,6 +19,7 @@ public:
 	void beginArray(String arrayName);
 	void endArray();
 	String getValue(char* key);
+	int getInt(char* key);
 };
 
 #endif

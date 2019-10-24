@@ -54,3 +54,9 @@ String JsonString::getValue(char * key)
 	}
 	return "";
 }
+
+int JsonString::getInt(char * key)
+{
+	String s = getValue(key);
+	return s.toInt();
+}

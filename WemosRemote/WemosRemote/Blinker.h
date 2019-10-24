@@ -5,6 +5,7 @@
 #else
 #include "WProgram.h"
 #endif
+#include "Console.h"
 
 class BlinkerItem
 {

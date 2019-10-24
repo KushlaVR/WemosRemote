@@ -8,6 +8,7 @@
 #include <Servo.h>
 #include "RoboconMotor.h"
 #include "Blinker.h"
+#include "Console.h"
 
 class SerialController
 {

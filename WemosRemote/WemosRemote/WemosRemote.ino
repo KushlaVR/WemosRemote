@@ -20,6 +20,7 @@
 #include <FS.h>
 #include <Servo.h>
 
+#include "Console.h"
 #include "RoboconMotor.h"
 #include "Json.h"
 #include "SerialController.h"
@@ -27,6 +28,16 @@
 #include <RemoteXY.h> 
 #include "WebUIController.h"
 
+#define pinServo D5
+#define pinMotorA D7
+#define pinMotorB D8
+#define pinFrontLight D4
+#define pinLeftLight D2
+#define pinRightLight D1
+#define pinBackLight D3
+#define pinStopLight D6
+#define pinParkingLight TX
+#define pinBuzzer RX
 
 
 // конфигурация интерфейса   
@@ -59,17 +70,31 @@ struct {
 } RemoteXY;
 #pragma pack(pop) 
 
-struct {
-	int center;
-	int max_left;
-	int max_right;
-	int position;
-	bool changed;
-} stearingParams;
+enum LightMode {
+	OFF = 0,
+	Parking,
+	ON
+};
 
 struct {
-	int min_speed;
-} motorParams;
+	int center;//градусів
+	int max_left;//градусів
+	int max_right;//градусів
+	int position;//градусів
+	int min_speed;//від 0 до 256
+	int front_light_on;//в процентах
+	int parking_light_on;//в процентах
+	int stop_light_duration;//в мілісекундах
+
+	int LightMode;
+
+	bool stopped;
+	bool emergency;
+	bool light_btn;
+
+	bool changed;
+	bool debug;
+} config;
 
 
 ///////////////////////////////////////////// 
@@ -83,28 +108,27 @@ bool connected = false;
 
 
 RoboEffects motorEffect = RoboEffects();
-RoboMotor motor = RoboMotor("motor", D7, D8, &motorEffect);
-
-//RoboEffects stearingEffect = RoboEffects();
-//RoboMotor stearing = RoboMotor("stearing", D5, D6, &stearingEffect);
+RoboMotor motor = RoboMotor("motor", pinMotorA, pinMotorB, &motorEffect);
 Servo stearingServo = Servo();
 
 SerialController serialController = SerialController();
 
 Blinker leftLight = Blinker("Left light");
 Blinker rightLight = Blinker("Right light");
-//Blinker siren1 = Blinker("Siren");
 Blinker buildinLed = Blinker("Build in led");
+Blinker stopLight = Blinker("Stop light");
 Blinker alarmOn = Blinker("Alarm on");
 Blinker alarmOff = Blinker("Alarm of");
 
-
-int FrontLightPin = D4;
 
 bool turnOffTurnLights = false;
 int turnLightsCondition = 10;
 
 void handleTurnLight(int stearing) {
+	if (config.emergency) {//Якщо включена аварійка - нічого не робимо
+		turnOffTurnLights = false;
+		return;
+	}
 	if (stearing < -turnLightsCondition) { //Включений лівий поворот
 		if (!leftLight.isRunning()) leftLight.begin();
 		rightLight.end();
@@ -123,47 +147,50 @@ void handleTurnLight(int stearing) {
 		if (leftLight.isRunning() && !rightLight.isRunning()) {//блимає лівий поворот
 			leftLight.end();
 			turnOffTurnLights = false;
-			Serial.println("Лівий поворот вимкнено.");
+			console.println("Лівий поворот вимкнено.");
 		}
 		else if (!leftLight.isRunning() && rightLight.isRunning()) {//блимає правий поворот
 			rightLight.end();
 			turnOffTurnLights = false;
-			Serial.println("Правий поворот вимкнено.");
+			console.println("Правий поворот вимкнено.");
 		}
 	}
 }
 
-void setup()
-{
-	Serial.begin(115200);
-	Serial.println();
-	Serial.println();
-	analogWriteRange(255);
-	String s;
-	if (!SPIFFS.begin()) {
-		Serial.println(F("No file system!"));
-		Serial.println(F("Fomating..."));
-		if (SPIFFS.format())
-			Serial.println(F("OK"));
-		else {
-			Serial.println(F("Fail.... rebooting..."));
-			while (true);
+int handledLightMode = 0;
+void handleLight() {
+	if (handledLightMode != config.LightMode) {
+		int val;
+		switch (config.LightMode)
+		{
+		case LightMode::OFF:
+			digitalWrite(pinFrontLight, LOW);
+			if (!config.debug)	digitalWrite(pinParkingLight, LOW);
+			break;
+		case LightMode::Parking:
+			val = map(config.parking_light_on, 0, 100, 0, 255);
+			analogWrite(pinFrontLight, val);
+			if (!config.debug) analogWrite(pinParkingLight, val);
+			break;
+		case LightMode::ON:
+			val = map(config.front_light_on, 0, 100, 0, 255);
+			analogWrite(pinFrontLight, val);
+			val = map(config.parking_light_on, 0, 100, 0, 255);
+			if (!config.debug) analogWrite(pinParkingLight, val);
+			break;
+		default:
+			break;
 		}
 	}
+}
 
-	if (SPIFFS.exists("/intro.txt")) {
-		File f = SPIFFS.open("/intro.txt", "r");
-		s = f.readString();
-		Serial.println(s.c_str());
-	}
-	else {
-		Serial.println(("Starting..."));
-	}
+void loadConfog() {
+	String s;
 
 	JsonString cfg = "";
 	File cfgFile;
 	if (!SPIFFS.exists("/config.json")) {
-		Serial.println(("Default setting loaded..."));
+		console.println(("Default setting loaded..."));
 		cfg.beginObject();
 		cfg.AddValue("ssid", "WEMOS");
 		cfg.AddValue("password", "12345678");
@@ -172,6 +199,9 @@ void setup()
 		cfg.AddValue("max_left", "150");
 		cfg.AddValue("max_right", "60");
 		cfg.AddValue("min_speed", "10");
+		cfg.AddValue("front_light_on", "100");
+		cfg.AddValue("parking_light_on", "50");
+		cfg.AddValue("stop_light_duration", "2000");
 		cfg.endObject();
 
 		cfgFile = SPIFFS.open("/config.json", "w");
@@ -180,89 +210,183 @@ void setup()
 		cfgFile.close();
 	}
 	else {
-		Serial.println(("Reading config..."));
+		console.println(("Reading config..."));
 		cfgFile = SPIFFS.open("/config.json", "r");
 		s = cfgFile.readString();
 		cfg = JsonString(s.c_str());
-		Serial.print(cfg.c_str());
-		Serial.println();
+		//console.print(cfg.c_str());
+		//console.println();
 	}
 
 	s = cfg.getValue("ssid") + "_" + WiFi.macAddress();
 	s.replace(":", "");
 	strcpy(&SSID[0], s.c_str());
-	Serial.println(SSID);
+	//Serial.println(SSID);
 
 	s = cfg.getValue("password");
 	strcpy(&SSID_password[0], s.c_str());
-	Serial.println(SSID_password);
+	//Serial.println(SSID_password);
+
+	s = cfg.getValue("mode");
+	if (s == "debug")
+		config.debug = true;
+	else
+		config.debug = false;
 
 	//Servo config reading
-	s = cfg.getValue("center");
-	stearingParams.center = s.toInt();
-
-	s = cfg.getValue("max_left");
-	stearingParams.max_left = s.toInt();
-
-	s = cfg.getValue("max_right");
-	stearingParams.max_right = s.toInt();
-	stearingParams.position = stearingParams.center;
-	stearingParams.changed = true;
-
-
-	stearingServo.attach(D5);
-	stearingServo.write(stearingParams.position);
-
-	serialController.stearing = &stearingServo;
+	config.center = cfg.getInt("center");
+	config.max_left = cfg.getInt("max_left");
+	config.max_right = cfg.getInt("max_right");
+	config.position = config.center;
 
 	//motor config reading
-	s = cfg.getValue("min_speed");
-	motorParams.min_speed = s.toInt();
-	motor.responder = &Serial;
-	motor.setWeight(800);
-	motor.reset();
+	config.min_speed = cfg.getInt("min_speed");
 
-	serialController.motor = &motor;
+	config.front_light_on = cfg.getInt("front_light_on");
+	config.parking_light_on = cfg.getInt("parking_light_on");
+	config.stop_light_duration = cfg.getInt("stop_light_duration");
+
+	config.changed = true;
+
+}
+
+void setupBlinkers() {
+	//Налаштування фар
+	pinMode(pinFrontLight, OUTPUT);
+	pinMode(pinLeftLight, OUTPUT);
+	pinMode(pinRightLight, OUTPUT);
+	pinMode(pinBackLight, OUTPUT);
+	pinMode(pinStopLight, OUTPUT);
+
+	digitalWrite(pinFrontLight, LOW);
+	digitalWrite(pinLeftLight, LOW);
+	digitalWrite(pinRightLight, LOW);
+	digitalWrite(pinBackLight, LOW);
+	digitalWrite(pinStopLight, LOW);
+
+	if (!config.debug) {
+		pinMode(pinParkingLight, OUTPUT);
+		pinMode(pinBuzzer, OUTPUT);
+		digitalWrite(pinParkingLight, LOW);
+		digitalWrite(pinBuzzer, LOW);
+	}
+
 
 	//Налаштування поворотників
 	leftLight
-		.Add(D2, 0, 255)
-		->Add(D2, 500, 0)
-		->Add(D2, 1000, 0);
+		.Add(pinLeftLight, 0, 255)
+		->Add(pinLeftLight, 500, 0)
+		->Add(pinLeftLight, 1000, 0);
 	serialController.leftLight = &leftLight;
 	rightLight
-		.Add(D1, 0, 255)
-		->Add(D1, 500, 0)
-		->Add(D1, 1000, 0);
+		.Add(pinRightLight, 0, 255)
+		->Add(pinRightLight, 500, 0)
+		->Add(pinRightLight, 1000, 0);
 	serialController.rightLight = &rightLight;
 
-	alarmOff
-		.Add(D3, 0, 255)
-		->Add(D3, 200, 0)
-		->Add(D3, 400, 255)
-		->Add(D3, 600, 0)
-		->repeat = false;
+	if (config.debug) {
+		alarmOff
+			.Add(pinLeftLight, 0, 255)
+			->Add(pinRightLight, 0, 255)
+			->Add(pinLeftLight, 200, 0)
+			->Add(pinRightLight, 200, 0)
+			->Add(pinLeftLight, 400, 255)
+			->Add(pinRightLight, 400, 255)
+			->Add(pinLeftLight, 600, 0)
+			->Add(pinRightLight, 600, 0);
+	}
+	else {
+		alarmOff
+			.Add(pinBuzzer, 0, 255)
+			->Add(pinBuzzer, 200, 0)
+			->Add(pinBuzzer, 400, 255)
+			->Add(pinBuzzer, 600, 0);
+	}
+	alarmOff.repeat = false;
 	alarmOff.debug = true;
 
-	alarmOn
-		.Add(D3, 0, 255)
-		->Add(D3, 200, 0)
-		->repeat = false;
+	if (config.debug) {
+		alarmOn
+			.Add(pinLeftLight, 0, 255)
+			->Add(pinRightLight, 0, 255)
+			->Add(pinLeftLight, 200, 0)
+			->Add(pinRightLight, 200, 0);
+	}
+	else {
+		alarmOn
+			.Add(pinBuzzer, 0, 255)
+			->Add(pinBuzzer, 200, 0);
+	}
+	alarmOn.repeat = false;
 	alarmOn.debug = true;
 
-	//Налаштування фар
-	pinMode(FrontLightPin, OUTPUT);
-	digitalWrite(FrontLightPin, LOW);
+	stopLight.Add(pinStopLight, 0, 0)
+		->Add(pinStopLight, 2, 255)
+		->Add(pinStopLight, config.stop_light_duration, 0)
+		->repeat = false;
+	stopLight.debug = true;
 	//Блимак встроїного світлодіода
 	buildinLed.Add(BUILTIN_LED, 0, 0)
 		->Add(BUILTIN_LED, 500, 255)
 		->Add(BUILTIN_LED, 1000, 0);
+
+}
+
+void setup()
+{
+	Serial.begin(115200);
+	Serial.println();
+	Serial.println();
+	console.output = &Serial;
+
+	analogWriteRange(255);
+	String s;
+	if (!SPIFFS.begin()) {
+		console.println(F("No file system!"));
+		console.println(F("Fomating..."));
+		if (SPIFFS.format())
+			console.println(F("OK"));
+		else {
+			console.println(F("Fail.... rebooting..."));
+			while (true);
+		}
+	}
+
+	if (SPIFFS.exists("/intro.txt")) {
+		File f = SPIFFS.open("/intro.txt", "r");
+		s = f.readString();
+		console.println(s.c_str());
+	}
+	else {
+		console.println(("Starting..."));
+	}
+
+
+	loadConfog();
+
+	if (!config.debug) {
+		Serial.end();
+		console.output = nullptr;
+	}
+
+	setupBlinkers();
+
+	stearingServo.attach(pinServo);
+	stearingServo.write(config.position);
+
+	motor.responder = &console;
+	motor.setWeight(800);
+	motor.reset();
+
+	serialController.stearing = &stearingServo;
+	serialController.motor = &motor;
+
 	buildinLed.begin();
 
 	remotexy = new CRemoteXY(RemoteXY_CONF_PROGMEM, &RemoteXY, REMOTEXY_ACCESS_PASSWORD, SSID, SSID_password, REMOTEXY_SERVER_PORT);//RemoteXY_Init();
 	RemoteXY.drive_mode = 1;
-	// TODO you setup code 
-	Serial.println("Start");
+
+	console.println("Start");
 	webServer.setup();
 	webServer.apName = String(SSID);
 }
@@ -272,94 +396,128 @@ int mapSpeed(int speed) {
 	int corectedSpeed = (speed * speed) / 100;
 
 	if (speed > 0)
-		return map(corectedSpeed, 0, 100, motorParams.min_speed, 255);
+		return map(corectedSpeed, 0, 100, config.min_speed, 255);
 	if (speed < 0)
-		return -map(corectedSpeed, 0, 100, motorParams.min_speed, 255);
+		return -map(corectedSpeed, 0, 100, config.min_speed, 255);
 	return 0;
 }
 
 int mapStearing(int direction) {
 	int corectedDirection = (direction * direction) / 100;
 
-	if (direction >= -5 && direction <= 5) return stearingParams.center;
+	if (direction >= -5 && direction <= 5) return config.center;
 	if (direction > 5)//в право
-		return map(corectedDirection, 0, 100, stearingParams.center, stearingParams.max_right);
+		return map(corectedDirection, 0, 100, config.center, config.max_right);
 	if (direction < 5)
-		return  map(corectedDirection, 0, 100, stearingParams.center, stearingParams.max_left);
+		return  map(corectedDirection, 0, 100, config.center, config.max_left);
 }
 
 
 void loop()
 {
 	RemoteXY_Handler();
-	if (!serialController.isRunning) {
-		// используйте структуру RemoteXY для передачи данных 
-		if (RemoteXY.connect_flag) {
-			if (!connected) {
-				Serial.println("Connected!");
-				digitalWrite(FrontLightPin, HIGH);
-				buildinLed.end();
-				leftLight.end();
-				rightLight.end();
-				motor.reset();
-				stearingParams.changed = (stearingParams.position!=stearingParams.center);
-				stearingParams.position = stearingParams.center;
-				connected = true;
-			}
-			int pos;
-			int speed;
-			switch (RemoteXY.drive_mode)
-			{
-			case 1: //лівий джойстик повороти, Повзунок - швидкість
-				speed = mapSpeed(RemoteXY.speed);
-				if (RemoteXY.left_joy_y < -20) speed = -speed;
-				motor.setSpeed(speed);
-				pos = mapStearing(RemoteXY.left_joy_x);
-				stearingParams.changed = (stearingParams.position != pos);
-				stearingParams.position = pos;
-				handleTurnLight(RemoteXY.left_joy_x);
-				break;
-
-			default: //Все керування лівим джойстиком
-				speed = mapSpeed(RemoteXY.left_joy_y);
-				motor.setSpeed(speed);
-				pos = mapStearing(RemoteXY.left_joy_x);
-				stearingParams.changed = (stearingParams.position != pos);
-				stearingParams.position = pos;
-				handleTurnLight(RemoteXY.left_joy_x);
-				break;
-
-			}
-			/*if (RemoteXY.Siren == 1) {
-				if (!siren1.isRunning()) siren1.begin();
+	if (RemoteXY.connect_flag) {
+		if (!connected) {
+			console.println("Connected!");
+			buildinLed.end();
+			leftLight.end();
+			rightLight.end();
+			alarmOff.begin();
+			motor.reset();
+			config.changed = (config.position != config.center);
+			config.position = config.center;
+			connected = true;
+		}
+		int pos;
+		int speed;
+		switch (RemoteXY.drive_mode)
+		{
+		case 1: //лівий джойстик повороти, Повзунок - швидкість
+			speed = mapSpeed(RemoteXY.speed);
+			if (RemoteXY.left_joy_y < -20) speed = -speed;
+			motor.setSpeed(speed);
+			if (RemoteXY.speed < 10) {
+				if (!config.stopped) {
+					stopLight.begin();
+					config.stopped = true;
+				}
 			}
 			else {
-				if (siren1.isRunning()) siren1.end();
-			}*/
+				config.stopped = false;
+			}
+			pos = mapStearing(RemoteXY.left_joy_x);
+			config.changed = (config.position != pos);
+			config.position = pos;
+			handleTurnLight(RemoteXY.left_joy_x);
+			break;
+
+		default: //Все керування лівим джойстиком
+			speed = mapSpeed(RemoteXY.left_joy_y);
+			motor.setSpeed(speed);
+			if (RemoteXY.left_joy_y > -5 && RemoteXY.left_joy_y < 5) {
+				if (!config.stopped) {
+					stopLight.begin();
+					config.stopped = true;
+				}
+			}
+			else {
+				config.stopped = false;
+			}
+			pos = mapStearing(RemoteXY.left_joy_x);
+			config.changed = (config.position != pos);
+			config.position = pos;
+			handleTurnLight(RemoteXY.left_joy_x);
+			break;
+
 		}
-		else {
-			if (connected) {
-				Serial.println("Disconnected!");
-				digitalWrite(FrontLightPin, LOW);
-				connected = false;
-				buildinLed.begin();
-				motor.reset();
-				stearingParams.changed = (stearingParams.position != stearingParams.center);
-				stearingParams.position = stearingParams.center;
+		if (RemoteXY.emergency_btn) {
+			if (!config.emergency) {
+				leftLight.begin();
+				rightLight.begin();
+				config.emergency = true;
 			}
 		}
+		else {
+			if (config.emergency) {
+				leftLight.end();
+				rightLight.end();
+				config.emergency = false;
+			}
+		}
+		if (RemoteXY.Light_btn != config.light_btn) {
+			if (RemoteXY.Light_btn) {
+				config.LightMode++;
+				if (config.LightMode > LightMode::ON) config.LightMode = 0;
+			}
+			config.light_btn = RemoteXY.Light_btn;
+		}
 	}
-	serialController.loop();
+	else {
+		if (connected) {
+			console.println("Disconnected!");
+			connected = false;
+			buildinLed.begin();
+			alarmOn.begin();
+			motor.reset();
+			config.changed = (config.position != config.center);
+			config.position = config.center;
+			config.LightMode = 0;
+		}
+	}
+	if (config.debug) {
+		serialController.loop();
+	}
 	motor.loop();
-	stearingServo.write(stearingParams.position);
-	if (stearingParams.changed) {
-		Serial.printf("Stearing -> %i\n", stearingParams.position);
-		stearingParams.changed = false;
+	stearingServo.write(config.position);
+	if (config.changed) {
+		console.printf("Stearing -> %i\n", config.position);
+		config.changed = false;
 	}
 	leftLight.loop();
 	rightLight.loop();
 	alarmOff.loop();
 	alarmOn.loop();
 	buildinLed.loop();
+	stopLight.loop();
 	webServer.loop();
 }

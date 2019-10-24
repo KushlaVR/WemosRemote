@@ -119,6 +119,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Blinker.h" />
+    <ClInclude Include="Console.h" />
     <ClInclude Include="Json.h" />
     <ClInclude Include="RoboconMotor.h" />
     <ClInclude Include="SerialController.h" />
@@ -127,6 +128,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Blinker.cpp" />
+    <ClCompile Include="Console.cpp" />
     <ClCompile Include="Json.cpp" />
     <ClCompile Include="RoboconMotor.cpp" />
     <ClCompile Include="SerialController.cpp" />
