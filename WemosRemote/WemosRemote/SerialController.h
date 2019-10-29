@@ -7,6 +7,7 @@
 
 #include <Servo.h>
 #include "RoboconMotor.h"
+#include "Stearing.h"
 #include "Blinker.h"
 #include "Console.h"
 
@@ -21,7 +22,7 @@ public:
 
 	bool isRunning = false;
 	RoboMotor * motor = nullptr;
-	Servo * stearing = nullptr;
+	Stearing * stearing = nullptr;
 	Blinker * leftLight = nullptr;
 	Blinker * rightLight = nullptr;
 	Blinker  * siren1 = nullptr;

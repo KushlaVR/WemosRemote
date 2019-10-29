@@ -100,28 +100,42 @@ void RoboMotor::loop()
 		responder->println(ret);
 	}
 	factSpeed = newSpeed;
-	if (factSpeed > 0) {
-		//їдемо в перед
-		digitalWrite(motorPinA, LOW);
-		if (pwmPin != 0)
+	if (pwmPin != 0) {
+		if (factSpeed > 0) {
+			digitalWrite(motorPinA, LOW);
 			digitalWrite(motorPinB, HIGH);
-		else
-			analogWrite(motorPinB, factSpeed);
-	}
-	else if (factSpeed < 0) {
-		//Їдемо назад
-		if (pwmPin != 0)
+			analogWrite(pwmPin, factSpeed);
+		}
+		else if (factSpeed < 0)
+		{
 			digitalWrite(motorPinA, HIGH);
-		else
-			analogWrite(motorPinA, factSpeed);
-		digitalWrite(motorPinB, LOW);
-	}
+			digitalWrite(motorPinB, LOW);
+			analogWrite(pwmPin, -factSpeed);
+		}
+		else {
+			//Стоїмо
+			digitalWrite(motorPinA, LOW);
+			digitalWrite(motorPinB, LOW);
+			analogWrite(pwmPin, factSpeed);
+		}
+	} 
 	else {
-		//Стоїмо
-		digitalWrite(motorPinA, LOW);
-		digitalWrite(motorPinB, LOW);
+		if (factSpeed > 0) {
+			//їдемо в перед
+			digitalWrite(motorPinA, LOW);
+			analogWrite(motorPinB, factSpeed);
+		}
+		else if (factSpeed < 0) {
+			//Їдемо назад
+			analogWrite(motorPinA, -factSpeed);
+			digitalWrite(motorPinB, LOW);
+		}
+		else {
+			//Стоїмо
+			digitalWrite(motorPinA, LOW);
+			digitalWrite(motorPinB, LOW);
+		}
 	}
-	if (pwmPin != 0) analogWrite(pwmPin, factSpeed);
 }
 
 void RoboMotor::setSpeed(int speed)

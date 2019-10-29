@@ -51,7 +51,7 @@ void SerialController::cmdMotor(String cmd)
 
 void SerialController::cmdStearing(String cmd)
 {
-	stearing->write(cmd.toInt());
+	stearing->setPosition(cmd.toInt());
 }
 
 void SerialController::cmdFlash(String cmd)

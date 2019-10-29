@@ -112,6 +112,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="data\config.json" />
+    <None Include="data\html\bootstrap.css" />
     <None Include="data\html\index.html" />
     <None Include="WemosRemote.ino">
       <FileType>CppCode</FileType>
@@ -123,6 +124,7 @@
     <ClInclude Include="Json.h" />
     <ClInclude Include="RoboconMotor.h" />
     <ClInclude Include="SerialController.h" />
+    <ClInclude Include="Stearing.h" />
     <ClInclude Include="WebUIController.h" />
     <ClInclude Include="__vm\.WemosRemote.vsarduino.h" />
   </ItemGroup>
@@ -132,6 +134,7 @@
     <ClCompile Include="Json.cpp" />
     <ClCompile Include="RoboconMotor.cpp" />
     <ClCompile Include="SerialController.cpp" />
+    <ClCompile Include="Stearing.cpp" />
     <ClCompile Include="WebUIController.cpp" />
   </ItemGroup>
   <ItemGroup>

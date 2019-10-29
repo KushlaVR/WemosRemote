@@ -18,6 +18,7 @@
     <None Include="WemosRemote.ino" />
     <None Include="data\config.json" />
     <None Include="data\html\index.html" />
+    <None Include="data\html\bootstrap.css" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.WemosRemote.vsarduino.h">
@@ -41,6 +42,9 @@
     <ClInclude Include="Console.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Stearing.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Blinker.cpp">
@@ -59,6 +63,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Console.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Stearing.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

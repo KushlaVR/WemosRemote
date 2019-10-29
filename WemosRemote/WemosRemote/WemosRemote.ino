@@ -22,6 +22,7 @@
 
 #include "Console.h"
 #include "RoboconMotor.h"
+#include "Stearing.h"
 #include "Json.h"
 #include "SerialController.h"
 #include "Blinker.h"
@@ -30,12 +31,12 @@
 
 #define pinServo D5
 #define pinMotorA D7
-#define pinMotorB D8
+#define pinMotorB D6
 #define pinFrontLight D4
 #define pinLeftLight D2
 #define pinRightLight D1
 #define pinBackLight D3
-#define pinStopLight D6
+#define pinStopLight D8
 #define pinParkingLight TX
 #define pinBuzzer RX
 
@@ -80,7 +81,7 @@ struct {
 	int center;//градусів
 	int max_left;//градусів
 	int max_right;//градусів
-	int position;//градусів
+
 	int min_speed;//від 0 до 256
 	int front_light_on;//в процентах
 	int parking_light_on;//в процентах
@@ -92,7 +93,6 @@ struct {
 	bool emergency;
 	bool light_btn;
 
-	bool changed;
 	bool debug;
 } config;
 
@@ -109,7 +109,7 @@ bool connected = false;
 
 RoboEffects motorEffect = RoboEffects();
 RoboMotor motor = RoboMotor("motor", pinMotorA, pinMotorB, &motorEffect);
-Servo stearingServo = Servo();
+Stearing stearingServo = Stearing(pinServo);
 
 SerialController serialController = SerialController();
 
@@ -237,7 +237,6 @@ void loadConfog() {
 	config.center = cfg.getInt("center");
 	config.max_left = cfg.getInt("max_left");
 	config.max_right = cfg.getInt("max_right");
-	config.position = config.center;
 
 	//motor config reading
 	config.min_speed = cfg.getInt("min_speed");
@@ -245,8 +244,6 @@ void loadConfog() {
 	config.front_light_on = cfg.getInt("front_light_on");
 	config.parking_light_on = cfg.getInt("parking_light_on");
 	config.stop_light_duration = cfg.getInt("stop_light_duration");
-
-	config.changed = true;
 
 }
 
@@ -371,8 +368,7 @@ void setup()
 
 	setupBlinkers();
 
-	stearingServo.attach(pinServo);
-	stearingServo.write(config.position);
+	stearingServo.setPosition(0);
 
 	motor.responder = &console;
 	motor.setWeight(800);
@@ -402,20 +398,14 @@ int mapSpeed(int speed) {
 	return 0;
 }
 
-int mapStearing(int direction) {
-	int corectedDirection = (direction * direction) / 100;
-
-	if (direction >= -5 && direction <= 5) return config.center;
-	if (direction > 5)//в право
-		return map(corectedDirection, 0, 100, config.center, config.max_right);
-	if (direction < 5)
-		return  map(corectedDirection, 0, 100, config.center, config.max_left);
-}
-
-
 void loop()
 {
 	RemoteXY_Handler();
+	
+	stearingServo.max_left = config.max_left;
+	stearingServo.max_right = config.max_right;
+	stearingServo.center = config.center;
+
 	if (RemoteXY.connect_flag) {
 		if (!connected) {
 			console.println("Connected!");
@@ -424,8 +414,7 @@ void loop()
 			rightLight.end();
 			alarmOff.begin();
 			motor.reset();
-			config.changed = (config.position != config.center);
-			config.position = config.center;
+			stearingServo.setPosition(0);
 			connected = true;
 		}
 		int pos;
@@ -445,9 +434,7 @@ void loop()
 			else {
 				config.stopped = false;
 			}
-			pos = mapStearing(RemoteXY.left_joy_x);
-			config.changed = (config.position != pos);
-			config.position = pos;
+			stearingServo.setPosition(RemoteXY.left_joy_x);
 			handleTurnLight(RemoteXY.left_joy_x);
 			break;
 
@@ -463,9 +450,7 @@ void loop()
 			else {
 				config.stopped = false;
 			}
-			pos = mapStearing(RemoteXY.left_joy_x);
-			config.changed = (config.position != pos);
-			config.position = pos;
+			stearingServo.setPosition(RemoteXY.left_joy_x);
 			handleTurnLight(RemoteXY.left_joy_x);
 			break;
 
@@ -499,8 +484,7 @@ void loop()
 			buildinLed.begin();
 			alarmOn.begin();
 			motor.reset();
-			config.changed = (config.position != config.center);
-			config.position = config.center;
+			stearingServo.setPosition(0);
 			config.LightMode = 0;
 		}
 	}
@@ -508,11 +492,7 @@ void loop()
 		serialController.loop();
 	}
 	motor.loop();
-	stearingServo.write(config.position);
-	if (config.changed) {
-		console.printf("Stearing -> %i\n", config.position);
-		config.changed = false;
-	}
+	stearingServo.loop();
 	leftLight.loop();
 	rightLight.loop();
 	alarmOff.loop();
