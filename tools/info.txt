@@ -1,3 +1,14 @@
+ private async void КнМікропрограма_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            await ЗавантажитиЗСервера();
+            string port = device.port;
+            output.Text = "";
+            Статус = "Завантаження мікропрограми на прилад...";
+            await Task.Run(() => Flash(port));
+            Статус = null;
+        }
+
+
 private void Flash(string port)
         {
             Process process = new Process
