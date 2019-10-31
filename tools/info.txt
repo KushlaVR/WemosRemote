@@ -1,1 +1,46 @@
-info
+private void Flash(string port)
+        {
+            Process process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "esptool.exe",
+                    Arguments = "--chip esp8266 --port " + port + " write_flash 0 " + binFile,
+                    UseShellExecute = false,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    CreateNoWindow = true
+                }
+            };
+            try
+            {
+                process.OutputDataReceived += new DataReceivedEventHandler(OutputHandler);
+                process.ErrorDataReceived += new DataReceivedEventHandler(OutputHandler);
+                process.Start();
+                process.BeginOutputReadLine();
+                process.BeginErrorReadLine();
+                process.WaitForExit();
+            }
+            catch (Exception ex)
+            {
+                output.Text = ex.ToString();
+            }
+        }
+
+
+void OutputHandler(object sendingProcess, DataReceivedEventArgs outLine)
+        {
+            if (outLine.Data != null)
+                Dispatcher.Invoke(new Action(() =>
+                {
+                    string s = outLine.Data;
+                    if (s.StartsWith("Writing at"))
+                    {
+                        int start = s.IndexOf("(") + 1;
+                        string val = s.Substring(start, s.IndexOf(")") - start - 2);
+                        прогрес.Value = int.Parse(val);
+                    }
+                    output.Text += "\n";
+                    output.Text += outLine.Data;
+                }));
+        }
