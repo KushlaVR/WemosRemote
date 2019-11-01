@@ -13,10 +13,11 @@ public:
 	int front_light_on;//в процентах
 	int parking_light_on;//в процентах
 	int stop_light_duration;//в мілісекундах
-	
+	int back_light_timeout;//в мілісекундах
 	bool debug;
 
 	int LightMode;
+	unsigned long stoppedTime;
 	int backLightMode;
 
 	bool stopped;

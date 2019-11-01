@@ -37,6 +37,7 @@ void SetupController::printConfig(JsonString * out)
 	out->AddValue("front_light_on", String(cfg->front_light_on));
 	out->AddValue("parking_light_on", String(cfg->parking_light_on));
 	out->AddValue("stop_light_duration", String(cfg->stop_light_duration));
+	out->AddValue("back_light_timeout", String(cfg->back_light_timeout));
 
 	out->AddValue("debug", String(cfg->debug));
 	out->endObject();
@@ -51,6 +52,7 @@ void SetupController::Setup_Get()
 
 void SetupController::Setup_Post()
 {
+
 	if (webServer.hasArg("ssid")) { setupController.cfg->ssid = webServer.arg("ssid"); }
 	if (webServer.hasArg("password")) { setupController.cfg->password = webServer.arg("password"); }
 	if (webServer.hasArg("center")) { setupController.cfg->center = webServer.arg("center").toInt(); }
@@ -60,6 +62,7 @@ void SetupController::Setup_Post()
 	if (webServer.hasArg("front_light_on")) { setupController.cfg->front_light_on = webServer.arg("front_light_on").toInt(); }
 	if (webServer.hasArg("parking_light_on")) { setupController.cfg->parking_light_on = webServer.arg("parking_light_on").toInt(); }
 	if (webServer.hasArg("stop_light_duration")) { setupController.cfg->stop_light_duration = webServer.arg("stop_light_duration").toInt(); }
+	if (webServer.hasArg("back_light_timeout")) { setupController.cfg->back_light_timeout = webServer.arg("back_light_timeout").toInt(); }
 
 	setupController.saveConfig();
 

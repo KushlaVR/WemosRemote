@@ -46,26 +46,28 @@
 // RemoteXY configurate   
 #pragma pack(push, 1) 
 uint8_t RemoteXY_CONF[] = {
-  255,7,0,0,0,57,0,8,25,0,
-  5,43,-7,17,34,34,2,26,31,1,
-  0,31,0,13,13,132,16,72,76,0,
-  2,0,49,2,17,9,2,26,31,31,
-  69,109,0,79,70,70,0,3,130,39,
-  49,22,12,2,26,5,51,65,16,35,
-  35,2,26,31
+  255,7,0,0,0,56,0,8,25,0,
+  2,0,46,0,29,5,34,26,31,31,
+  69,109,0,79,70,70,0,1,0,35,
+  15,20,20,132,16,76,0,5,43,-10,
+  3,51,51,2,26,31,3,130,47,49,
+  22,12,2,26,5,32,63,0,63,63,
+  176,26,31
 };
+
+
 
 // this structure defines all the variables of your control interface  
 struct {
 
 	// input variable
-	int8_t left_joy_x; // =-100..100 координата x положения джойстика 
-	int8_t left_joy_y; // =-100..100 координата y положения джойстика 
-	uint8_t Light_btn; // =1 если кнопка нажата, иначе =0 
-	uint8_t emergency_btn; // =1 если переключатель включен и =0 если отключен 
-	uint8_t drive_mode; // =0 если переключатель в положении A, =1 если в положении B, =2 если в положении C, ... 
-	int8_t right_joy_x; // =-100..100 координата x положения джойстика 
-	int8_t right_joy_y; // =-100..100 координата y положения джойстика 
+	uint8_t emergency_btn; // =1 if switch ON and =0 if OFF 
+	uint8_t Light_btn; // =1 if button pressed, else =0 
+	int8_t left_joy_x; // =-100..100 x-coordinate joystick position 
+	int8_t left_joy_y; // =-100..100 y-coordinate joystick position 
+	uint8_t drive_mode; // =0 if select position A, =1 if position B, =2 if position C, ... 
+	int8_t right_joy_x; // =-100..100 x-coordinate joystick position 
+	int8_t right_joy_y; // =-100..100 y-coordinate joystick position 
 
 	  // other variable
 	uint8_t connect_flag;  // =1 if wire connected, else =0 
@@ -75,6 +77,7 @@ struct {
 
 enum LightMode {
 	OFF = 0,
+	WAIT_FOR_TIMEOUT,
 	Parking,
 	ON
 };
@@ -86,7 +89,7 @@ ConfigStruct config;
 ///////////////////////////////////////////// 
 
 #define REMOTEXY_SERVER_PORT 6377 
-char SSID[20];
+char SSID[32];
 char SSID_password[20];
 bool connected = false;
 
@@ -172,14 +175,21 @@ void handleLight() {
 		}
 	}
 	if (config.backLightMode != handledBackLightMode) {
-		handledBackLightMode = config.backLightMode;
 		switch (config.backLightMode)
 		{
 		case LightMode::OFF:
+			handledBackLightMode = config.backLightMode;
 			backLight.end();
+			break;
+		case LightMode::WAIT_FOR_TIMEOUT:
+			if ((millis() - config.stoppedTime) > config.back_light_timeout) {
+				handledBackLightMode = config.backLightMode;
+				backLight.end();
+			}
 			break;
 		case LightMode::ON:
 			backLight.begin();
+			handledBackLightMode = config.backLightMode;
 			break;
 		default:
 			break;
@@ -221,25 +231,25 @@ void setupBlinkers() {
 	alarmOff
 		.Add(pinLeftLight, 0, config.parking_light_on)
 		->Add(pinRightLight, 0, config.parking_light_on)
-		->Add(pinLeftLight, 200, 0)
-		->Add(pinRightLight, 200, 0)
-		->Add(pinLeftLight, 400, config.parking_light_on)
-		->Add(pinRightLight, 400, config.parking_light_on)
-		->Add(pinLeftLight, 600, 0)
-		->Add(pinRightLight, 600, 0);
+		->Add(pinLeftLight, 300, 0)
+		->Add(pinRightLight, 300, 0)
+		->Add(pinLeftLight, 600, config.parking_light_on)
+		->Add(pinRightLight, 600, config.parking_light_on)
+		->Add(pinLeftLight, 900, 0)
+		->Add(pinRightLight, 900, 0);
 	alarmOff.repeat = false;
 	//alarmOff.debug = true;
 
 	alarmOn
 		.Add(pinLeftLight, 0, config.parking_light_on)
 		->Add(pinRightLight, 0, config.parking_light_on)
-		->Add(pinLeftLight, 200, 0)
-		->Add(pinRightLight, 200, 0);
+		->Add(pinLeftLight, 600, 0)
+		->Add(pinRightLight, 600, 0);
 	alarmOn.repeat = false;
 	//alarmOn.debug = true;
 
 	stopLight.Add(pinStopLight, 0, 0)
-		->Add(pinStopLight, 2, 255)
+		->Add(pinStopLight, 50, 255)
 		->Add(pinStopLight, config.stop_light_duration, 0)
 		->repeat = false;
 	stopLight.debug = true;
@@ -271,6 +281,7 @@ void loadConfig()
 		cfg.AddValue("front_light_on", "80");
 		cfg.AddValue("parking_light_on", "10");
 		cfg.AddValue("stop_light_duration", "2000");
+		cfg.AddValue("back_light_timeout", "500");
 		cfg.endObject();
 
 		cfgFile = SPIFFS.open("/config.json", "w");
@@ -306,6 +317,7 @@ void loadConfig()
 	config.front_light_on = cfg.getInt("front_light_on");
 	config.parking_light_on = cfg.getInt("parking_light_on");
 	config.stop_light_duration = cfg.getInt("stop_light_duration");
+	config.back_light_timeout = cfg.getInt("back_light_timeout");
 
 	s = config.ssid + "_" + WiFi.macAddress();
 	s.replace(":", "");
@@ -348,7 +360,7 @@ void setup()
 
 
 	loadConfig();
-	
+
 
 
 	if (!config.debug) {
@@ -403,6 +415,7 @@ void loop()
 			rightLight.end();
 			alarmOff.begin();
 			motor.reset();
+			config.stopped = true;
 			stearingServo.setPosition(0);
 			connected = true;
 		}
@@ -415,6 +428,10 @@ void loop()
 			motor.setSpeed(speed);
 			if (speed < 0)
 				config.backLightMode = LightMode::ON;
+			else if (speed == 0) {
+				if (config.backLightMode == LightMode::ON)
+					config.backLightMode = LightMode::WAIT_FOR_TIMEOUT;
+			}
 			else
 				config.backLightMode = LightMode::OFF;
 
@@ -422,6 +439,7 @@ void loop()
 				if (!config.stopped) {
 					stopLight.begin();
 					config.stopped = true;
+					config.stoppedTime = millis();
 				}
 			}
 			else {
@@ -444,6 +462,7 @@ void loop()
 				if (!config.stopped) {
 					stopLight.begin();
 					config.stopped = true;
+					config.stoppedTime = millis();
 				}
 			}
 			else {

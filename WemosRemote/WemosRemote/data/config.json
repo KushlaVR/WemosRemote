@@ -8,5 +8,6 @@
   "min_speed": "50",
   "front_light_on": "80",
   "parking_light_on": "10",
-  "stop_light_duration": "2000"
+  "stop_light_duration": "2000",
+  "back_light_timeout": "500"
 }

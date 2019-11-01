@@ -15,11 +15,11 @@
                 <form action="/api/setup" method="post" id="form">
                     <div class="form-group">
                         <label>SSID</label>
-                        <input type="text" maxlength="5" name="ssid" class="form-control" required="required" />
+                        <input type="text" maxlength="10" name="ssid" class="form-control" required="required" />
                     </div>
                     <div class="form-group">
                         <label>password</label>
-                        <input type="text" maxlength="8" name="password" class="form-control" required="required" />
+                        <input type="text" maxlength="10" name="password" class="form-control" required="required" />
                     </div>
                     <div class="form-group">
                         <label>Operation mode</label>
@@ -108,6 +108,18 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="form-group">
+                        <label>Back light timeout</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="back_light_timeout" class="form-control" step="10" min="0" max="1000" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">0..1000</span>
+                                <span class="input-group-text">milis</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <input type="submit" class="btn btn-primary" value="Save" />
                 </form>
             </div>
