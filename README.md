@@ -103,3 +103,4 @@ Wemos remote - проект для керування авто моделлю з
 8) Габарит D0
 9) *Бузер RX*
 
+![Wiring diagram](/img/test.png)
