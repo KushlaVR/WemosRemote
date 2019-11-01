@@ -5,5 +5,5 @@ set /p portNumber="COM"
 
 echo "Port number is COM%portNumber%"
 
-esptool.exe --chip esp8266 --port %portNumber% write_flash 0 firmware.bin
+esptool.exe --chip esp8266 --port COM%portNumber% write_flash 0 firmware.bin
 pause
