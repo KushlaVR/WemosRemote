@@ -2,9 +2,11 @@
 
 Wemos remote - проект для керування авто моделлю з додатку на телефоні. 
 Керування реалізовано на процесорі ESP8266. Цей процесор компактний, має вбудований WIFI модуль і адаповане ядро під фреймворк Arduino. Прошивка реалізована у середовищі VisualStudio 2019 з використанням фреймворків:
-* Arduino
-* RemoteXY
-* ESP8266
+* Arduino https://www.arduino.cc/en/Main/Software
+* RemoteXY http://remotexy.com/
+* ESP8266 https://github.com/esp8266/Arduino
+* jQuery https://jquery.com/
+* Bootstrap https://getbootstrap.com/
 
 При необхідлності скетч можна редагувати у середовищі Arduino IDE.
 
