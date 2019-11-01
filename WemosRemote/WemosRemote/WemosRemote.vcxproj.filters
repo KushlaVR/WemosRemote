@@ -19,6 +19,8 @@
     <None Include="data\config.json" />
     <None Include="data\html\index.html" />
     <None Include="data\html\bootstrap.css" />
+    <None Include="data\html\jquery.js" />
+    <None Include="data\html\kushlavr.js" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.WemosRemote.vsarduino.h">
@@ -45,6 +47,9 @@
     <ClInclude Include="Stearing.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SetupController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Blinker.cpp">
@@ -66,6 +71,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Stearing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SetupController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

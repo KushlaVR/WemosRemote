@@ -28,6 +28,7 @@
 #include "Blinker.h"
 #include <RemoteXY.h> 
 #include "WebUIController.h"
+#include "SetupController.h"
 
 #define pinServo D5
 #define pinMotorA D7
@@ -37,21 +38,21 @@
 #define pinRightLight D1
 #define pinBackLight D3
 #define pinStopLight D8
-#define pinParkingLight TX
-#define pinBuzzer RX
+#define pinParkingLight D0
+//#define pinBuzzer RX
 
 
 // конфигурация интерфейса   
 // RemoteXY configurate   
 #pragma pack(push, 1) 
 uint8_t RemoteXY_CONF[] = {
-  255,6,0,0,0,56,0,8,25,0,
-  5,43,-9,9,43,43,2,26,31,1,
-  0,57,4,18,18,132,16,72,76,0,
-  2,0,57,39,18,9,2,26,31,31,
-  69,109,0,79,70,70,0,3,130,55,
-  50,22,12,2,26,4,0,88,2,17,
-  60,2,26
+  255,7,0,0,0,57,0,8,25,0,
+  5,43,-7,17,34,34,2,26,31,1,
+  0,31,0,13,13,132,16,72,76,0,
+  2,0,49,2,17,9,2,26,31,31,
+  69,109,0,79,70,70,0,3,130,39,
+  49,22,12,2,26,5,51,65,16,35,
+  35,2,26,31
 };
 
 // this structure defines all the variables of your control interface  
@@ -63,7 +64,8 @@ struct {
 	uint8_t Light_btn; // =1 если кнопка нажата, иначе =0 
 	uint8_t emergency_btn; // =1 если переключатель включен и =0 если отключен 
 	uint8_t drive_mode; // =0 если переключатель в положении A, =1 если в положении B, =2 если в положении C, ... 
-	int8_t speed; // =0..100 положение слайдера 
+	int8_t right_joy_x; // =-100..100 координата x положения джойстика 
+	int8_t right_joy_y; // =-100..100 координата y положения джойстика 
 
 	  // other variable
 	uint8_t connect_flag;  // =1 if wire connected, else =0 
@@ -77,25 +79,7 @@ enum LightMode {
 	ON
 };
 
-struct {
-	int center;//градусів
-	int max_left;//градусів
-	int max_right;//градусів
-
-	int min_speed;//від 0 до 256
-	int front_light_on;//в процентах
-	int parking_light_on;//в процентах
-	int stop_light_duration;//в мілісекундах
-
-	int LightMode;
-
-	bool stopped;
-	bool emergency;
-	bool light_btn;
-
-	bool debug;
-} config;
-
+ConfigStruct config;
 
 ///////////////////////////////////////////// 
 //           END RemoteXY include          // 
@@ -115,8 +99,8 @@ SerialController serialController = SerialController();
 
 Blinker leftLight = Blinker("Left light");
 Blinker rightLight = Blinker("Right light");
-Blinker buildinLed = Blinker("Build in led");
 Blinker stopLight = Blinker("Stop light");
+Blinker backLight = Blinker("Back light");
 Blinker alarmOn = Blinker("Alarm on");
 Blinker alarmOff = Blinker("Alarm of");
 
@@ -158,25 +142,44 @@ void handleTurnLight(int stearing) {
 }
 
 int handledLightMode = 0;
+int handledBackLightMode = 0;
 void handleLight() {
+	if (!RemoteXY.connect_flag) {
+		config.LightMode = LightMode::OFF;
+	};
 	if (handledLightMode != config.LightMode) {
+		handledLightMode = config.LightMode;
 		int val;
 		switch (config.LightMode)
 		{
 		case LightMode::OFF:
 			digitalWrite(pinFrontLight, LOW);
-			if (!config.debug)	digitalWrite(pinParkingLight, LOW);
+			digitalWrite(pinParkingLight, LOW);
 			break;
 		case LightMode::Parking:
 			val = map(config.parking_light_on, 0, 100, 0, 255);
 			analogWrite(pinFrontLight, val);
-			if (!config.debug) analogWrite(pinParkingLight, val);
+			analogWrite(pinParkingLight, val);
 			break;
 		case LightMode::ON:
 			val = map(config.front_light_on, 0, 100, 0, 255);
 			analogWrite(pinFrontLight, val);
 			val = map(config.parking_light_on, 0, 100, 0, 255);
-			if (!config.debug) analogWrite(pinParkingLight, val);
+			analogWrite(pinParkingLight, val);
+			break;
+		default:
+			break;
+		}
+	}
+	if (config.backLightMode != handledBackLightMode) {
+		handledBackLightMode = config.backLightMode;
+		switch (config.backLightMode)
+		{
+		case LightMode::OFF:
+			backLight.end();
+			break;
+		case LightMode::ON:
+			backLight.begin();
 			break;
 		default:
 			break;
@@ -184,9 +187,75 @@ void handleLight() {
 	}
 }
 
-void loadConfog() {
-	String s;
 
+void setupBlinkers() {
+	//Налаштування фар
+	pinMode(pinFrontLight, OUTPUT);
+	pinMode(pinLeftLight, OUTPUT);
+	pinMode(pinRightLight, OUTPUT);
+	pinMode(pinBackLight, OUTPUT);
+	pinMode(pinStopLight, OUTPUT);
+
+	digitalWrite(pinFrontLight, LOW);
+	digitalWrite(pinLeftLight, LOW);
+	digitalWrite(pinRightLight, LOW);
+	digitalWrite(pinBackLight, LOW);
+	digitalWrite(pinStopLight, LOW);
+
+	pinMode(pinParkingLight, OUTPUT);
+	digitalWrite(pinParkingLight, LOW);
+
+
+	//Налаштування поворотників
+	leftLight
+		.Add(pinLeftLight, 0, config.parking_light_on)
+		->Add(pinLeftLight, 500, 0)
+		->Add(pinLeftLight, 1000, 0);
+	serialController.leftLight = &leftLight;
+	rightLight
+		.Add(pinRightLight, 0, config.parking_light_on)
+		->Add(pinRightLight, 500, 0)
+		->Add(pinRightLight, 1000, 0);
+	serialController.rightLight = &rightLight;
+
+	alarmOff
+		.Add(pinLeftLight, 0, config.parking_light_on)
+		->Add(pinRightLight, 0, config.parking_light_on)
+		->Add(pinLeftLight, 200, 0)
+		->Add(pinRightLight, 200, 0)
+		->Add(pinLeftLight, 400, config.parking_light_on)
+		->Add(pinRightLight, 400, config.parking_light_on)
+		->Add(pinLeftLight, 600, 0)
+		->Add(pinRightLight, 600, 0);
+	alarmOff.repeat = false;
+	//alarmOff.debug = true;
+
+	alarmOn
+		.Add(pinLeftLight, 0, config.parking_light_on)
+		->Add(pinRightLight, 0, config.parking_light_on)
+		->Add(pinLeftLight, 200, 0)
+		->Add(pinRightLight, 200, 0);
+	alarmOn.repeat = false;
+	//alarmOn.debug = true;
+
+	stopLight.Add(pinStopLight, 0, 0)
+		->Add(pinStopLight, 2, 255)
+		->Add(pinStopLight, config.stop_light_duration, 0)
+		->repeat = false;
+	stopLight.debug = true;
+
+	backLight.Add(pinBackLight, 0, 0)
+		->Add(pinBackLight, 16, 255)
+		->Add(pinBackLight, 20, 0)
+		->repeat = true;
+
+
+}
+
+
+void loadConfig()
+{
+	String s;
 	JsonString cfg = "";
 	File cfgFile;
 	if (!SPIFFS.exists("/config.json")) {
@@ -198,9 +267,9 @@ void loadConfog() {
 		cfg.AddValue("center", "90");
 		cfg.AddValue("max_left", "150");
 		cfg.AddValue("max_right", "60");
-		cfg.AddValue("min_speed", "10");
-		cfg.AddValue("front_light_on", "100");
-		cfg.AddValue("parking_light_on", "50");
+		cfg.AddValue("min_speed", "50");
+		cfg.AddValue("front_light_on", "80");
+		cfg.AddValue("parking_light_on", "10");
 		cfg.AddValue("stop_light_duration", "2000");
 		cfg.endObject();
 
@@ -214,18 +283,11 @@ void loadConfog() {
 		cfgFile = SPIFFS.open("/config.json", "r");
 		s = cfgFile.readString();
 		cfg = JsonString(s.c_str());
-		//console.print(cfg.c_str());
-		//console.println();
+		cfgFile.close();
 	}
 
-	s = cfg.getValue("ssid") + "_" + WiFi.macAddress();
-	s.replace(":", "");
-	strcpy(&SSID[0], s.c_str());
-	//Serial.println(SSID);
-
-	s = cfg.getValue("password");
-	strcpy(&SSID_password[0], s.c_str());
-	//Serial.println(SSID_password);
+	config.ssid = String(cfg.getValue("ssid"));
+	config.password = String(cfg.getValue("password"));
 
 	s = cfg.getValue("mode");
 	if (s == "debug")
@@ -245,89 +307,15 @@ void loadConfog() {
 	config.parking_light_on = cfg.getInt("parking_light_on");
 	config.stop_light_duration = cfg.getInt("stop_light_duration");
 
-}
+	s = config.ssid + "_" + WiFi.macAddress();
+	s.replace(":", "");
+	strcpy(&SSID[0], s.c_str());
 
-void setupBlinkers() {
-	//Налаштування фар
-	pinMode(pinFrontLight, OUTPUT);
-	pinMode(pinLeftLight, OUTPUT);
-	pinMode(pinRightLight, OUTPUT);
-	pinMode(pinBackLight, OUTPUT);
-	pinMode(pinStopLight, OUTPUT);
-
-	digitalWrite(pinFrontLight, LOW);
-	digitalWrite(pinLeftLight, LOW);
-	digitalWrite(pinRightLight, LOW);
-	digitalWrite(pinBackLight, LOW);
-	digitalWrite(pinStopLight, LOW);
-
-	if (!config.debug) {
-		pinMode(pinParkingLight, OUTPUT);
-		pinMode(pinBuzzer, OUTPUT);
-		digitalWrite(pinParkingLight, LOW);
-		digitalWrite(pinBuzzer, LOW);
-	}
-
-
-	//Налаштування поворотників
-	leftLight
-		.Add(pinLeftLight, 0, 255)
-		->Add(pinLeftLight, 500, 0)
-		->Add(pinLeftLight, 1000, 0);
-	serialController.leftLight = &leftLight;
-	rightLight
-		.Add(pinRightLight, 0, 255)
-		->Add(pinRightLight, 500, 0)
-		->Add(pinRightLight, 1000, 0);
-	serialController.rightLight = &rightLight;
-
-	if (config.debug) {
-		alarmOff
-			.Add(pinLeftLight, 0, 255)
-			->Add(pinRightLight, 0, 255)
-			->Add(pinLeftLight, 200, 0)
-			->Add(pinRightLight, 200, 0)
-			->Add(pinLeftLight, 400, 255)
-			->Add(pinRightLight, 400, 255)
-			->Add(pinLeftLight, 600, 0)
-			->Add(pinRightLight, 600, 0);
-	}
-	else {
-		alarmOff
-			.Add(pinBuzzer, 0, 255)
-			->Add(pinBuzzer, 200, 0)
-			->Add(pinBuzzer, 400, 255)
-			->Add(pinBuzzer, 600, 0);
-	}
-	alarmOff.repeat = false;
-	alarmOff.debug = true;
-
-	if (config.debug) {
-		alarmOn
-			.Add(pinLeftLight, 0, 255)
-			->Add(pinRightLight, 0, 255)
-			->Add(pinLeftLight, 200, 0)
-			->Add(pinRightLight, 200, 0);
-	}
-	else {
-		alarmOn
-			.Add(pinBuzzer, 0, 255)
-			->Add(pinBuzzer, 200, 0);
-	}
-	alarmOn.repeat = false;
-	alarmOn.debug = true;
-
-	stopLight.Add(pinStopLight, 0, 0)
-		->Add(pinStopLight, 2, 255)
-		->Add(pinStopLight, config.stop_light_duration, 0)
-		->repeat = false;
-	stopLight.debug = true;
-	//Блимак встроїного світлодіода
-	buildinLed.Add(BUILTIN_LED, 0, 0)
-		->Add(BUILTIN_LED, 500, 255)
-		->Add(BUILTIN_LED, 1000, 0);
+	s = config.password;
+	strcpy(&SSID_password[0], s.c_str());
 
 }
+
 
 void setup()
 {
@@ -359,7 +347,9 @@ void setup()
 	}
 
 
-	loadConfog();
+	loadConfig();
+	
+
 
 	if (!config.debug) {
 		Serial.end();
@@ -377,7 +367,6 @@ void setup()
 	serialController.stearing = &stearingServo;
 	serialController.motor = &motor;
 
-	buildinLed.begin();
 
 	remotexy = new CRemoteXY(RemoteXY_CONF_PROGMEM, &RemoteXY, REMOTEXY_ACCESS_PASSWORD, SSID, SSID_password, REMOTEXY_SERVER_PORT);//RemoteXY_Init();
 	RemoteXY.drive_mode = 1;
@@ -385,6 +374,7 @@ void setup()
 	console.println("Start");
 	webServer.setup();
 	webServer.apName = String(SSID);
+	setupController.cfg = &config;
 }
 
 
@@ -401,7 +391,7 @@ int mapSpeed(int speed) {
 void loop()
 {
 	RemoteXY_Handler();
-	
+
 	stearingServo.max_left = config.max_left;
 	stearingServo.max_right = config.max_right;
 	stearingServo.center = config.center;
@@ -409,7 +399,6 @@ void loop()
 	if (RemoteXY.connect_flag) {
 		if (!connected) {
 			console.println("Connected!");
-			buildinLed.end();
 			leftLight.end();
 			rightLight.end();
 			alarmOff.begin();
@@ -422,16 +411,21 @@ void loop()
 		switch (RemoteXY.drive_mode)
 		{
 		case 1: //лівий джойстик повороти, Повзунок - швидкість
-			speed = mapSpeed(RemoteXY.speed);
-			if (RemoteXY.left_joy_y < -20) speed = -speed;
+			speed = mapSpeed(RemoteXY.right_joy_y);
 			motor.setSpeed(speed);
-			if (RemoteXY.speed < 10) {
+			if (speed < 0)
+				config.backLightMode = LightMode::ON;
+			else
+				config.backLightMode = LightMode::OFF;
+
+			if (RemoteXY.right_joy_y > -10 && RemoteXY.right_joy_y < 10) {
 				if (!config.stopped) {
 					stopLight.begin();
 					config.stopped = true;
 				}
 			}
 			else {
+				stopLight.end();
 				config.stopped = false;
 			}
 			stearingServo.setPosition(RemoteXY.left_joy_x);
@@ -441,6 +435,11 @@ void loop()
 		default: //Все керування лівим джойстиком
 			speed = mapSpeed(RemoteXY.left_joy_y);
 			motor.setSpeed(speed);
+			if (speed < 0)
+				config.backLightMode = LightMode::ON;
+			else
+				config.backLightMode = LightMode::OFF;
+
 			if (RemoteXY.left_joy_y > -5 && RemoteXY.left_joy_y < 5) {
 				if (!config.stopped) {
 					stopLight.begin();
@@ -448,6 +447,7 @@ void loop()
 				}
 			}
 			else {
+				stopLight.end();
 				config.stopped = false;
 			}
 			stearingServo.setPosition(RemoteXY.left_joy_x);
@@ -476,16 +476,17 @@ void loop()
 			}
 			config.light_btn = RemoteXY.Light_btn;
 		}
+		handleLight();
 	}
 	else {
 		if (connected) {
 			console.println("Disconnected!");
 			connected = false;
-			buildinLed.begin();
 			alarmOn.begin();
 			motor.reset();
 			stearingServo.setPosition(0);
 			config.LightMode = 0;
+			handleLight();
 		}
 	}
 	if (config.debug) {
@@ -497,7 +498,7 @@ void loop()
 	rightLight.loop();
 	alarmOff.loop();
 	alarmOn.loop();
-	buildinLed.loop();
 	stopLight.loop();
+	backLight.loop();
 	webServer.loop();
 }
