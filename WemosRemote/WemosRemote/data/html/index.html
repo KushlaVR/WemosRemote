@@ -66,6 +66,19 @@
                         </div>
                     </div>
 
+                    <div class="form-group">
+                        <label>Stearing potenciometer linearity</label>
+                        <div class="input-group">
+                            <select class="custom-select" name="stearing_linearity" id="stearing_linearity">
+                                <option value="0" selected>Linear</option>
+                                <option value="1">Y = X^2 / X</option>
+                            </select>
+                            <div class="input-group-append">
+                                <span class="input-group-text">Select one</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <h2>Engine</h2>
                     <div class="form-group">
                         <label>Minimum PWM speed</label>
@@ -73,6 +86,19 @@
                             <input type="number" maxlength="5" name="min_speed" class="form-control" step="1" min="0" max="255" required="required" />
                             <div class="input-group-append">
                                 <span class="input-group-text">0..255</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Speed potenciometer linearity</label>
+                        <div class="input-group">
+                            <select class="custom-select" name="potentiometer_linearity" id="potentiometer_linearity">
+                                <option value="0" selected>Linear</option>
+                                <option value="1">Y = X^2 / X</option>
+                            </select>
+                            <div class="input-group-append">
+                                <span class="input-group-text">Select one</span>
                             </div>
                         </div>
                     </div>

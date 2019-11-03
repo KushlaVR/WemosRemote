@@ -2,9 +2,12 @@
 
 
 
-int Stearing::mapPosition(int direction)
+int Stearing::mapPosition(int direction, PotentiometerLinearity stearing_linearity)
 {
-	int corectedDirection = (direction * direction) / 100;
+	int corectedDirection = abs(direction);
+	if (stearing_linearity == PotentiometerLinearity::X2_div_X) {
+		corectedDirection = (direction * direction) / 100;
+	}
 
 	if (direction >= -5 && direction <= 5) return center;
 	if (direction > 5)//в право
@@ -26,9 +29,9 @@ Stearing::~Stearing()
 {
 }
 
-void Stearing::setPosition(int position)
+void Stearing::setPosition(int position, PotentiometerLinearity stearing_linearity)
 {
-	int newPos = mapPosition(position);
+	int newPos = mapPosition(position, stearing_linearity);
 	if (newPos != factPosition) {
 		console.printf("Stearing->%i\n", newPos);
 	}

@@ -51,7 +51,7 @@ void SerialController::cmdMotor(String cmd)
 
 void SerialController::cmdStearing(String cmd)
 {
-	stearing->setPosition(cmd.toInt());
+	stearing->setPosition(cmd.toInt(), PotentiometerLinearity::Linear);
 }
 
 void SerialController::cmdFlash(String cmd)

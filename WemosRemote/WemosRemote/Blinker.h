@@ -37,6 +37,7 @@ public:
 	Blinker * Add(int pin, unsigned long offset, uint8_t value);
 	Blinker * begin() { current = first; startTime = millis(); return this; };
 	Blinker * end();
+	BlinkerItem * item(int index);
 	bool isRunning() { return startTime != 0; };
 };
 

@@ -67,6 +67,19 @@ Blinker * Blinker::end()
 	return this;
 }
 
+BlinkerItem * Blinker::item(int index)
+{
+	int i = 0;
+	BlinkerItem * item = first;
+	while (item != nullptr)
+	{
+		if (i == index) return item;
+		item = item->next;
+		i++;
+	}
+	return nullptr;
+}
+
 BlinkerItem::BlinkerItem()
 {
 	next = nullptr;

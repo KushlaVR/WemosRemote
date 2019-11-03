@@ -77,10 +77,23 @@ struct {
 
 enum LightMode {
 	OFF = 0,
-	WAIT_FOR_TIMEOUT,
 	Parking,
-	ON
+	ON,
+	WAIT_FOR_TIMEOUT
 };
+
+struct StateStructure{
+
+	int LightMode;
+	unsigned long stoppedTime;
+	int backLightMode;
+
+	int speed;
+	bool stopped;
+	bool emergency;
+	bool light_btn;
+} state;
+
 
 ConfigStruct config;
 
@@ -112,7 +125,7 @@ bool turnOffTurnLights = false;
 int turnLightsCondition = 10;
 
 void handleTurnLight(int stearing) {
-	if (config.emergency) {//Якщо включена аварійка - нічого не робимо
+	if (state.emergency) {//Якщо включена аварійка - нічого не робимо
 		turnOffTurnLights = false;
 		return;
 	}
@@ -148,12 +161,12 @@ int handledLightMode = 0;
 int handledBackLightMode = 0;
 void handleLight() {
 	if (!RemoteXY.connect_flag) {
-		config.LightMode = LightMode::OFF;
+		state.LightMode = LightMode::OFF;
 	};
-	if (handledLightMode != config.LightMode) {
-		handledLightMode = config.LightMode;
+	if (handledLightMode != state.LightMode) {
+		handledLightMode = state.LightMode;
 		int val;
-		switch (config.LightMode)
+		switch (state.LightMode)
 		{
 		case LightMode::OFF:
 			digitalWrite(pinFrontLight, LOW);
@@ -174,22 +187,22 @@ void handleLight() {
 			break;
 		}
 	}
-	if (config.backLightMode != handledBackLightMode) {
-		switch (config.backLightMode)
+	if (state.backLightMode != handledBackLightMode) {
+		switch (state.backLightMode)
 		{
 		case LightMode::OFF:
-			handledBackLightMode = config.backLightMode;
+			handledBackLightMode = state.backLightMode;
 			backLight.end();
 			break;
 		case LightMode::WAIT_FOR_TIMEOUT:
-			if ((millis() - config.stoppedTime) > config.back_light_timeout) {
-				handledBackLightMode = config.backLightMode;
+			if ((millis() - state.stoppedTime) > config.back_light_timeout) {
+				handledBackLightMode = state.backLightMode;
 				backLight.end();
 			}
 			break;
 		case LightMode::ON:
 			backLight.begin();
-			handledBackLightMode = config.backLightMode;
+			handledBackLightMode = state.backLightMode;
 			break;
 		default:
 			break;
@@ -249,7 +262,7 @@ void setupBlinkers() {
 	//alarmOn.debug = true;
 
 	stopLight.Add(pinStopLight, 0, 0)
-		->Add(pinStopLight, 50, 255)
+		->Add(pinStopLight, 0, config.front_light_on)
 		->Add(pinStopLight, config.stop_light_duration, 0)
 		->repeat = false;
 	stopLight.debug = true;
@@ -259,75 +272,22 @@ void setupBlinkers() {
 		->Add(pinBackLight, 20, 0)
 		->repeat = true;
 
-
 }
 
+void refreshBrigtnes() {
+	leftLight.item(0)->value = config.parking_light_on;
+	rightLight.item(0)->value = config.parking_light_on;
 
-void loadConfig()
-{
-	String s;
-	JsonString cfg = "";
-	File cfgFile;
-	if (!SPIFFS.exists("/config.json")) {
-		console.println(("Default setting loaded..."));
-		cfg.beginObject();
-		cfg.AddValue("ssid", "WEMOS");
-		cfg.AddValue("password", "12345678");
-		cfg.AddValue("mode", "debug");
-		cfg.AddValue("center", "90");
-		cfg.AddValue("max_left", "150");
-		cfg.AddValue("max_right", "60");
-		cfg.AddValue("min_speed", "50");
-		cfg.AddValue("front_light_on", "80");
-		cfg.AddValue("parking_light_on", "10");
-		cfg.AddValue("stop_light_duration", "2000");
-		cfg.AddValue("back_light_timeout", "500");
-		cfg.endObject();
+	alarmOn.item(0)->value = config.parking_light_on;
+	alarmOn.item(1)->value = config.parking_light_on;
 
-		cfgFile = SPIFFS.open("/config.json", "w");
-		cfgFile.print(cfg.c_str());
-		cfgFile.flush();
-		cfgFile.close();
-	}
-	else {
-		console.println(("Reading config..."));
-		cfgFile = SPIFFS.open("/config.json", "r");
-		s = cfgFile.readString();
-		cfg = JsonString(s.c_str());
-		cfgFile.close();
-	}
+	alarmOff.item(0)->value = config.parking_light_on;
+	alarmOff.item(1)->value = config.parking_light_on;
+	alarmOff.item(4)->value = config.parking_light_on;
+	alarmOff.item(5)->value = config.parking_light_on;
 
-	config.ssid = String(cfg.getValue("ssid"));
-	config.password = String(cfg.getValue("password"));
-
-	s = cfg.getValue("mode");
-	if (s == "debug")
-		config.debug = true;
-	else
-		config.debug = false;
-
-	//Servo config reading
-	config.center = cfg.getInt("center");
-	config.max_left = cfg.getInt("max_left");
-	config.max_right = cfg.getInt("max_right");
-
-	//motor config reading
-	config.min_speed = cfg.getInt("min_speed");
-
-	config.front_light_on = cfg.getInt("front_light_on");
-	config.parking_light_on = cfg.getInt("parking_light_on");
-	config.stop_light_duration = cfg.getInt("stop_light_duration");
-	config.back_light_timeout = cfg.getInt("back_light_timeout");
-
-	s = config.ssid + "_" + WiFi.macAddress();
-	s.replace(":", "");
-	strcpy(&SSID[0], s.c_str());
-
-	s = config.password;
-	strcpy(&SSID_password[0], s.c_str());
-
+	stopLight.item(1)->value = config.front_light_on;
 }
-
 
 void setup()
 {
@@ -358,9 +318,15 @@ void setup()
 		console.println(("Starting..."));
 	}
 
+	setupController.cfg = &config;
+	setupController.loadConfig();
+	
+	s = config.ssid + "_" + WiFi.macAddress();
+	s.replace(":", "");
+	strcpy(&SSID[0], s.c_str());
 
-	loadConfig();
-
+	s = config.password;
+	strcpy(&SSID_password[0], s.c_str());
 
 
 	if (!config.debug) {
@@ -370,7 +336,7 @@ void setup()
 
 	setupBlinkers();
 
-	stearingServo.setPosition(0);
+	stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
 
 	motor.responder = &console;
 	motor.setWeight(800);
@@ -386,12 +352,15 @@ void setup()
 	console.println("Start");
 	webServer.setup();
 	webServer.apName = String(SSID);
-	setupController.cfg = &config;
+
 }
 
 
 int mapSpeed(int speed) {
-	int corectedSpeed = (speed * speed) / 100;
+	int corectedSpeed = abs(speed);
+	if (config.potentiometer_linearity == PotentiometerLinearity::X2_div_X) {
+		corectedSpeed = (speed * speed) / 100;
+	}
 
 	if (speed > 0)
 		return map(corectedSpeed, 0, 100, config.min_speed, 255);
@@ -415,8 +384,8 @@ void loop()
 			rightLight.end();
 			alarmOff.begin();
 			motor.reset();
-			config.stopped = true;
-			stearingServo.setPosition(0);
+			state.stopped = true;
+			stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
 			connected = true;
 		}
 		int pos;
@@ -427,26 +396,26 @@ void loop()
 			speed = mapSpeed(RemoteXY.right_joy_y);
 			motor.setSpeed(speed);
 			if (speed < 0)
-				config.backLightMode = LightMode::ON;
+				state.backLightMode = LightMode::ON;
 			else if (speed == 0) {
-				if (config.backLightMode == LightMode::ON)
-					config.backLightMode = LightMode::WAIT_FOR_TIMEOUT;
+				if (state.backLightMode == LightMode::ON)
+					state.backLightMode = LightMode::WAIT_FOR_TIMEOUT;
 			}
 			else
-				config.backLightMode = LightMode::OFF;
+				state.backLightMode = LightMode::OFF;
 
 			if (RemoteXY.right_joy_y > -10 && RemoteXY.right_joy_y < 10) {
-				if (!config.stopped) {
-					stopLight.begin();
-					config.stopped = true;
-					config.stoppedTime = millis();
+				if (!state.stopped) {
+					//stopLight.begin();
+					state.stopped = true;
+					state.stoppedTime = millis();
 				}
 			}
 			else {
-				stopLight.end();
-				config.stopped = false;
+				//stopLight.end();
+				state.stopped = false;
 			}
-			stearingServo.setPosition(RemoteXY.left_joy_x);
+			stearingServo.setPosition(RemoteXY.left_joy_x, (PotentiometerLinearity)config.stearing_linearity);
 			handleTurnLight(RemoteXY.left_joy_x);
 			break;
 
@@ -454,46 +423,64 @@ void loop()
 			speed = mapSpeed(RemoteXY.left_joy_y);
 			motor.setSpeed(speed);
 			if (speed < 0)
-				config.backLightMode = LightMode::ON;
+				state.backLightMode = LightMode::ON;
 			else
-				config.backLightMode = LightMode::OFF;
+				state.backLightMode = LightMode::OFF;
 
 			if (RemoteXY.left_joy_y > -5 && RemoteXY.left_joy_y < 5) {
-				if (!config.stopped) {
-					stopLight.begin();
-					config.stopped = true;
-					config.stoppedTime = millis();
+				if (!state.stopped) {
+					//stopLight.begin();
+					state.stopped = true;
+					state.stoppedTime = millis();
 				}
 			}
 			else {
-				stopLight.end();
-				config.stopped = false;
+				//stopLight.end();
+				state.stopped = false;
 			}
-			stearingServo.setPosition(RemoteXY.left_joy_x);
+			stearingServo.setPosition(RemoteXY.left_joy_x, (PotentiometerLinearity)config.stearing_linearity);
 			handleTurnLight(RemoteXY.left_joy_x);
 			break;
-
 		}
+
+		if (state.speed != speed) {
+			//швидкість змінилась
+			if (speed == 0) {//Зупинка
+				stopLight.begin();
+			}
+			else {
+				if (abs(speed) > abs(state.speed)) {//Швидкість зросла
+					stopLight.end();
+				}
+				else {
+					if (abs(state.speed - speed) > 10) {//Швидкість впала більше ніж на 10
+						stopLight.begin();
+					}
+				}
+			}
+			state.speed = speed;
+		}
+
 		if (RemoteXY.emergency_btn) {
-			if (!config.emergency) {
+			if (!state.emergency) {
 				leftLight.begin();
 				rightLight.begin();
-				config.emergency = true;
+				state.emergency = true;
 			}
 		}
 		else {
-			if (config.emergency) {
+			if (state.emergency) {
 				leftLight.end();
 				rightLight.end();
-				config.emergency = false;
+				state.emergency = false;
 			}
 		}
-		if (RemoteXY.Light_btn != config.light_btn) {
+		if (RemoteXY.Light_btn != state.light_btn) {
 			if (RemoteXY.Light_btn) {
-				config.LightMode++;
-				if (config.LightMode > LightMode::ON) config.LightMode = 0;
+				state.LightMode++;
+				if (state.LightMode > LightMode::ON) state.LightMode = 0;
 			}
-			config.light_btn = RemoteXY.Light_btn;
+			state.light_btn = RemoteXY.Light_btn;
 		}
 		handleLight();
 	}
@@ -503,8 +490,8 @@ void loop()
 			connected = false;
 			alarmOn.begin();
 			motor.reset();
-			stearingServo.setPosition(0);
-			config.LightMode = 0;
+			stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
+			state.LightMode = 0;
 			handleLight();
 		}
 	}

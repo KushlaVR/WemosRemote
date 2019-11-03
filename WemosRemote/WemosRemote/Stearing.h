@@ -3,13 +3,14 @@
 #include <Servo.h>
 #include "Console.h"
 #include "RoboconMotor.h"
+#include "SetupController.h"
 
 class Stearing
 {
 	int pin = 0;
 	int factPosition = 0;
 
-	int mapPosition(int pos);
+	int mapPosition(int pos, PotentiometerLinearity stearing_linearity);
 
 public:
 	Stearing(int pin);
@@ -20,7 +21,7 @@ public:
 	int center = 90;
 
 	//positio -100..100
-	void setPosition(int position);
+	void setPosition(int position, PotentiometerLinearity stearing_linearity);
 
 	void loop();
 };
