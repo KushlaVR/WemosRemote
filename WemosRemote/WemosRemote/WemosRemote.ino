@@ -82,7 +82,7 @@ enum LightMode {
 	WAIT_FOR_TIMEOUT
 };
 
-struct StateStructure{
+struct StateStructure {
 
 	int LightMode;
 	unsigned long stoppedTime;
@@ -268,13 +268,14 @@ void setupBlinkers() {
 	stopLight.debug = true;
 
 	backLight.Add(pinBackLight, 0, 0)
-		->Add(pinBackLight, 16, 255)
+		->Add(pinBackLight, map(255 - config.back_light_pwm, 0, 255, 0, 20), 255)
 		->Add(pinBackLight, 20, 0)
 		->repeat = true;
 
 }
 
 void refreshBrigtnes() {
+
 	leftLight.item(0)->value = config.parking_light_on;
 	rightLight.item(0)->value = config.parking_light_on;
 
@@ -287,6 +288,10 @@ void refreshBrigtnes() {
 	alarmOff.item(5)->value = config.parking_light_on;
 
 	stopLight.item(1)->value = config.front_light_on;
+	stopLight.item(1)->offset = config.stop_light_duration;
+
+	backLight.item(0)->offset = map(255 - config.back_light_pwm, 0, 255, 0, 20);
+
 }
 
 void setup()
@@ -320,7 +325,7 @@ void setup()
 
 	setupController.cfg = &config;
 	setupController.loadConfig();
-	
+
 	s = config.ssid + "_" + WiFi.macAddress();
 	s.replace(":", "");
 	strcpy(&SSID[0], s.c_str());

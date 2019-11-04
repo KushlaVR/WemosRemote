@@ -25,6 +25,7 @@ public:
 	int parking_light_on;//в процентах
 	int stop_light_duration;//в мілісекундах
 	int back_light_timeout;//в мілісекундах
+	int back_light_pwm;
 
 };
 

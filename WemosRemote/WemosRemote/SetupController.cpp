@@ -36,6 +36,7 @@ void SetupController::loadConfig()
 		cfg.AddValue("parking_light_on", "10");
 		cfg.AddValue("stop_light_duration", "2000");
 		cfg.AddValue("back_light_timeout", "500");
+		cfg.AddValue("back_light_pwm", "255");
 
 		cfg.endObject();
 
@@ -75,6 +76,7 @@ void SetupController::loadConfig()
 	this->cfg->parking_light_on = cfg.getInt("parking_light_on");
 	this->cfg->stop_light_duration = cfg.getInt("stop_light_duration");
 	this->cfg->back_light_timeout = cfg.getInt("back_light_timeout");
+	this->cfg->back_light_pwm = cfg.getInt("back_light_pwm");
 
 }
 
@@ -106,6 +108,7 @@ void SetupController::printConfig(JsonString * out)
 	out->AddValue("parking_light_on", String(cfg->parking_light_on));
 	out->AddValue("stop_light_duration", String(cfg->stop_light_duration));
 	out->AddValue("back_light_timeout", String(cfg->back_light_timeout));
+	out->AddValue("back_light_pwm", String(cfg->back_light_pwm));
 
 	out->AddValue("debug", String(cfg->debug));
 	out->endObject();
@@ -136,6 +139,7 @@ void SetupController::Setup_Post()
 	if (webServer.hasArg("parking_light_on")) { setupController.cfg->parking_light_on = webServer.arg("parking_light_on").toInt(); }
 	if (webServer.hasArg("stop_light_duration")) { setupController.cfg->stop_light_duration = webServer.arg("stop_light_duration").toInt(); }
 	if (webServer.hasArg("back_light_timeout")) { setupController.cfg->back_light_timeout = webServer.arg("back_light_timeout").toInt(); }
+	if (webServer.hasArg("back_light_pwm")) { setupController.cfg->back_light_pwm = webServer.arg("back_light_pwm").toInt(); }
 
 	setupController.saveConfig();
 
