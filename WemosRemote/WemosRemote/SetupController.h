@@ -22,11 +22,13 @@ public:
 	int potentiometer_linearity;//Тип керування
 
 	int front_light_on;//в процентах
+	int high_light_on;//в процентах
 	int parking_light_on;//в процентах
 	int stop_light_duration;//в мілісекундах
 	int back_light_timeout;//в мілісекундах
 	int back_light_pwm;
 
+	int drive_mode;//Режим керування
 };
 
 

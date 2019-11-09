@@ -32,11 +32,13 @@ void SetupController::loadConfig()
 		cfg.AddValue("min_speed", "50");
 		cfg.AddValue("potentiometer_linearity", "1");
 
-		cfg.AddValue("front_light_on", "80");
+		cfg.AddValue("front_light_on", "40");
+		cfg.AddValue("high_light_on", "80");
 		cfg.AddValue("parking_light_on", "10");
 		cfg.AddValue("stop_light_duration", "2000");
 		cfg.AddValue("back_light_timeout", "500");
 		cfg.AddValue("back_light_pwm", "255");
+		cfg.AddValue("drive_mode", "1");
 
 		cfg.endObject();
 
@@ -73,10 +75,12 @@ void SetupController::loadConfig()
 	this->cfg->potentiometer_linearity = cfg.getInt("potentiometer_linearity");
 
 	this->cfg->front_light_on = cfg.getInt("front_light_on");
+	this->cfg->high_light_on = cfg.getInt("high_light_on");
 	this->cfg->parking_light_on = cfg.getInt("parking_light_on");
 	this->cfg->stop_light_duration = cfg.getInt("stop_light_duration");
 	this->cfg->back_light_timeout = cfg.getInt("back_light_timeout");
 	this->cfg->back_light_pwm = cfg.getInt("back_light_pwm");
+	this->cfg->drive_mode = cfg.getInt("drive_mode");
 
 }
 
@@ -105,11 +109,13 @@ void SetupController::printConfig(JsonString * out)
 	out->AddValue("potentiometer_linearity", String(cfg->potentiometer_linearity));
 
 	out->AddValue("front_light_on", String(cfg->front_light_on));
+	out->AddValue("high_light_on", String(cfg->high_light_on));
 	out->AddValue("parking_light_on", String(cfg->parking_light_on));
 	out->AddValue("stop_light_duration", String(cfg->stop_light_duration));
 	out->AddValue("back_light_timeout", String(cfg->back_light_timeout));
 	out->AddValue("back_light_pwm", String(cfg->back_light_pwm));
 
+	out->AddValue("drive_mode", String(cfg->drive_mode));
 	out->AddValue("debug", String(cfg->debug));
 	out->endObject();
 }
@@ -136,10 +142,12 @@ void SetupController::Setup_Post()
 	if (webServer.hasArg("potentiometer_linearity")) { setupController.cfg->potentiometer_linearity = webServer.arg("potentiometer_linearity").toInt(); }
 
 	if (webServer.hasArg("front_light_on")) { setupController.cfg->front_light_on = webServer.arg("front_light_on").toInt(); }
+	if (webServer.hasArg("high_light_on")) { setupController.cfg->high_light_on = webServer.arg("high_light_on").toInt(); }
 	if (webServer.hasArg("parking_light_on")) { setupController.cfg->parking_light_on = webServer.arg("parking_light_on").toInt(); }
 	if (webServer.hasArg("stop_light_duration")) { setupController.cfg->stop_light_duration = webServer.arg("stop_light_duration").toInt(); }
 	if (webServer.hasArg("back_light_timeout")) { setupController.cfg->back_light_timeout = webServer.arg("back_light_timeout").toInt(); }
 	if (webServer.hasArg("back_light_pwm")) { setupController.cfg->back_light_pwm = webServer.arg("back_light_pwm").toInt(); }
+	if (webServer.hasArg("drive_mode")) { setupController.cfg->drive_mode = webServer.arg("drive_mode").toInt(); }
 
 	setupController.saveConfig();
 

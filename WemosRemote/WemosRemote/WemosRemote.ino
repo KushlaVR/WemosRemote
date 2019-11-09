@@ -46,13 +46,12 @@
 // RemoteXY configurate   
 #pragma pack(push, 1) 
 uint8_t RemoteXY_CONF[] = {
-  255,7,0,0,0,56,0,8,25,0,
-  2,0,46,0,29,5,34,26,31,31,
-  69,109,0,79,70,70,0,1,0,35,
-  15,20,20,132,16,76,0,5,43,-10,
-  3,51,51,2,26,31,3,130,47,49,
-  22,12,2,26,5,32,63,0,63,63,
-  176,26,31
+  255,7,0,0,0,51,0,8,25,0,
+  1,0,36,18,20,20,36,31,65,0,
+  1,0,54,-2,19,19,177,31,72,0,
+  1,0,54,44,20,20,132,16,76,0,
+  5,43,-10,5,52,52,2,26,31,5,
+  32,61,0,63,63,176,26,31
 };
 
 
@@ -61,11 +60,11 @@ uint8_t RemoteXY_CONF[] = {
 struct {
 
 	// input variable
-	uint8_t emergency_btn; // =1 if switch ON and =0 if OFF 
-	uint8_t Light_btn; // =1 if button pressed, else =0 
+	uint8_t Alarm; // =1 if button pressed, else =0 
+	uint8_t Light_high; // =1 if button pressed, else =0 
+	uint8_t Light_low; // =1 if button pressed, else =0 
 	int8_t left_joy_x; // =-100..100 x-coordinate joystick position 
 	int8_t left_joy_y; // =-100..100 y-coordinate joystick position 
-	uint8_t drive_mode; // =0 if select position A, =1 if position B, =2 if position C, ... 
 	int8_t right_joy_x; // =-100..100 x-coordinate joystick position 
 	int8_t right_joy_y; // =-100..100 y-coordinate joystick position 
 
@@ -77,9 +76,9 @@ struct {
 
 enum LightMode {
 	OFF = 0,
-	Parking,
-	ON,
-	WAIT_FOR_TIMEOUT
+	Parking = 1,
+	ON = 2,
+	WAIT_FOR_TIMEOUT = 3
 };
 
 struct StateStructure {
@@ -91,7 +90,9 @@ struct StateStructure {
 	int speed;
 	bool stopped;
 	bool emergency;
+	bool emergency_btn_pressed;
 	bool light_btn;
+	bool high_light_btn;
 } state;
 
 
@@ -157,31 +158,39 @@ void handleTurnLight(int stearing) {
 	}
 }
 
+bool handledhigh_light_btn_state = false;
 int handledLightMode = 0;
 int handledBackLightMode = 0;
 void handleLight() {
 	if (!RemoteXY.connect_flag) {
 		state.LightMode = LightMode::OFF;
 	};
-	if (handledLightMode != state.LightMode) {
+	if (handledLightMode != state.LightMode || handledhigh_light_btn_state != state.high_light_btn) {
 		handledLightMode = state.LightMode;
+		handledhigh_light_btn_state = state.high_light_btn;
 		int val;
 		switch (state.LightMode)
 		{
 		case LightMode::OFF:
-			digitalWrite(pinFrontLight, LOW);
+			if (state.high_light_btn)
+				analogWrite(pinFrontLight, map(config.high_light_on, 0, 100, 0, 255));
+			else
+				digitalWrite(pinFrontLight, LOW);
 			digitalWrite(pinParkingLight, LOW);
 			break;
 		case LightMode::Parking:
-			val = map(config.parking_light_on, 0, 100, 0, 255);
-			analogWrite(pinFrontLight, val);
-			analogWrite(pinParkingLight, val);
+			if (state.high_light_btn)
+				analogWrite(pinFrontLight, map(config.high_light_on, 0, 100, 0, 255));
+			else
+				digitalWrite(pinFrontLight, LOW);
+			analogWrite(pinParkingLight, map(config.parking_light_on, 0, 100, 0, 255));
 			break;
 		case LightMode::ON:
-			val = map(config.front_light_on, 0, 100, 0, 255);
-			analogWrite(pinFrontLight, val);
-			val = map(config.parking_light_on, 0, 100, 0, 255);
-			analogWrite(pinParkingLight, val);
+			if (state.high_light_btn)
+				analogWrite(pinFrontLight, map(config.high_light_on, 0, 100, 0, 255));
+			else
+				analogWrite(pinFrontLight, map(config.front_light_on, 0, 100, 0, 255));
+			analogWrite(pinParkingLight, map(config.parking_light_on, 0, 100, 0, 255));
 			break;
 		default:
 			break;
@@ -352,7 +361,6 @@ void setup()
 
 
 	remotexy = new CRemoteXY(RemoteXY_CONF_PROGMEM, &RemoteXY, REMOTEXY_ACCESS_PASSWORD, SSID, SSID_password, REMOTEXY_SERVER_PORT);//RemoteXY_Init();
-	RemoteXY.drive_mode = 1;
 
 	console.println("Start");
 	webServer.setup();
@@ -395,7 +403,7 @@ void loop()
 		}
 		int pos;
 		int speed;
-		switch (RemoteXY.drive_mode)
+		switch (config.drive_mode)
 		{
 		case 1: //лівий джойстик повороти, Повзунок - швидкість
 			speed = mapSpeed(RemoteXY.right_joy_y);
@@ -466,27 +474,37 @@ void loop()
 			state.speed = speed;
 		}
 
-		if (RemoteXY.emergency_btn) {
-			if (!state.emergency) {
-				leftLight.begin();
-				rightLight.begin();
-				state.emergency = true;
+		if (RemoteXY.Alarm) {
+			if (!state.emergency_btn_pressed) {
+				state.emergency_btn_pressed = true;
+				if (state.emergency) {
+					leftLight.end();
+					rightLight.end();
+					state.emergency = false;
+				}
+				else {
+					leftLight.begin();
+					rightLight.begin();
+					state.emergency = true;
+				}
 			}
 		}
 		else {
-			if (state.emergency) {
-				leftLight.end();
-				rightLight.end();
-				state.emergency = false;
+			if (state.emergency_btn_pressed) {				
+				state.emergency_btn_pressed = false;
 			}
 		}
-		if (RemoteXY.Light_btn != state.light_btn) {
-			if (RemoteXY.Light_btn) {
+		if (RemoteXY.Light_low != state.light_btn) {
+			if (RemoteXY.Light_low) {
 				state.LightMode++;
 				if (state.LightMode > LightMode::ON) state.LightMode = 0;
 			}
-			state.light_btn = RemoteXY.Light_btn;
+			state.light_btn = RemoteXY.Light_low;
 		}
+		if (RemoteXY.Light_high != state.high_light_btn) {
+			state.high_light_btn = RemoteXY.Light_high;
+		}
+
 		handleLight();
 	}
 	else {
