@@ -21,7 +21,7 @@ Stearing::Stearing(int pin)
 	this->pin = pin;
 	pinMode(pin, OUTPUT);
 	servo = new Servo();
-	servo->attach(pin);
+	//servo->attach(pin);
 }
 
 
@@ -41,5 +41,12 @@ void Stearing::setPosition(int position, PotentiometerLinearity stearing_lineari
 
 void Stearing::loop()
 {
-	servo->write(factPosition);
+	if (isEnabled) {
+		if (!servo->attached()) servo->attach(pin);
+		servo->write(factPosition);
+	}
+	else
+	{
+		if (servo->attached()) servo->detach();
+	}
 }

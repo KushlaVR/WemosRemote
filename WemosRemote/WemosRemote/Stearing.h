@@ -19,6 +19,7 @@ public:
 	int max_left = 60;
 	int max_right = 120;
 	int center = 90;
+	bool isEnabled = false;
 
 	//positio -100..100
 	void setPosition(int position, PotentiometerLinearity stearing_linearity);

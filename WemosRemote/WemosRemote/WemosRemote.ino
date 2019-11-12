@@ -31,8 +31,8 @@
 #include "SetupController.h"
 
 #define pinServo D5
-#define pinMotorA D7
-#define pinMotorB D6
+#define pinMotorA D7//назад
+#define pinMotorB D6//вперед
 #define pinFrontLight D4
 #define pinLeftLight D2
 #define pinRightLight D1
@@ -182,7 +182,7 @@ void handleLight() {
 			if (state.high_light_btn)
 				analogWrite(pinFrontLight, map(config.high_light_on, 0, 100, 0, 255));
 			else
-				digitalWrite(pinFrontLight, LOW);
+				analogWrite(pinFrontLight, map(config.parking_light_on, 0, 100, 0, 255));
 			analogWrite(pinParkingLight, map(config.parking_light_on, 0, 100, 0, 255));
 			break;
 		case LightMode::ON:
@@ -309,7 +309,6 @@ void setup()
 	Serial.println();
 	Serial.println();
 	console.output = &Serial;
-
 	analogWriteRange(255);
 	String s;
 	if (!SPIFFS.begin()) {
@@ -350,7 +349,11 @@ void setup()
 
 	setupBlinkers();
 
+	stearingServo.max_left = config.max_left;
+	stearingServo.max_right = config.max_right;
+	stearingServo.center = config.center;
 	stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
+	stearingServo.isEnabled = false;
 
 	motor.responder = &console;
 	motor.setWeight(800);
@@ -399,6 +402,7 @@ void loop()
 			motor.reset();
 			state.stopped = true;
 			stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
+			stearingServo.isEnabled = true;
 			connected = true;
 		}
 		int pos;
@@ -516,6 +520,7 @@ void loop()
 			stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
 			state.LightMode = 0;
 			handleLight();
+			stearingServo.isEnabled = false;
 		}
 	}
 	if (config.debug) {
