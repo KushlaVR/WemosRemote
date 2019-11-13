@@ -24,6 +24,8 @@ public:
 	int front_light_on;//в процентах
 	int high_light_on;//в процентах
 	int parking_light_on;//в процентах
+	int turn_light_on;//в процентах
+
 	int stop_light_duration;//в мілісекундах
 	int back_light_timeout;//в мілісекундах
 	int back_light_pwm;
@@ -31,6 +33,7 @@ public:
 	int drive_mode;//Режим керування
 };
 
+typedef void(*myFunctionPointer) ();
 
 class SetupController
 {
@@ -46,6 +49,8 @@ public:
 
 	static void Setup_Get();
 	static void Setup_Post();
+
+	myFunctionPointer reloadConfig = nullptr;
 };
 
 

@@ -11,8 +11,9 @@
   "front_light_on": "40",
   "high_light_on": "80",
   "parking_light_on": "10",
+  "turn_light_on": "10",
   "stop_light_duration": "2000",
   "back_light_timeout": "500",
-  "back_light_pwm": "255",
+  "back_light_pwm": "100",
   "drive_mode": "1"
 }

@@ -35,6 +35,7 @@ void SetupController::loadConfig()
 		cfg.AddValue("front_light_on", "40");
 		cfg.AddValue("high_light_on", "80");
 		cfg.AddValue("parking_light_on", "10");
+		cfg.AddValue("turn_light_on", "10");
 		cfg.AddValue("stop_light_duration", "2000");
 		cfg.AddValue("back_light_timeout", "500");
 		cfg.AddValue("back_light_pwm", "255");
@@ -77,6 +78,8 @@ void SetupController::loadConfig()
 	this->cfg->front_light_on = cfg.getInt("front_light_on");
 	this->cfg->high_light_on = cfg.getInt("high_light_on");
 	this->cfg->parking_light_on = cfg.getInt("parking_light_on");
+	this->cfg->turn_light_on = cfg.getInt("turn_light_on");
+
 	this->cfg->stop_light_duration = cfg.getInt("stop_light_duration");
 	this->cfg->back_light_timeout = cfg.getInt("back_light_timeout");
 	this->cfg->back_light_pwm = cfg.getInt("back_light_pwm");
@@ -92,6 +95,7 @@ void SetupController::saveConfig()
 	cfgFile.print(out.c_str());
 	cfgFile.flush();
 	cfgFile.close();
+	if (setupController.reloadConfig != nullptr) setupController.reloadConfig();
 }
 
 void SetupController::printConfig(JsonString * out)
@@ -111,6 +115,7 @@ void SetupController::printConfig(JsonString * out)
 	out->AddValue("front_light_on", String(cfg->front_light_on));
 	out->AddValue("high_light_on", String(cfg->high_light_on));
 	out->AddValue("parking_light_on", String(cfg->parking_light_on));
+	out->AddValue("turn_light_on", String(cfg->turn_light_on));
 	out->AddValue("stop_light_duration", String(cfg->stop_light_duration));
 	out->AddValue("back_light_timeout", String(cfg->back_light_timeout));
 	out->AddValue("back_light_pwm", String(cfg->back_light_pwm));
@@ -137,13 +142,14 @@ void SetupController::Setup_Post()
 	if (webServer.hasArg("max_left")) { setupController.cfg->max_left = webServer.arg("max_left").toInt(); }
 	if (webServer.hasArg("max_right")) { setupController.cfg->max_right = webServer.arg("max_right").toInt(); }
 	if (webServer.hasArg("stearing_linearity")) { setupController.cfg->stearing_linearity = webServer.arg("stearing_linearity").toInt(); }
-	
+
 	if (webServer.hasArg("min_speed")) { setupController.cfg->min_speed = webServer.arg("min_speed").toInt(); }
 	if (webServer.hasArg("potentiometer_linearity")) { setupController.cfg->potentiometer_linearity = webServer.arg("potentiometer_linearity").toInt(); }
 
 	if (webServer.hasArg("front_light_on")) { setupController.cfg->front_light_on = webServer.arg("front_light_on").toInt(); }
 	if (webServer.hasArg("high_light_on")) { setupController.cfg->high_light_on = webServer.arg("high_light_on").toInt(); }
 	if (webServer.hasArg("parking_light_on")) { setupController.cfg->parking_light_on = webServer.arg("parking_light_on").toInt(); }
+	if (webServer.hasArg("turn_light_on")) { setupController.cfg->turn_light_on = webServer.arg("turn_light_on").toInt(); }
 	if (webServer.hasArg("stop_light_duration")) { setupController.cfg->stop_light_duration = webServer.arg("stop_light_duration").toInt(); }
 	if (webServer.hasArg("back_light_timeout")) { setupController.cfg->back_light_timeout = webServer.arg("back_light_timeout").toInt(); }
 	if (webServer.hasArg("back_light_pwm")) { setupController.cfg->back_light_pwm = webServer.arg("back_light_pwm").toInt(); }

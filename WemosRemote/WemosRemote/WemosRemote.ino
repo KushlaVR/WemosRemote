@@ -240,31 +240,31 @@ void setupBlinkers() {
 
 	//Налаштування поворотників
 	leftLight
-		.Add(pinLeftLight, 0, config.parking_light_on)
+		.Add(pinLeftLight, 0, config.turn_light_on)
 		->Add(pinLeftLight, 500, 0)
 		->Add(pinLeftLight, 1000, 0);
 	serialController.leftLight = &leftLight;
 	rightLight
-		.Add(pinRightLight, 0, config.parking_light_on)
+		.Add(pinRightLight, 0, config.turn_light_on)
 		->Add(pinRightLight, 500, 0)
 		->Add(pinRightLight, 1000, 0);
 	serialController.rightLight = &rightLight;
 
 	alarmOff
-		.Add(pinLeftLight, 0, config.parking_light_on)
-		->Add(pinRightLight, 0, config.parking_light_on)
+		.Add(pinLeftLight, 0, config.turn_light_on)
+		->Add(pinRightLight, 0, config.turn_light_on)
 		->Add(pinLeftLight, 300, 0)
 		->Add(pinRightLight, 300, 0)
-		->Add(pinLeftLight, 600, config.parking_light_on)
-		->Add(pinRightLight, 600, config.parking_light_on)
+		->Add(pinLeftLight, 600, config.turn_light_on)
+		->Add(pinRightLight, 600, config.turn_light_on)
 		->Add(pinLeftLight, 900, 0)
 		->Add(pinRightLight, 900, 0);
 	alarmOff.repeat = false;
 	//alarmOff.debug = true;
 
 	alarmOn
-		.Add(pinLeftLight, 0, config.parking_light_on)
-		->Add(pinRightLight, 0, config.parking_light_on)
+		.Add(pinLeftLight, 0, config.turn_light_on)
+		->Add(pinRightLight, 0, config.turn_light_on)
 		->Add(pinLeftLight, 600, 0)
 		->Add(pinRightLight, 600, 0);
 	alarmOn.repeat = false;
@@ -283,23 +283,24 @@ void setupBlinkers() {
 
 }
 
+
 void refreshBrigtnes() {
 
-	leftLight.item(0)->value = config.parking_light_on;
-	rightLight.item(0)->value = config.parking_light_on;
+	leftLight.item(0)->value = config.turn_light_on;
+	rightLight.item(0)->value = config.turn_light_on;
 
-	alarmOn.item(0)->value = config.parking_light_on;
-	alarmOn.item(1)->value = config.parking_light_on;
+	alarmOn.item(0)->value = config.turn_light_on;
+	alarmOn.item(1)->value = config.turn_light_on;
 
-	alarmOff.item(0)->value = config.parking_light_on;
-	alarmOff.item(1)->value = config.parking_light_on;
-	alarmOff.item(4)->value = config.parking_light_on;
-	alarmOff.item(5)->value = config.parking_light_on;
+	alarmOff.item(0)->value = config.turn_light_on;
+	alarmOff.item(1)->value = config.turn_light_on;
+	alarmOff.item(4)->value = config.turn_light_on;
+	alarmOff.item(5)->value = config.turn_light_on;
 
 	stopLight.item(1)->value = config.front_light_on;
-	stopLight.item(1)->offset = config.stop_light_duration;
+	stopLight.item(2)->offset = config.stop_light_duration;
 
-	backLight.item(0)->offset = map(255 - config.back_light_pwm, 0, 255, 0, 20);
+	backLight.item(0)->offset = map(100 - config.back_light_pwm, 0, 100, 0, 20);
 
 }
 
@@ -369,6 +370,7 @@ void setup()
 	webServer.setup();
 	webServer.apName = String(SSID);
 
+	setupController.reloadConfig = &refreshBrigtnes;
 }
 
 
@@ -398,6 +400,7 @@ void loop()
 			console.println("Connected!");
 			leftLight.end();
 			rightLight.end();
+			state.emergency = false;
 			alarmOff.begin();
 			motor.reset();
 			state.stopped = true;
@@ -494,7 +497,7 @@ void loop()
 			}
 		}
 		else {
-			if (state.emergency_btn_pressed) {				
+			if (state.emergency_btn_pressed) {
 				state.emergency_btn_pressed = false;
 			}
 		}
@@ -515,6 +518,9 @@ void loop()
 		if (connected) {
 			console.println("Disconnected!");
 			connected = false;
+			leftLight.end();
+			rightLight.end();
+			state.emergency = false;
 			alarmOn.begin();
 			motor.reset();
 			stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
