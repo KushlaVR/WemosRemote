@@ -147,4 +147,4 @@ Wemos remote - проект для керування авто моделлю з
 9) ~*Бузер RX*~
 
 ## Спосіб підключення
-![Wiring diagram](/img/test.png)
+![Wiring diagram](/img/schematic.png)
