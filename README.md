@@ -2,7 +2,7 @@
 
 Wemos remote - проект для керування авто моделлю з додатку на телефоні. 
 
-Проект зроблено спеціально для моделеі ВАЗ2108 з Youtube каналу Евгений Былеев https://www.youtube.com/channel/UC27d-7p-ovLAEvgUijC3Dwg
+Проект зроблено спеціально для моделеі ВАЗ2108 з Youtube каналу Евгения Былеева https://www.youtube.com/channel/UC27d-7p-ovLAEvgUijC3Dwg
 
 Усі етапи переобки моделі:
 * Частина 1 https://www.youtube.com/watch?v=yfO8KKdHDNg
