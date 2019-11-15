@@ -16,7 +16,7 @@ public:
 	BlinkerItem * next;
 	int pin;
 	unsigned long offset;
-	uint8_t value;
+	int value;
 };
 
 class Blinker
@@ -37,7 +37,16 @@ public:
 	Blinker * Add(int pin, unsigned long offset, uint8_t value);
 	Blinker * begin() { current = first; startTime = millis(); return this; };
 	Blinker * end();
+	virtual void write(int pin, int value);
 	BlinkerItem * item(int index);
 	bool isRunning() { return startTime != 0; };
 };
 
+
+class Beeper :public Blinker {
+
+public:
+	Beeper(String name) : Blinker(name) {}
+	~Beeper() {}
+	virtual void write(int pin, int value);
+};

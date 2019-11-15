@@ -39,7 +39,8 @@
 #define pinBackLight D3
 #define pinStopLight D8
 #define pinParkingLight D0
-//#define pinBuzzer RX
+#define pinBuzzer RX
+
 
 
 // конфигурация интерфейса   
@@ -93,6 +94,9 @@ struct StateStructure {
 	bool emergency_btn_pressed;
 	bool light_btn;
 	bool high_light_btn;
+
+	bool serialEnabled;
+
 } state;
 
 
@@ -120,7 +124,8 @@ Blinker stopLight = Blinker("Stop light");
 Blinker backLight = Blinker("Back light");
 Blinker alarmOn = Blinker("Alarm on");
 Blinker alarmOff = Blinker("Alarm of");
-
+Beeper alarmBeepOn = Beeper("Alarm beep of");
+Beeper alarmBeepOff = Beeper("Alarm beep of");
 
 bool turnOffTurnLights = false;
 int turnLightsCondition = 10;
@@ -283,6 +288,20 @@ void setupBlinkers() {
 
 }
 
+void setupBeepers() {
+	alarmBeepOff
+		.Add(pinBuzzer, 0, 2000)
+		->Add(pinBuzzer, 300, 0)
+		->Add(pinBuzzer, 600, 2000)
+		->Add(pinBuzzer, 900, 0);
+	alarmBeepOff.repeat = false;
+
+	alarmBeepOn
+		.Add(pinBuzzer, 0, config.turn_light_on)
+		->Add(pinBuzzer, 600, 0);
+	alarmBeepOn.repeat = false;
+
+}
 
 void refreshBrigtnes() {
 
@@ -304,8 +323,10 @@ void refreshBrigtnes() {
 
 }
 
+
 void setup()
 {
+	state.serialEnabled = true;
 	Serial.begin(115200);
 	Serial.println();
 	Serial.println();
@@ -343,12 +364,13 @@ void setup()
 	strcpy(&SSID_password[0], s.c_str());
 
 
-	if (!config.debug) {
-		Serial.end();
-		console.output = nullptr;
-	}
+	//if (!config.debug) {
+	//	Serial.end();
+	//	console.output = nullptr;
+	//}
 
 	setupBlinkers();
+	setupBeepers();
 
 	stearingServo.max_left = config.max_left;
 	stearingServo.max_right = config.max_right;
@@ -362,7 +384,6 @@ void setup()
 
 	serialController.stearing = &stearingServo;
 	serialController.motor = &motor;
-
 
 	remotexy = new CRemoteXY(RemoteXY_CONF_PROGMEM, &RemoteXY, REMOTEXY_ACCESS_PASSWORD, SSID, SSID_password, REMOTEXY_SERVER_PORT);//RemoteXY_Init();
 
@@ -387,6 +408,8 @@ int mapSpeed(int speed) {
 	return 0;
 }
 
+
+
 void loop()
 {
 	RemoteXY_Handler();
@@ -402,6 +425,7 @@ void loop()
 			rightLight.end();
 			state.emergency = false;
 			alarmOff.begin();
+			alarmBeepOff.begin();
 			motor.reset();
 			state.stopped = true;
 			stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
@@ -522,6 +546,7 @@ void loop()
 			rightLight.end();
 			state.emergency = false;
 			alarmOn.begin();
+			alarmBeepOff.begin();
 			motor.reset();
 			stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
 			state.LightMode = 0;
@@ -532,12 +557,28 @@ void loop()
 	if (config.debug) {
 		serialController.loop();
 	}
+	if (state.serialEnabled) {
+		if (alarmBeepOn.isRunning() || alarmBeepOff.isRunning()) {
+			Serial.end();
+			state.serialEnabled = false;
+		}
+	}
+	else
+	{
+		if (!alarmBeepOn.isRunning() && !alarmBeepOff.isRunning()) {
+			Serial.begin(115200);
+			state.serialEnabled = true;
+		}
+	}
+
 	motor.loop();
 	stearingServo.loop();
 	leftLight.loop();
 	rightLight.loop();
 	alarmOff.loop();
+	alarmBeepOff.loop();
 	alarmOn.loop();
+	alarmBeepOn.loop();
 	stopLight.loop();
 	backLight.loop();
 	webServer.loop();

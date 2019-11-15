@@ -67,6 +67,16 @@ Blinker * Blinker::end()
 	return this;
 }
 
+void Blinker::write(int pin, int value)
+{
+	if (value == 0)
+		digitalWrite(pin, LOW);
+	else if (value == 255)
+		digitalWrite(pin, HIGH);
+	else
+		analogWrite(pin, value);
+}
+
 BlinkerItem * Blinker::item(int index)
 {
 	int i = 0;
@@ -83,4 +93,14 @@ BlinkerItem * Blinker::item(int index)
 BlinkerItem::BlinkerItem()
 {
 	next = nullptr;
+}
+
+void Beeper::write(int pin, int value)
+{
+	if (value == 0)
+		noTone(pin);
+	else {
+		analogWriteFreq(value);
+		tone(pin, value);
+	}
 }
