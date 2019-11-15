@@ -1,6 +1,19 @@
 # Wemos Remote
 
 Wemos remote - проект для керування авто моделлю з додатку на телефоні. 
+
+Проект зроблено спеціально для моделеі ВАЗ2108 з каналу Youtube каналу Евгений Былеев https://www.youtube.com/channel/UC27d-7p-ovLAEvgUijC3Dwg
+Усі етапи переобки моделі:
+* Частина 1 https://www.youtube.com/watch?v=yfO8KKdHDNg
+* Частина 2 https://www.youtube.com/watch?v=fh4VSRUZ7cI
+* Частина 3 https://www.youtube.com/watch?v=LJ8kn36iIjE
+* Частина 4 https://www.youtube.com/watch?v=ulSTMTheBtc
+* Частина 5 https://www.youtube.com/watch?v=QjuS22DsXOE&t=425s
+* Частина 6 https://www.youtube.com/watch?v=itL2xLTIavY
+* Частина 7 https://www.youtube.com/watch?v=qjkIQKs_uEk
+* Частина 8 https://www.youtube.com/watch?v=_W1Ysf4-UWk
+* Частина 9 Ще не вийшла....
+
 Керування реалізовано на процесорі ESP8266. Цей процесор компактний, має вбудований WIFI модуль і адаповане ядро під фреймворк Arduino. Прошивка реалізована у середовищі VisualStudio 2019 з використанням фреймворків:
 * Arduino https://www.arduino.cc/en/Main/Software
 * RemoteXY http://remotexy.com/
