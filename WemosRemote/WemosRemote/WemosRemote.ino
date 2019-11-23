@@ -124,8 +124,9 @@ Blinker stopLight = Blinker("Stop light");
 Blinker backLight = Blinker("Back light");
 Blinker alarmOn = Blinker("Alarm on");
 Blinker alarmOff = Blinker("Alarm of");
-Beeper alarmBeepOn = Beeper("Alarm beep of");
+Beeper alarmBeepOn = Beeper("Alarm beep on");
 Beeper alarmBeepOff = Beeper("Alarm beep of");
+Beeper turnLightBeeper = Beeper("Turn light beep");
 
 bool turnOffTurnLights = false;
 int turnLightsCondition = 10;
@@ -136,11 +137,11 @@ void handleTurnLight(int stearing) {
 		return;
 	}
 	if (stearing < -turnLightsCondition) { //Включений лівий поворот
-		if (!leftLight.isRunning()) leftLight.begin();
+		if (!leftLight.isRunning()) { leftLight.begin(); turnLightBeeper.begin(); }
 		rightLight.end();
 	}
 	if (stearing > turnLightsCondition) { //Включений правий поворот
-		if (!rightLight.isRunning()) rightLight.begin();
+		if (!rightLight.isRunning()) { rightLight.begin(); turnLightBeeper.begin(); }
 		leftLight.end();
 	}
 	if (leftLight.isRunning()) {
@@ -152,11 +153,13 @@ void handleTurnLight(int stearing) {
 	if (turnOffTurnLights && stearing > -turnLightsCondition && stearing < turnLightsCondition) {//Повернули руль в стартове положення
 		if (leftLight.isRunning() && !rightLight.isRunning()) {//блимає лівий поворот
 			leftLight.end();
+			turnLightBeeper.end();
 			turnOffTurnLights = false;
 			console.println("Лівий поворот вимкнено.");
 		}
 		else if (!leftLight.isRunning() && rightLight.isRunning()) {//блимає правий поворот
 			rightLight.end();
+			turnLightBeeper.end();
 			turnOffTurnLights = false;
 			console.println("Правий поворот вимкнено.");
 		}
@@ -289,17 +292,23 @@ void setupBlinkers() {
 }
 
 void setupBeepers() {
+	alarmBeepOn
+		.Add(pinBuzzer, 0, 5000)
+		->Add(pinBuzzer, 150, 0)
+		->Add(pinBuzzer, 200, 5000)
+		->Add(pinBuzzer, 350, 0);
+	alarmBeepOn.repeat = false;
+
 	alarmBeepOff
-		.Add(pinBuzzer, 0, 2000)
-		->Add(pinBuzzer, 300, 0)
-		->Add(pinBuzzer, 600, 2000)
-		->Add(pinBuzzer, 900, 0);
+		.Add(pinBuzzer, 0, 5000)
+		->Add(pinBuzzer, 150, 0);
 	alarmBeepOff.repeat = false;
 
-	alarmBeepOn
-		.Add(pinBuzzer, 0, config.turn_light_on)
-		->Add(pinBuzzer, 600, 0);
-	alarmBeepOn.repeat = false;
+	turnLightBeeper.Add(pinBuzzer, 0, 1000)
+		->Add(pinBuzzer, 1, 0)
+		->Add(pinBuzzer, 500, 1000)
+		->Add(pinBuzzer, 501, 0)
+		->Add(pinBuzzer, 1000, 0);
 
 }
 
@@ -327,9 +336,12 @@ void refreshBrigtnes() {
 void setup()
 {
 	state.serialEnabled = true;
-	Serial.begin(115200);
-	Serial.println();
-	Serial.println();
+	Serial.end();
+	pinMode(pinBuzzer, OUTPUT);
+	digitalWrite(pinBuzzer, LOW);
+	//Serial.begin(115200);
+	//Serial.println();
+	//Serial.println();
 	console.output = &Serial;
 	analogWriteRange(255);
 	String s;
@@ -423,9 +435,10 @@ void loop()
 			console.println("Connected!");
 			leftLight.end();
 			rightLight.end();
+			turnLightBeeper.end();
 			state.emergency = false;
 			alarmOff.begin();
-			alarmBeepOff.begin();
+			alarmBeepOn.begin();
 			motor.reset();
 			state.stopped = true;
 			stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
@@ -511,11 +524,13 @@ void loop()
 				if (state.emergency) {
 					leftLight.end();
 					rightLight.end();
+					turnLightBeeper.end();
 					state.emergency = false;
 				}
 				else {
 					leftLight.begin();
 					rightLight.begin();
+					turnLightBeeper.begin();
 					state.emergency = true;
 				}
 			}
@@ -544,6 +559,7 @@ void loop()
 			connected = false;
 			leftLight.end();
 			rightLight.end();
+			turnLightBeeper.end();
 			state.emergency = false;
 			alarmOn.begin();
 			alarmBeepOff.begin();
@@ -559,14 +575,14 @@ void loop()
 	}
 	if (state.serialEnabled) {
 		if (alarmBeepOn.isRunning() || alarmBeepOff.isRunning()) {
-			Serial.end();
+			//Serial.end();
 			state.serialEnabled = false;
 		}
 	}
 	else
 	{
 		if (!alarmBeepOn.isRunning() && !alarmBeepOff.isRunning()) {
-			Serial.begin(115200);
+			//Serial.begin(115200);
 			state.serialEnabled = true;
 		}
 	}
@@ -575,6 +591,7 @@ void loop()
 	stearingServo.loop();
 	leftLight.loop();
 	rightLight.loop();
+	turnLightBeeper.loop();
 	alarmOff.loop();
 	alarmBeepOff.loop();
 	alarmOn.loop();
