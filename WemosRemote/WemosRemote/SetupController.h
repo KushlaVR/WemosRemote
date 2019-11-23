@@ -30,6 +30,11 @@ public:
 	int back_light_timeout;//в мілісекундах
 	int back_light_pwm;
 
+	int beep_freq;
+	int beep_duration;
+	int beep_interval;
+
+
 	int drive_mode;//Режим керування
 };
 

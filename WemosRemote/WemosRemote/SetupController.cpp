@@ -39,6 +39,9 @@ void SetupController::loadConfig()
 		cfg.AddValue("stop_light_duration", "2000");
 		cfg.AddValue("back_light_timeout", "500");
 		cfg.AddValue("back_light_pwm", "255");
+		cfg.AddValue("beep_freq", "1000");
+		cfg.AddValue("beep_duration", "150");
+		cfg.AddValue("beep_interval", "50");
 		cfg.AddValue("drive_mode", "1");
 
 		cfg.endObject();
@@ -83,6 +86,11 @@ void SetupController::loadConfig()
 	this->cfg->stop_light_duration = cfg.getInt("stop_light_duration");
 	this->cfg->back_light_timeout = cfg.getInt("back_light_timeout");
 	this->cfg->back_light_pwm = cfg.getInt("back_light_pwm");
+
+	this->cfg->beep_freq = cfg.getInt("beep_freq");
+	this->cfg->beep_duration = cfg.getInt("beep_duration");
+	this->cfg->beep_interval = cfg.getInt("beep_interval");
+
 	this->cfg->drive_mode = cfg.getInt("drive_mode");
 
 }
@@ -120,6 +128,10 @@ void SetupController::printConfig(JsonString * out)
 	out->AddValue("back_light_timeout", String(cfg->back_light_timeout));
 	out->AddValue("back_light_pwm", String(cfg->back_light_pwm));
 
+	out->AddValue("beep_freq", String(cfg->beep_freq));
+	out->AddValue("beep_duration", String(cfg->beep_duration));
+	out->AddValue("beep_interval", String(cfg->beep_interval));
+
 	out->AddValue("drive_mode", String(cfg->drive_mode));
 	out->AddValue("debug", String(cfg->debug));
 	out->endObject();
@@ -153,6 +165,11 @@ void SetupController::Setup_Post()
 	if (webServer.hasArg("stop_light_duration")) { setupController.cfg->stop_light_duration = webServer.arg("stop_light_duration").toInt(); }
 	if (webServer.hasArg("back_light_timeout")) { setupController.cfg->back_light_timeout = webServer.arg("back_light_timeout").toInt(); }
 	if (webServer.hasArg("back_light_pwm")) { setupController.cfg->back_light_pwm = webServer.arg("back_light_pwm").toInt(); }
+	
+	if (webServer.hasArg("beep_freq")) { setupController.cfg->beep_freq = webServer.arg("beep_freq").toInt(); }
+	if (webServer.hasArg("beep_duration")) { setupController.cfg->beep_duration = webServer.arg("beep_duration").toInt(); }
+	if (webServer.hasArg("beep_interval")) { setupController.cfg->beep_interval = webServer.arg("beep_interval").toInt(); }
+	
 	if (webServer.hasArg("drive_mode")) { setupController.cfg->drive_mode = webServer.arg("drive_mode").toInt(); }
 
 	setupController.saveConfig();

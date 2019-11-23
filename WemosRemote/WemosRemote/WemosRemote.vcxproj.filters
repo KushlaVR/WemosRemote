@@ -80,7 +80,4 @@
   <ItemGroup>
     <Text Include="data\intro.txt" />
   </ItemGroup>
-  <ItemGroup>
-    <Media Include="data\mp3\sound.mp3" />
-  </ItemGroup>
 </Project>

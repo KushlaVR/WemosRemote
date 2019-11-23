@@ -15,5 +15,8 @@
   "stop_light_duration": "2000",
   "back_light_timeout": "500",
   "back_light_pwm": "100",
+  "beep_freq": "510",
+  "beep_duration": "150",
+  "beep_interval": "100",
   "drive_mode": "1"
 }

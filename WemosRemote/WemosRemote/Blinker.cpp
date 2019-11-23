@@ -21,7 +21,7 @@ void Blinker::loop()
 	BlinkerItem * item = current;
 	if (item == nullptr) return;//Якщо немає елемента на черзі - нічого не робимо
 	if (offset < item->offset) return;//Якщо час ще не настав - виходимо
-	analogWrite(item->pin, item->value);//Час настав
+	write(item->pin, item->value);//Час настав
 	if (debug) {
 		console.print(name);
 		console.printf(": %i->%i\n", item->pin, item->value);
@@ -61,7 +61,7 @@ Blinker * Blinker::end()
 	BlinkerItem * item = first;
 	while (item != nullptr)
 	{
-		analogWrite(item->pin, 0);
+		write(item->pin, 0);
 		item = item->next;
 	}
 	return this;

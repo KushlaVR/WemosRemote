@@ -293,15 +293,15 @@ void setupBlinkers() {
 
 void setupBeepers() {
 	alarmBeepOn
-		.Add(pinBuzzer, 0, 5000)
-		->Add(pinBuzzer, 150, 0)
-		->Add(pinBuzzer, 200, 5000)
-		->Add(pinBuzzer, 350, 0);
+		.Add(pinBuzzer, 0, config.beep_freq)
+		->Add(pinBuzzer, config.beep_duration, 0)
+		->Add(pinBuzzer, config.beep_duration + config.beep_interval, config.beep_freq)
+		->Add(pinBuzzer, config.beep_duration + config.beep_interval + config.beep_duration, 0);
 	alarmBeepOn.repeat = false;
 
 	alarmBeepOff
-		.Add(pinBuzzer, 0, 5000)
-		->Add(pinBuzzer, 150, 0);
+		.Add(pinBuzzer, 0, config.beep_freq)
+		->Add(pinBuzzer, config.beep_duration, 0);
 	alarmBeepOff.repeat = false;
 
 	turnLightBeeper.Add(pinBuzzer, 0, 1000)
@@ -312,7 +312,7 @@ void setupBeepers() {
 
 }
 
-void refreshBrigtnes() {
+void refreshConfig() {
 
 	leftLight.item(0)->value = config.turn_light_on;
 	rightLight.item(0)->value = config.turn_light_on;
@@ -329,6 +329,16 @@ void refreshBrigtnes() {
 	stopLight.item(2)->offset = config.stop_light_duration;
 
 	backLight.item(0)->offset = map(100 - config.back_light_pwm, 0, 100, 0, 20);
+
+	alarmBeepOn.item(0)->value = config.beep_freq;
+	alarmBeepOn.item(2)->value = config.beep_freq;
+	alarmBeepOff.item(0)->value = config.beep_freq;
+
+	alarmBeepOn.item(1)->offset = config.beep_duration;
+	alarmBeepOn.item(2)->offset = config.beep_duration + config.beep_interval;
+	alarmBeepOn.item(3)->offset = config.beep_duration + config.beep_interval + config.beep_duration;
+
+	alarmBeepOff.item(1)->offset = config.beep_duration;
 
 }
 
@@ -403,7 +413,7 @@ void setup()
 	webServer.setup();
 	webServer.apName = String(SSID);
 
-	setupController.reloadConfig = &refreshBrigtnes;
+	setupController.reloadConfig = &refreshConfig;
 }
 
 
