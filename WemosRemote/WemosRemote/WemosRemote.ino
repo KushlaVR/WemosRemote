@@ -1,7 +1,7 @@
 ﻿/*
- Name:		WemosRemote.ino
- Created:	10/23/2019 7:53:20 PM
- Author:	Віталік
+ Name:    WemosRemote.ino
+ Created: 10/23/2019 7:53:20 PM
+ Authors:  KushlaVR@gmail.com, zilibob4ik
 */
 
 
@@ -30,6 +30,14 @@
 #include "WebUIController.h"
 #include "SetupController.h"
 
+#include <AudioFileSourceSPIFFS.h>
+#include <AudioFileSourceID3.h>
+#include <AudioGeneratorMP3.h>
+#include <AudioOutputI2SNoDAC.h>
+
+
+#include "mp3.h"
+
 #define pinServo D5
 #define pinMotorA D7//назад
 #define pinMotorB D6//вперед
@@ -40,6 +48,32 @@
 #define pinStopLight D8
 #define pinParkingLight D0
 #define pinBuzzer RX
+
+String signals[] = { "/mp3/alarm.mp3", "/mp3/1.mp3", "/mp3/2.mp3" };
+
+
+
+// Called when a metadata event occurs (i.e. an ID3 tag, an ICY block, etc.
+void MDCallback(void *cbData, const char *type, bool isUnicode, const char *string)
+{
+	(void)cbData;
+	Serial.printf("ID3 callback for: %s = '", type);
+
+	if (isUnicode) {
+		string += 2;
+	}
+
+	while (*string) {
+		char a = *(string++);
+		if (isUnicode) {
+			string++;
+		}
+		Serial.printf("%c", a);
+	}
+	Serial.printf("'\n");
+	Serial.flush();
+}
+
 
 
 
@@ -291,26 +325,7 @@ void setupBlinkers() {
 
 }
 
-void setupBeepers() {
-	alarmBeepOn
-		.Add(pinBuzzer, 0, config.beep_freq)
-		->Add(pinBuzzer, config.beep_duration, 0)
-		->Add(pinBuzzer, config.beep_duration + config.beep_interval, config.beep_freq)
-		->Add(pinBuzzer, config.beep_duration + config.beep_interval + config.beep_duration, 0);
-	alarmBeepOn.repeat = false;
 
-	alarmBeepOff
-		.Add(pinBuzzer, 0, config.beep_freq)
-		->Add(pinBuzzer, config.beep_duration, 0);
-	alarmBeepOff.repeat = false;
-
-	turnLightBeeper.Add(pinBuzzer, 0, 1000)
-		->Add(pinBuzzer, 1, 0)
-		->Add(pinBuzzer, 500, 1000)
-		->Add(pinBuzzer, 501, 0)
-		->Add(pinBuzzer, 1000, 0);
-
-}
 
 void refreshConfig() {
 
@@ -346,12 +361,25 @@ void refreshConfig() {
 void setup()
 {
 	state.serialEnabled = true;
-	Serial.end();
-	pinMode(pinBuzzer, OUTPUT);
-	digitalWrite(pinBuzzer, LOW);
-	//Serial.begin(115200);
-	//Serial.println();
-	//Serial.println();
+	//Serial.end();
+	//pinMode(pinBuzzer, OUTPUT);
+	//digitalWrite(pinBuzzer, LOW);
+	Serial.begin(115200);
+	Serial.println();
+	Serial.println();
+	SPIFFS.begin();
+
+	/*
+	   file = new AudioFileSourceSPIFFS("/alarm.mp3");
+	  id3 = new AudioFileSourceID3(file);
+	  id3->RegisterMetadataCB(MDCallback, (void*)"ID3TAG");
+	  out = new AudioOutputI2SNoDAC();
+	  mp3 = new AudioGeneratorMP3();
+	  mp3->begin(id3, out);
+	*/
+	initMP3(); //инициализируем библиотеку МП3
+
+
 	console.output = &Serial;
 	analogWriteRange(255);
 	String s;
@@ -387,12 +415,12 @@ void setup()
 
 
 	//if (!config.debug) {
-	//	Serial.end();
-	//	console.output = nullptr;
+	//  Serial.end();
+	//  console.output = nullptr;
 	//}
 
 	setupBlinkers();
-	setupBeepers();
+
 
 	stearingServo.max_left = config.max_left;
 	stearingServo.max_right = config.max_right;
@@ -414,6 +442,8 @@ void setup()
 	webServer.apName = String(SSID);
 
 	setupController.reloadConfig = &refreshConfig;
+
+	mp3PlayTrack(signals[0].c_str()); //Воспроизводим сигнал
 }
 
 
@@ -434,7 +464,13 @@ int mapSpeed(int speed) {
 
 void loop()
 {
-	RemoteXY_Handler();
+	if (mp3->isRunning()) { if (!mp3->loop()) mp3->stop(); } //else {  Serial.printf("MP3 done\n");  delay(1000); }
+
+// mp3PlayTrack( signals[0].c_str()); //Воспроизводим сигнал
+
+
+
+	RemoteXY_Handler(); //под вопросом
 
 	stearingServo.max_left = config.max_left;
 	stearingServo.max_right = config.max_right;

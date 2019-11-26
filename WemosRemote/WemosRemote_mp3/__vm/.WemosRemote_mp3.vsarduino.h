@@ -113,6 +113,6 @@ typedef long __PTRDIFF_TYPE__;
 #define interrupts() sei()
 #define noInterrupts() cli()
 
-#include "WemosRemote.ino"
+#include "WemosRemote_mp3.ino"
 #endif
 #endif
