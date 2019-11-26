@@ -147,7 +147,7 @@
   </ItemGroup>
   <ItemGroup>
     <Media Include="data\mp3\1.mp3" />
-    <Media Include="data\mp3\2.mp3" />
+    <Media Include="data\mp3\0.mp3" />
     <Media Include="data\mp3\alarm.mp3" />
     <Media Include="data\mp3\pno-cs.mp3" />
   </ItemGroup>

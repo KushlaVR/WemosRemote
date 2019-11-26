@@ -47,9 +47,9 @@
 #define pinBackLight D3
 #define pinStopLight D8
 #define pinParkingLight D0
-#define pinBuzzer RX
+//#define pinBuzzer RX
 
-String signals[] = { "/mp3/alarm.mp3", "/mp3/1.mp3", "/mp3/2.mp3" };
+//String signals[] = { "/mp3/alarm.mp3", "/mp3/1.mp3", "/mp3/2.mp3" };
 
 
 
@@ -130,7 +130,8 @@ struct StateStructure {
 	bool high_light_btn;
 
 	bool serialEnabled;
-
+	ulong mp3Start;
+	ulong mp3Timeout;
 } state;
 
 
@@ -209,7 +210,15 @@ void handleLight() {
 	};
 	if (handledLightMode != state.LightMode || handledhigh_light_btn_state != state.high_light_btn) {
 		handledLightMode = state.LightMode;
-		handledhigh_light_btn_state = state.high_light_btn;
+		if (handledhigh_light_btn_state != state.high_light_btn) {
+			handledhigh_light_btn_state = state.high_light_btn;
+			if (state.high_light_btn) {
+				playMP3("/mp3/1.pm3");
+			}
+			else {
+				stopMP3();
+			}
+		}
 		int val;
 		switch (state.LightMode)
 		{
@@ -443,7 +452,7 @@ void setup()
 
 	setupController.reloadConfig = &refreshConfig;
 
-	mp3PlayTrack(signals[0].c_str()); //Воспроизводим сигнал
+	//mp3PlayTrack(signals[0].c_str()); //Воспроизводим сигнал
 }
 
 
@@ -464,11 +473,20 @@ int mapSpeed(int speed) {
 
 void loop()
 {
-	if (mp3->isRunning()) { if (!mp3->loop()) mp3->stop(); } //else {  Serial.printf("MP3 done\n");  delay(1000); }
-
-// mp3PlayTrack( signals[0].c_str()); //Воспроизводим сигнал
-
-
+	if (mp3->isRunning()) {
+		if (!mp3->loop()) {
+			stopMP3();
+			state.mp3Timeout = 0;
+		}
+		else {
+			if (state.mp3Timeout != 0) {
+				if ((millis() - state.mp3Start) > state.mp3Timeout) {
+					stopMP3();
+					state.mp3Timeout = 0;
+				}
+			}
+		}
+	}
 
 	RemoteXY_Handler(); //под вопросом
 
@@ -479,6 +497,7 @@ void loop()
 	if (RemoteXY.connect_flag) {
 		if (!connected) {
 			console.println("Connected!");
+			playMP3("/mp3/0.mp3");
 			leftLight.end();
 			rightLight.end();
 			turnLightBeeper.end();
@@ -602,6 +621,9 @@ void loop()
 	else {
 		if (connected) {
 			console.println("Disconnected!");
+			playMP3("/mp3/0.mp3");
+			state.mp3Start = millis();
+			state.mp3Timeout = 500;
 			connected = false;
 			leftLight.end();
 			rightLight.end();
