@@ -130,8 +130,6 @@ struct StateStructure {
 	bool high_light_btn;
 
 	bool serialEnabled;
-	ulong mp3Start;
-	ulong mp3Timeout;
 } state;
 
 
@@ -213,7 +211,7 @@ void handleLight() {
 		if (handledhigh_light_btn_state != state.high_light_btn) {
 			handledhigh_light_btn_state = state.high_light_btn;
 			if (state.high_light_btn) {
-				playMP3("/mp3/1.pm3");
+				playMP3("/mp3/1.pm3", 1000);
 			}
 			else {
 				stopMP3();
@@ -473,20 +471,7 @@ int mapSpeed(int speed) {
 
 void loop()
 {
-	if (mp3->isRunning()) {
-		if (!mp3->loop()) {
-			stopMP3();
-			state.mp3Timeout = 0;
-		}
-		else {
-			if (state.mp3Timeout != 0) {
-				if ((millis() - state.mp3Start) > state.mp3Timeout) {
-					stopMP3();
-					state.mp3Timeout = 0;
-				}
-			}
-		}
-	}
+	loopMP3();
 
 	RemoteXY_Handler(); //под вопросом
 
@@ -621,9 +606,7 @@ void loop()
 	else {
 		if (connected) {
 			console.println("Disconnected!");
-			playMP3("/mp3/0.mp3");
-			state.mp3Start = millis();
-			state.mp3Timeout = 500;
+			playMP3("/mp3/0.mp3", 500);
 			connected = false;
 			leftLight.end();
 			rightLight.end();
