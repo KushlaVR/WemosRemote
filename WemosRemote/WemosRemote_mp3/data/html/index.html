@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wemos WIFI reote controll</title>
+    <link rel="stylesheet" href="bootstrap.css" />
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="kushlavr.js"></script>
+</head>
+<body>
+    <div class="container mb-4">
+        <div class="row">
+            <div class="col-2"></div>
+            <div class="col-8">
+                <h1>Config</h1>
+                <form action="/api/setup" method="post" id="form">
+                    <div class="form-group">
+                        <label>SSID</label>
+                        <input type="text" maxlength="10" name="ssid" class="form-control" required="required" />
+                    </div>
+                    <div class="form-group">
+                        <label>password</label>
+                        <input type="text" maxlength="10" name="password" class="form-control" required="required" />
+                    </div>
+                    <div class="form-group">
+                        <label>Operation mode</label>
+                        <div class="input-group mb-3">
+                            <select class="custom-select" name="mode" id="mode">
+                                <option value="1" selected>Setup</option>
+                                <option value="2">Run</option>
+                            </select>
+                            <div class="input-group-append">
+                                <label class="input-group-text" for="mode">Mode</label>
+                            </div>
+                        </div>
+                        <div>In setup mode some function may be disabled.</div>
+                    </div>
+
+
+                    <h2>Servo</h2>
+                    <div class="form-group">
+                        <label>Center</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="center" class="form-control" step="1" min="0" max="180" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">0<sup>o</sup>..180<sup>o</sup></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Left</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="max_left" class="form-control" step="1" min="0" max="180" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">0<sup>o</sup>..180<sup>o</sup></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Right</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="max_right" class="form-control" step="1" min="0" max="180" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">0<sup>o</sup>..180<sup>o</sup></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Stearing potenciometer linearity</label>
+                        <div class="input-group">
+                            <select class="custom-select" name="stearing_linearity" id="stearing_linearity">
+                                <option value="0" selected>Linear</option>
+                                <option value="1">Y = X^2 / X</option>
+                            </select>
+                            <div class="input-group-append">
+                                <span class="input-group-text">Select one</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>Engine</h2>
+                    <div class="form-group">
+                        <label>Minimum PWM speed</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="min_speed" class="form-control" step="1" min="0" max="255" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">0..255</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Speed potenciometer linearity</label>
+                        <div class="input-group">
+                            <select class="custom-select" name="potentiometer_linearity" id="potentiometer_linearity">
+                                <option value="0" selected>Linear</option>
+                                <option value="1">Y = X^2 / X</option>
+                            </select>
+                            <div class="input-group-append">
+                                <span class="input-group-text">Select one</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>Light</h2>
+                    <div class="form-group">
+                        <label>Head light PWM</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="front_light_on" class="form-control" step="1" min="0" max="100" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">0..100</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>High light PWM</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="high_light_on" class="form-control" step="1" min="0" max="100" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">0..100</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Parking light PWM</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="parking_light_on" class="form-control" step="1" min="0" max="100" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">0..100</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Turn light PWM</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="turn_light_on" class="form-control" step="1" min="0" max="100" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">0..100</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Stop light duration</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="stop_light_duration" class="form-control" step="10" min="500" max="5000" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">500..5000</span>
+                                <span class="input-group-text">milis</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Back light timeout</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="back_light_timeout" class="form-control" step="10" min="0" max="1000" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">0..1000</span>
+                                <span class="input-group-text">milis</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Back light PWM</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="back_light_pwm" class="form-control" step="1" min="0" max="100" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">0..100</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>Beeper</h2>
+                    <div class="form-group">
+                        <label>Frequency</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="beep_freq" class="form-control" step="1" min="100" max="5000" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">100..5000</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Duration</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="beep_duration" class="form-control" step="1" min="10" max="1000" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">10..1000</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Interval</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="beep_interval" class="form-control" step="1" min="10" max="1000" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">10..1000</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="submit" class="btn btn-primary" value="Save" />
+                </form>
+            </div>
+            <div class="col-2"></div>
+        </div>
+    </div>
+    <div class="jumbotron">
+
+    </div>
+    <script>
+        $(document).ready(function () {
+            console.log("ready!");
+            KVR.load();
+        });
+    </script>
+</body>
+</html>

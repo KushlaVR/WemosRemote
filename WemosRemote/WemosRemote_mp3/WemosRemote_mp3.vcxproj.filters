@@ -19,10 +19,26 @@
     <None Include="src\arduino folders read me.txt">
       <Filter>Misc Files</Filter>
     </None>
+    <None Include="data\html\index.html" />
+    <None Include="data\html\bootstrap.css" />
+    <None Include="data\html\kushlavr.js" />
+    <None Include="data\html\jquery.js" />
+    <None Include="data\config.json">
+      <Filter>Misc Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="__vm\.WemosRemote_mp3.vsarduino.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Media Include="data\mp3\0.mp3" />
+    <Media Include="data\mp3\1.mp3" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="data\intro.txt">
+      <Filter>Misc Files</Filter>
+    </Text>
   </ItemGroup>
 </Project>
