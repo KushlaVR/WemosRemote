@@ -1,7 +1,7 @@
 ﻿/*
- Name:    WemosRemote.ino
- Created: 10/23/2019 7:53:20 PM
- Authors:  KushlaVR@gmail.com, zilibob4ik
+ Name:		WemosRemote.ino
+ Created:	10/23/2019 7:53:20 PM
+ Author:	Віталік
 */
 
 
@@ -30,14 +30,6 @@
 #include "WebUIController.h"
 #include "SetupController.h"
 
-#include <AudioFileSourceSPIFFS.h>
-#include <AudioFileSourceID3.h>
-#include <AudioGeneratorMP3.h>
-#include <AudioOutputI2SNoDAC.h>
-
-
-#include "mp3.h"
-
 #define pinServo D5
 #define pinMotorA D7//назад
 #define pinMotorB D6//вперед
@@ -47,33 +39,7 @@
 #define pinBackLight D3
 #define pinStopLight D8
 #define pinParkingLight D0
-//#define pinBuzzer RX
-
-//String signals[] = { "/mp3/alarm.mp3", "/mp3/1.mp3", "/mp3/2.mp3" };
-
-
-
-// Called when a metadata event occurs (i.e. an ID3 tag, an ICY block, etc.
-void MDCallback(void *cbData, const char *type, bool isUnicode, const char *string)
-{
-	(void)cbData;
-	Serial.printf("ID3 callback for: %s = '", type);
-
-	if (isUnicode) {
-		string += 2;
-	}
-
-	while (*string) {
-		char a = *(string++);
-		if (isUnicode) {
-			string++;
-		}
-		Serial.printf("%c", a);
-	}
-	Serial.printf("'\n");
-	Serial.flush();
-}
-
+#define pinBuzzer RX
 
 
 
@@ -130,6 +96,7 @@ struct StateStructure {
 	bool high_light_btn;
 
 	bool serialEnabled;
+
 } state;
 
 
@@ -208,15 +175,20 @@ void handleLight() {
 	};
 	if (handledLightMode != state.LightMode || handledhigh_light_btn_state != state.high_light_btn) {
 		handledLightMode = state.LightMode;
+
 		if (handledhigh_light_btn_state != state.high_light_btn) {
 			handledhigh_light_btn_state = state.high_light_btn;
 			if (state.high_light_btn) {
-				playMP3("/mp3/1.pm3", 1000);
+				//Бібікаємо
+				analogWriteFreq(config.beep_freq);
+				tone(pinBuzzer, config.beep_freq);
 			}
-			else {
-				stopMP3();
+			else
+			{
+				noTone(pinBuzzer);
 			}
 		}
+
 		int val;
 		switch (state.LightMode)
 		{
@@ -332,7 +304,26 @@ void setupBlinkers() {
 
 }
 
+void setupBeepers() {
+	alarmBeepOn
+		.Add(pinBuzzer, 0, config.beep_freq)
+		->Add(pinBuzzer, config.beep_duration, 0)
+		->Add(pinBuzzer, config.beep_duration + config.beep_interval, config.beep_freq)
+		->Add(pinBuzzer, config.beep_duration + config.beep_interval + config.beep_duration, 0);
+	alarmBeepOn.repeat = false;
 
+	alarmBeepOff
+		.Add(pinBuzzer, 0, config.beep_freq)
+		->Add(pinBuzzer, config.beep_duration, 0);
+	alarmBeepOff.repeat = false;
+
+	turnLightBeeper.Add(pinBuzzer, 0, 1000)
+		->Add(pinBuzzer, 1, 0)
+		->Add(pinBuzzer, 500, 1000)
+		->Add(pinBuzzer, 501, 0)
+		->Add(pinBuzzer, 1000, 0);
+
+}
 
 void refreshConfig() {
 
@@ -368,25 +359,12 @@ void refreshConfig() {
 void setup()
 {
 	state.serialEnabled = true;
-	//Serial.end();
-	//pinMode(pinBuzzer, OUTPUT);
-	//digitalWrite(pinBuzzer, LOW);
-	Serial.begin(115200);
-	Serial.println();
-	Serial.println();
-	SPIFFS.begin();
-
-	/*
-	   file = new AudioFileSourceSPIFFS("/alarm.mp3");
-	  id3 = new AudioFileSourceID3(file);
-	  id3->RegisterMetadataCB(MDCallback, (void*)"ID3TAG");
-	  out = new AudioOutputI2SNoDAC();
-	  mp3 = new AudioGeneratorMP3();
-	  mp3->begin(id3, out);
-	*/
-	initMP3(); //инициализируем библиотеку МП3
-
-
+	Serial.end();
+	pinMode(pinBuzzer, OUTPUT);
+	digitalWrite(pinBuzzer, LOW);
+	//Serial.begin(115200);
+	//Serial.println();
+	//Serial.println();
 	console.output = &Serial;
 	analogWriteRange(255);
 	String s;
@@ -422,12 +400,12 @@ void setup()
 
 
 	//if (!config.debug) {
-	//  Serial.end();
-	//  console.output = nullptr;
+	//	Serial.end();
+	//	console.output = nullptr;
 	//}
 
 	setupBlinkers();
-
+	setupBeepers();
 
 	stearingServo.max_left = config.max_left;
 	stearingServo.max_right = config.max_right;
@@ -449,8 +427,6 @@ void setup()
 	webServer.apName = String(SSID);
 
 	setupController.reloadConfig = &refreshConfig;
-
-	//mp3PlayTrack(signals[0].c_str()); //Воспроизводим сигнал
 }
 
 
@@ -471,9 +447,7 @@ int mapSpeed(int speed) {
 
 void loop()
 {
-	loopMP3();
-
-	RemoteXY_Handler(); //под вопросом
+	RemoteXY_Handler();
 
 	stearingServo.max_left = config.max_left;
 	stearingServo.max_right = config.max_right;
@@ -482,7 +456,6 @@ void loop()
 	if (RemoteXY.connect_flag) {
 		if (!connected) {
 			console.println("Connected!");
-			playMP3("/mp3/0.mp3");
 			leftLight.end();
 			rightLight.end();
 			turnLightBeeper.end();
@@ -606,7 +579,6 @@ void loop()
 	else {
 		if (connected) {
 			console.println("Disconnected!");
-			playMP3("/mp3/0.mp3", 500);
 			connected = false;
 			leftLight.end();
 			rightLight.end();
