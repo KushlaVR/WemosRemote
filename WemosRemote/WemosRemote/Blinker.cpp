@@ -100,7 +100,7 @@ void Beeper::write(int pin, int value)
 	if (value == 0)
 		noTone(pin);
 	else {
-		analogWriteFreq(value);
+		//analogWriteFreq(value);
 		tone(pin, value);
 	}
 }

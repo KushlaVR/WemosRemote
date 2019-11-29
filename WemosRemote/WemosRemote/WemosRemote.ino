@@ -180,7 +180,7 @@ void handleLight() {
 			handledhigh_light_btn_state = state.high_light_btn;
 			if (state.high_light_btn) {
 				//Бібікаємо
-				analogWriteFreq(config.beep_freq);
+				//analogWriteFreq(config.beep_freq);
 				tone(pinBuzzer, config.beep_freq);
 			}
 			else
@@ -298,7 +298,7 @@ void setupBlinkers() {
 	stopLight.debug = true;
 
 	backLight.Add(pinBackLight, 0, 0)
-		->Add(pinBackLight, map(255 - config.back_light_pwm, 0, 255, 0, 20), 255)
+		->Add(pinBackLight, map(100 - config.back_light_pwm, 0, 100, 0, 20), 255)
 		->Add(pinBackLight, 20, 0)
 		->repeat = true;
 
@@ -306,14 +306,14 @@ void setupBlinkers() {
 
 void setupBeepers() {
 	alarmBeepOn
-		.Add(pinBuzzer, 0, config.beep_freq)
+		.Add(pinBuzzer, 1, config.beep_freq)
 		->Add(pinBuzzer, config.beep_duration, 0)
-		->Add(pinBuzzer, config.beep_duration + config.beep_interval, config.beep_freq)
+		->Add(pinBuzzer, config.beep_duration + config.beep_interval + 1, config.beep_freq)
 		->Add(pinBuzzer, config.beep_duration + config.beep_interval + config.beep_duration, 0);
 	alarmBeepOn.repeat = false;
 
 	alarmBeepOff
-		.Add(pinBuzzer, 0, config.beep_freq)
+		.Add(pinBuzzer, 1, config.beep_freq)
 		->Add(pinBuzzer, config.beep_duration, 0);
 	alarmBeepOff.repeat = false;
 
@@ -348,7 +348,7 @@ void refreshConfig() {
 	alarmBeepOff.item(0)->value = config.beep_freq;
 
 	alarmBeepOn.item(1)->offset = config.beep_duration;
-	alarmBeepOn.item(2)->offset = config.beep_duration + config.beep_interval;
+	alarmBeepOn.item(2)->offset = config.beep_duration + config.beep_interval + 1;
 	alarmBeepOn.item(3)->offset = config.beep_duration + config.beep_interval + config.beep_duration;
 
 	alarmBeepOff.item(1)->offset = config.beep_duration;
