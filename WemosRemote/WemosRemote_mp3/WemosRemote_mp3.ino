@@ -30,7 +30,7 @@ private:
 	AudioGeneratorMP3* mp3;
 	AudioOutputI2SNoDAC* out;
 
-	std::vector<Track*> playlist;
+	std::vector<Track*> playlist = std::vector<Track*>();
 	Track* current = nullptr;
 	bool paused = false;
 public:
