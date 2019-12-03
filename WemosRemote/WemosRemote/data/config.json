@@ -5,7 +5,7 @@
   "center": "90",
   "max_left": "120",
   "max_right": "60",
-  "stearing_linearity": "1",
+  "stearing_linearity": "0",
   "min_speed": "50",
   "potentiometer_linearity": "1",
   "front_light_on": "40",

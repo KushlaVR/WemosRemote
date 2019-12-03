@@ -211,7 +211,7 @@ void handleLight() {
 		if (handledhigh_light_btn_state != state.high_light_btn) {
 			handledhigh_light_btn_state = state.high_light_btn;
 			if (state.high_light_btn) {
-				playMP3("/mp3/1.pm3", 1000);
+				playMP3("/mp3/klakson.mp3", 1000);
 			}
 			else {
 				stopMP3();
@@ -482,7 +482,7 @@ void loop()
 	if (RemoteXY.connect_flag) {
 		if (!connected) {
 			console.println("Connected!");
-			playMP3("/mp3/0.mp3");
+			playMP3("/mp3/two-beep.mp3");
 			leftLight.end();
 			rightLight.end();
 			turnLightBeeper.end();
@@ -606,7 +606,7 @@ void loop()
 	else {
 		if (connected) {
 			console.println("Disconnected!");
-			playMP3("/mp3/0.mp3", 500);
+			playMP3("/mp3/one-beep.mp3", 500);
 			connected = false;
 			leftLight.end();
 			rightLight.end();
