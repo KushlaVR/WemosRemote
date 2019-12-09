@@ -186,6 +186,12 @@ SpeedController::SpeedController(String name, int pin, RoboEffects * effect) : M
 	servo = new Servo();
 }
 
+SpeedController::~SpeedController()
+{
+	delete servo;
+	servo = nullptr;
+}
+
 void SpeedController::write(int newSpeed)
 {
 	if (isEnabled) {

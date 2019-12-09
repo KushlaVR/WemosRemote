@@ -8,6 +8,7 @@
 #else
 #include "WProgram.h"
 #endif
+#include <Servo.h>
 
 class RoboEffects {
 
