@@ -21,7 +21,7 @@ public:
 	~SerialController();
 
 	bool isRunning = false;
-	RoboMotor * motor = nullptr;
+	MotorBase * motor = nullptr;
 	Stearing * stearing = nullptr;
 	Blinker * leftLight = nullptr;
 	Blinker * rightLight = nullptr;

@@ -47,10 +47,7 @@
 #define pinBackLight D3
 #define pinStopLight D8
 #define pinParkingLight D0
-//#define pinBuzzer RX
-
-//String signals[] = { "/mp3/alarm.mp3", "/mp3/1.mp3", "/mp3/2.mp3" };
-
+#define pinBuzzer RX
 
 
 // Called when a metadata event occurs (i.e. an ID3 tag, an ICY block, etc.
@@ -146,7 +143,7 @@ bool connected = false;
 
 
 RoboEffects motorEffect = RoboEffects();
-RoboMotor motor = RoboMotor("motor", pinMotorA, pinMotorB, &motorEffect);
+MotorBase * motor = nullptr;// HBridge("motor", pinMotorA, pinMotorB, &motorEffect);
 Stearing stearingServo = Stearing(pinServo);
 
 SerialController serialController = SerialController();
@@ -157,8 +154,6 @@ Blinker stopLight = Blinker("Stop light");
 Blinker backLight = Blinker("Back light");
 Blinker alarmOn = Blinker("Alarm on");
 Blinker alarmOff = Blinker("Alarm of");
-Beeper alarmBeepOn = Beeper("Alarm beep on");
-Beeper alarmBeepOff = Beeper("Alarm beep of");
 Beeper turnLightBeeper = Beeper("Turn light beep");
 
 bool turnOffTurnLights = false;
@@ -330,11 +325,48 @@ void setupBlinkers() {
 		->Add(pinBackLight, 20, 0)
 		->repeat = true;
 
+	turnLightBeeper.Add(pinBuzzer, 0, 1000)
+		->Add(pinBuzzer, 1, 0)
+		->Add(pinBuzzer, 500, 1000)
+		->Add(pinBuzzer, 501, 0)
+		->Add(pinBuzzer, 1000, 0);
+
 }
 
+void setupMotor() {
+	if (motor != nullptr) {
+		if (motor->controllerType != config.controller_type) {
+			delete motor;
+			motor = nullptr;
+		}
+	}
+	if (motor == nullptr) {
+		switch (config.controller_type)
+		{
+		case 0:
+			motor = new HBridge("motor", pinMotorA, pinMotorB, &motorEffect);
+			break;
+		case 1:
+			motor = new SpeedController("motor", pinMotorB, &motorEffect);
+			break;
+		case 2:
+			motor = new SpeedController("motor", pinMotorA, &motorEffect);
+			break;
+		default:
+			break;
+		}
+	}
 
+	motor->responder = &console;
+	motor->setWeight(800);
+	motor->reset();
+	serialController.motor = motor;
+
+}
 
 void refreshConfig() {
+
+	setupMotor();
 
 	leftLight.item(0)->value = config.turn_light_on;
 	rightLight.item(0)->value = config.turn_light_on;
@@ -352,16 +384,6 @@ void refreshConfig() {
 
 	backLight.item(0)->offset = map(100 - config.back_light_pwm, 0, 100, 0, 20);
 
-	alarmBeepOn.item(0)->value = config.beep_freq;
-	alarmBeepOn.item(2)->value = config.beep_freq;
-	alarmBeepOff.item(0)->value = config.beep_freq;
-
-	alarmBeepOn.item(1)->offset = config.beep_duration;
-	alarmBeepOn.item(2)->offset = config.beep_duration + config.beep_interval;
-	alarmBeepOn.item(3)->offset = config.beep_duration + config.beep_interval + config.beep_duration;
-
-	alarmBeepOff.item(1)->offset = config.beep_duration;
-
 }
 
 
@@ -369,8 +391,8 @@ void setup()
 {
 	state.serialEnabled = true;
 	//Serial.end();
-	//pinMode(pinBuzzer, OUTPUT);
-	//digitalWrite(pinBuzzer, LOW);
+	pinMode(pinBuzzer, OUTPUT);
+	digitalWrite(pinBuzzer, HIGH);
 	Serial.begin(115200);
 	Serial.println();
 	Serial.println();
@@ -428,19 +450,16 @@ void setup()
 
 	setupBlinkers();
 
-
 	stearingServo.max_left = config.max_left;
 	stearingServo.max_right = config.max_right;
 	stearingServo.center = config.center;
 	stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
 	stearingServo.isEnabled = false;
 
-	motor.responder = &console;
-	motor.setWeight(800);
-	motor.reset();
+	setupMotor();
 
 	serialController.stearing = &stearingServo;
-	serialController.motor = &motor;
+	serialController.motor = motor;
 
 	remotexy = new CRemoteXY(RemoteXY_CONF_PROGMEM, &RemoteXY, REMOTEXY_ACCESS_PASSWORD, SSID, SSID_password, REMOTEXY_SERVER_PORT);//RemoteXY_Init();
 
@@ -488,8 +507,8 @@ void loop()
 			turnLightBeeper.end();
 			state.emergency = false;
 			alarmOff.begin();
-			alarmBeepOn.begin();
-			motor.reset();
+			motor->isEnabled = false;
+			motor->reset();
 			state.stopped = true;
 			stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
 			stearingServo.isEnabled = true;
@@ -501,7 +520,7 @@ void loop()
 		{
 		case 1: //лівий джойстик повороти, Повзунок - швидкість
 			speed = mapSpeed(RemoteXY.right_joy_y);
-			motor.setSpeed(speed);
+			motor->setSpeed(speed);
 			if (speed < 0)
 				state.backLightMode = LightMode::ON;
 			else if (speed == 0) {
@@ -528,7 +547,7 @@ void loop()
 
 		default: //Все керування лівим джойстиком
 			speed = mapSpeed(RemoteXY.left_joy_y);
-			motor.setSpeed(speed);
+			motor->setSpeed(speed);
 			if (speed < 0)
 				state.backLightMode = LightMode::ON;
 			else
@@ -613,8 +632,8 @@ void loop()
 			turnLightBeeper.end();
 			state.emergency = false;
 			alarmOn.begin();
-			alarmBeepOff.begin();
-			motor.reset();
+			motor->reset();
+			motor->isEnabled = false;
 			stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
 			state.LightMode = 0;
 			handleLight();
@@ -624,29 +643,14 @@ void loop()
 	if (config.debug) {
 		serialController.loop();
 	}
-	if (state.serialEnabled) {
-		if (alarmBeepOn.isRunning() || alarmBeepOff.isRunning()) {
-			//Serial.end();
-			state.serialEnabled = false;
-		}
-	}
-	else
-	{
-		if (!alarmBeepOn.isRunning() && !alarmBeepOff.isRunning()) {
-			//Serial.begin(115200);
-			state.serialEnabled = true;
-		}
-	}
 
-	motor.loop();
+	motor->loop();
 	stearingServo.loop();
 	leftLight.loop();
 	rightLight.loop();
 	turnLightBeeper.loop();
 	alarmOff.loop();
-	alarmBeepOff.loop();
 	alarmOn.loop();
-	alarmBeepOn.loop();
 	stopLight.loop();
 	backLight.loop();
 	webServer.loop();

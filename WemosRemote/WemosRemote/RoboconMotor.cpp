@@ -40,29 +40,16 @@ int RoboEffects::softStartSoftEnd()
 	}
 }
 
-RoboMotor::RoboMotor(String name, int pwmPin, int reley1Pin, int reley2Pin, RoboEffects *effect)
+
+
+
+MotorBase::MotorBase(String name, RoboEffects * effect)
 {
-	//Запамятовуємо піни мотора
 	this->name = name;
-	this->pwmPin = pwmPin;
-	this->motorPinA = reley1Pin;
-	this->motorPinB = reley2Pin;
 	this->effect = effect;
-	//Налаштовуємо пни на вихід
-	if (pwmPin!=0) pinMode(pwmPin, OUTPUT);
-	pinMode(reley1Pin, OUTPUT);
-	pinMode(reley2Pin, OUTPUT);
-	//Виводимо нулі на всі пни (шим мовчить, релюшки виключені)
-	if (pwmPin != 0) digitalWrite(pwmPin, LOW);
-	digitalWrite(reley1Pin, LOW);
-	digitalWrite(reley2Pin, LOW);
 }
 
-RoboMotor::RoboMotor(String name, int pinA, int pinB, RoboEffects * effect) :RoboMotor(name, 0, pinA, pinB, effect)
-{
-}
-
-void RoboMotor::setWeight(long weight)
+void MotorBase::setWeight(long weight)
 {
 	//запамятовуємо вагу (не обовязково, але може в подальшому знадобиться для інформації)
 	this->weight = weight;
@@ -81,7 +68,30 @@ void RoboMotor::setWeight(long weight)
 	//Ця характеристика буде мінятись експерементально
 }
 
-void RoboMotor::loop()
+void MotorBase::setSpeed(int speed)
+{
+	if (targetSpeed == speed) return;
+	targetSpeed = speed;//Запамятовуємо цільову швидкість
+	delta = targetSpeed - factSpeed;//на скільки змінилася швидкість відносно фактичної
+	int d = delta;
+	if (d < 0) d *= -1;
+	effect->duration = map(d, 0, 255, 0, etalonDuration);//Визначаємо тривалість зміни швидкості
+	//Маємо тривалість розгону від 0 до максималки, коректуємо час пропорційно до дельти.
+	//Використовуємо функцію map();
+	Serial.print("effect->duration");
+	Serial.println(effect->duration);
+	effect->begin();//Скидємо точку відліку фізики. 
+}
+
+void MotorBase::reset()
+{
+	targetSpeed = 0;
+	factSpeed = 0;
+	delta = 0;
+	effect->duration = 0;
+}
+
+void MotorBase::loop()
 {
 	//Фактичну швидкість визначаємо згідно із ядром фізики (softStartSoftEnd - плавний старт<->плавний стоп)
 	//Це означає, що на початку ми збільшуємо шим малими порціями, потім щораз більшими і більшими,
@@ -99,14 +109,44 @@ void RoboMotor::loop()
 		ret.endObject();
 		responder->println(ret);
 	}
+
+}
+
+void MotorBase::write(int newSpeed)
+{
 	factSpeed = newSpeed;
+}
+
+
+HBridge::HBridge(String name, int pwmPin, int reley1Pin, int reley2Pin, RoboEffects *effect) : MotorBase(name, effect)
+{
+	//Запамятовуємо піни мотора
+	this->pwmPin = pwmPin;
+	this->motorPinA = reley1Pin;
+	this->motorPinB = reley2Pin;
+	//Налаштовуємо пни на вихід
+	if (pwmPin != 0) pinMode(pwmPin, OUTPUT);
+	pinMode(reley1Pin, OUTPUT);
+	pinMode(reley2Pin, OUTPUT);
+	//Виводимо нулі на всі пни (шим мовчить, релюшки виключені)
+	if (pwmPin != 0) digitalWrite(pwmPin, LOW);
+	digitalWrite(reley1Pin, LOW);
+	digitalWrite(reley2Pin, LOW);
+}
+
+HBridge::HBridge(String name, int pinA, int pinB, RoboEffects * effect) :HBridge(name, 0, pinA, pinB, effect)
+{
+}
+
+void HBridge::write(int newSpeed)
+{
 	if (pwmPin != 0) {
-		if (factSpeed > 0) {
+		if (isEnabled && factSpeed > 0) {
 			digitalWrite(motorPinA, LOW);
 			digitalWrite(motorPinB, HIGH);
 			analogWrite(pwmPin, factSpeed);
 		}
-		else if (factSpeed < 0)
+		else if (isEnabled && factSpeed < 0)
 		{
 			digitalWrite(motorPinA, HIGH);
 			digitalWrite(motorPinB, LOW);
@@ -118,14 +158,14 @@ void RoboMotor::loop()
 			digitalWrite(motorPinB, LOW);
 			analogWrite(pwmPin, factSpeed);
 		}
-	} 
+	}
 	else {
-		if (factSpeed > 0) {
+		if (isEnabled && factSpeed > 0) {
 			//їдемо в перед
 			digitalWrite(motorPinA, LOW);
 			analogWrite(motorPinB, factSpeed);
 		}
-		else if (factSpeed < 0) {
+		else if (isEnabled && factSpeed < 0) {
 			//Їдемо назад
 			analogWrite(motorPinA, -factSpeed);
 			digitalWrite(motorPinB, LOW);
@@ -136,27 +176,25 @@ void RoboMotor::loop()
 			digitalWrite(motorPinB, LOW);
 		}
 	}
+	MotorBase::write(newSpeed);
 }
 
-void RoboMotor::setSpeed(int speed)
+SpeedController::SpeedController(String name, int pin, RoboEffects * effect) : MotorBase(name, effect)
 {
-	if (targetSpeed == speed) return;
-	targetSpeed = speed;//Запамятовуємо цільову швидкість
-	delta = targetSpeed - factSpeed;//на скільки змінилася швидкість відносно фактичної
-	int d = delta;
-	if (d < 0) d *= -1;
-	effect->duration = map(d, 0, 255, 0, etalonDuration);//Визначаємо тривалість зміни швидкості
-	//Маємо тривалість розгону від 0 до максималки, коректуємо час пропорційно до дельти.
-	//Використовуємо функцію map();
-	Serial.print("effect->duration");
-	Serial.println(effect->duration);
-	effect->begin();//Скидємо точку відліку фізики. 
+	this->pin = pin;
+	pinMode(pin, OUTPUT);
+	servo = new Servo();
 }
 
-void RoboMotor::reset()
+void SpeedController::write(int newSpeed)
 {
-	targetSpeed = 0;
-	factSpeed = 0;
-	delta = 0;
-	effect->duration = 0;
+	if (isEnabled) {
+		if (!servo->attached()) servo->attach(pin);
+		servo->write(map(factSpeed, -255, 255, 0, 180));
+	}
+	else
+	{
+		if (servo->attached()) servo->detach();
+	}
+	MotorBase::write(newSpeed);
 }
