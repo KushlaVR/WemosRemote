@@ -25,21 +25,21 @@ void SetupController::loadConfig()
 		cfg.AddValue("mode", "debug");
 
 		cfg.AddValue("center", "90");
-		cfg.AddValue("max_left", "150");
+		cfg.AddValue("max_left", "120");
 		cfg.AddValue("max_right", "60");
 		cfg.AddValue("stearing_linearity", "1");
 
 		cfg.AddValue("controller_type", "0");
-		cfg.AddValue("min_speed", "50");
+		cfg.AddValue("min_speed", "20");
 		cfg.AddValue("potentiometer_linearity", "1");
 
 		cfg.AddValue("front_light_on", "40");
 		cfg.AddValue("high_light_on", "80");
 		cfg.AddValue("parking_light_on", "10");
-		cfg.AddValue("turn_light_on", "10");
+		cfg.AddValue("turn_light_on", "80");
 		cfg.AddValue("stop_light_duration", "2000");
 		cfg.AddValue("back_light_timeout", "500");
-		cfg.AddValue("back_light_pwm", "255");
+		cfg.AddValue("back_light_pwm", "70");
 		cfg.AddValue("beep_freq", "1000");
 		cfg.AddValue("beep_duration", "150");
 		cfg.AddValue("beep_interval", "50");

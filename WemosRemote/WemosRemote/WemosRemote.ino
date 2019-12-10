@@ -47,7 +47,7 @@
 #define pinBackLight D3
 #define pinStopLight D8
 #define pinParkingLight D0
-#define pinBuzzer RX
+//#define pinBuzzer RX
 
 
 // Called when a metadata event occurs (i.e. an ID3 tag, an ICY block, etc.
@@ -325,11 +325,11 @@ void setupBlinkers() {
 		->Add(pinBackLight, 20, 0)
 		->repeat = true;
 
-	turnLightBeeper.Add(pinBuzzer, 0, 1000)
+	/*turnLightBeeper.Add(pinBuzzer, 0, 1000)
 		->Add(pinBuzzer, 1, 0)
 		->Add(pinBuzzer, 500, 1000)
 		->Add(pinBuzzer, 501, 0)
-		->Add(pinBuzzer, 1000, 0);
+		->Add(pinBuzzer, 1000, 0);*/
 
 }
 
@@ -344,13 +344,13 @@ void setupMotor() {
 		switch (config.controller_type)
 		{
 		case 0:
-			motor = new HBridge("motor", pinMotorA, pinMotorB, &motorEffect);
+			motor = new HBridge("H-Bridge", pinMotorA, pinMotorB, &motorEffect);
 			break;
 		case 1:
-			motor = new SpeedController("motor", pinMotorB, &motorEffect);
+			motor = new SpeedController("Speed reg D6", pinMotorB, &motorEffect);
 			break;
 		case 2:
-			motor = new SpeedController("motor", pinMotorA, &motorEffect);
+			motor = new SpeedController("Speed reg D7", pinMotorA, &motorEffect);
 			break;
 		default:
 			break;
@@ -391,8 +391,8 @@ void setup()
 {
 	state.serialEnabled = true;
 	//Serial.end();
-	pinMode(pinBuzzer, OUTPUT);
-	digitalWrite(pinBuzzer, HIGH);
+	//pinMode(pinBuzzer, OUTPUT);
+	//digitalWrite(pinBuzzer, HIGH);
 	Serial.begin(115200);
 	Serial.println();
 	Serial.println();
@@ -507,7 +507,7 @@ void loop()
 			turnLightBeeper.end();
 			state.emergency = false;
 			alarmOff.begin();
-			motor->isEnabled = false;
+			motor->isEnabled = true;
 			motor->reset();
 			state.stopped = true;
 			stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
