@@ -335,6 +335,9 @@ void setupBlinkers() {
 
 void setupMotor() {
 	if (motor != nullptr) {
+		motor->isEnabled = false;
+		motor->reset();
+		motor->loop();
 		if (motor->controllerType != config.controller_type) {
 			delete motor;
 			motor = nullptr;
@@ -353,6 +356,7 @@ void setupMotor() {
 			motor = new SpeedController("Speed reg D7", pinMotorA, &motorEffect);
 			break;
 		default:
+			return;
 			break;
 		}
 	}
@@ -360,6 +364,7 @@ void setupMotor() {
 	motor->responder = &console;
 	motor->setWeight(800);
 	motor->reset();
+	motor->isEnabled = RemoteXY.connect_flag;
 	serialController.motor = motor;
 
 }

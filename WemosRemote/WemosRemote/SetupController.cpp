@@ -29,7 +29,7 @@ void SetupController::loadConfig()
 		cfg.AddValue("max_right", "60");
 		cfg.AddValue("stearing_linearity", "1");
 
-		cfg.AddValue("controller_type", "0");
+		cfg.AddValue("controller_type", "2");
 		cfg.AddValue("min_speed", "20");
 		cfg.AddValue("potentiometer_linearity", "1");
 

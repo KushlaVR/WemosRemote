@@ -6,6 +6,7 @@
   "max_left": "120",
   "max_right": "60",
   "stearing_linearity": "1",
+  "controller_type": "2",
   "min_speed": "20",
   "potentiometer_linearity": "1",
   "front_light_on": "40",
