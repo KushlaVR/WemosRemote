@@ -31,6 +31,7 @@ void SetupController::loadConfig()
 
 		cfg.AddValue("controller_type", "0");
 		cfg.AddValue("min_speed", "50");
+		cfg.AddValue("inertion", "800");
 		cfg.AddValue("potentiometer_linearity", "1");
 
 		cfg.AddValue("front_light_on", "40");

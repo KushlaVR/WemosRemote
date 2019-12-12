@@ -7,6 +7,7 @@
   "max_right": "60",
   "stearing_linearity": "0",
   "min_speed": "50",
+  "inertion": "800",
   "potentiometer_linearity": "1",
   "front_light_on": "40",
   "high_light_on": "80",
