@@ -362,7 +362,7 @@ void setupMotor() {
 	}
 
 	motor->responder = &console;
-	motor->setWeight(800);
+	motor->setWeight(config.inertion);
 	motor->reset();
 	motor->isEnabled = RemoteXY.connect_flag;
 	serialController.motor = motor;

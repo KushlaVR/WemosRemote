@@ -29,8 +29,8 @@ void SetupController::loadConfig()
 		cfg.AddValue("max_right", "60");
 		cfg.AddValue("stearing_linearity", "1");
 
-		cfg.AddValue("controller_type", "0");
-		cfg.AddValue("min_speed", "50");
+		cfg.AddValue("controller_type", "2");
+		cfg.AddValue("min_speed", "20");
 		cfg.AddValue("inertion", "800");
 		cfg.AddValue("potentiometer_linearity", "1");
 
@@ -79,6 +79,7 @@ void SetupController::loadConfig()
 	//motor config reading
 	this->cfg->controller_type = cfg.getInt("controller_type");
 	this->cfg->min_speed = cfg.getInt("min_speed");
+	this->cfg->inertion = cfg.getInt("inertion");
 	this->cfg->potentiometer_linearity = cfg.getInt("potentiometer_linearity");
 
 	this->cfg->front_light_on = cfg.getInt("front_light_on");
@@ -122,6 +123,7 @@ void SetupController::printConfig(JsonString * out)
 
 	out->AddValue("controller_type", String(cfg->controller_type));
 	out->AddValue("min_speed", String(cfg->min_speed));
+	out->AddValue("inertion", String(cfg->inertion));
 	out->AddValue("potentiometer_linearity", String(cfg->potentiometer_linearity));
 
 	out->AddValue("front_light_on", String(cfg->front_light_on));
@@ -160,6 +162,7 @@ void SetupController::Setup_Post()
 	if (webServer.hasArg("stearing_linearity")) { setupController.cfg->stearing_linearity = webServer.arg("stearing_linearity").toInt(); }
 
 	if (webServer.hasArg("controller_type")) { setupController.cfg->controller_type = webServer.arg("controller_type").toInt(); }
+	if (webServer.hasArg("inertion")) { setupController.cfg->min_speed = webServer.arg("inertion").toInt(); }
 	if (webServer.hasArg("min_speed")) { setupController.cfg->min_speed = webServer.arg("min_speed").toInt(); }
 	if (webServer.hasArg("potentiometer_linearity")) { setupController.cfg->potentiometer_linearity = webServer.arg("potentiometer_linearity").toInt(); }
 
