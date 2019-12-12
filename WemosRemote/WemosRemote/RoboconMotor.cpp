@@ -109,7 +109,7 @@ void MotorBase::loop()
 		ret.endObject();
 		responder->println(ret);
 	}
-
+	write(newSpeed);
 }
 
 void MotorBase::write(int newSpeed)
@@ -140,13 +140,14 @@ HBridge::HBridge(String name, int pinA, int pinB, RoboEffects * effect) :HBridge
 
 void HBridge::write(int newSpeed)
 {
+	MotorBase::write(newSpeed);
 	if (pwmPin != 0) {
-		if (isEnabled && factSpeed > 0) {
+		if (isEnabled && (factSpeed > 0)) {
 			digitalWrite(motorPinA, LOW);
 			digitalWrite(motorPinB, HIGH);
 			analogWrite(pwmPin, factSpeed);
 		}
-		else if (isEnabled && factSpeed < 0)
+		else if (isEnabled && (factSpeed < 0))
 		{
 			digitalWrite(motorPinA, HIGH);
 			digitalWrite(motorPinB, LOW);
@@ -160,12 +161,12 @@ void HBridge::write(int newSpeed)
 		}
 	}
 	else {
-		if (isEnabled && factSpeed > 0) {
+		if (isEnabled && (factSpeed > 0)) {
 			//їдемо в перед
 			digitalWrite(motorPinA, LOW);
 			analogWrite(motorPinB, factSpeed);
 		}
-		else if (isEnabled && factSpeed < 0) {
+		else if (isEnabled && (factSpeed < 0)) {
 			//Їдемо назад
 			analogWrite(motorPinA, -factSpeed);
 			digitalWrite(motorPinB, LOW);
@@ -176,7 +177,6 @@ void HBridge::write(int newSpeed)
 			digitalWrite(motorPinB, LOW);
 		}
 	}
-	MotorBase::write(newSpeed);
 }
 
 SpeedController::SpeedController(String name, int pin, RoboEffects * effect) : MotorBase(name, effect)
