@@ -162,7 +162,7 @@ void SetupController::Setup_Post()
 	if (webServer.hasArg("stearing_linearity")) { setupController.cfg->stearing_linearity = webServer.arg("stearing_linearity").toInt(); }
 
 	if (webServer.hasArg("controller_type")) { setupController.cfg->controller_type = webServer.arg("controller_type").toInt(); }
-	if (webServer.hasArg("inertion")) { setupController.cfg->min_speed = webServer.arg("inertion").toInt(); }
+	if (webServer.hasArg("inertion")) { setupController.cfg->inertion = webServer.arg("inertion").toInt(); }
 	if (webServer.hasArg("min_speed")) { setupController.cfg->min_speed = webServer.arg("min_speed").toInt(); }
 	if (webServer.hasArg("potentiometer_linearity")) { setupController.cfg->potentiometer_linearity = webServer.arg("potentiometer_linearity").toInt(); }
 
