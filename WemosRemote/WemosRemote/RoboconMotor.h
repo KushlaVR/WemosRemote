@@ -8,12 +8,13 @@
 #else
 #include "WProgram.h"
 #endif
+#include <Servo.h>
 
 class RoboEffects {
 
 private:
 	long start = 0;
-public :
+public:
 	//Duration millisecond (1000 miliseconds = 1 second)
 	long span = 0;
 	long duration = 1000;
@@ -26,30 +27,63 @@ public :
 };
 
 
-class RoboMotor {
+class MotorBase {
 private:
 	RoboEffects * effect;
 	int etalonDuration = 3000;
 	int targetSpeed = 0;
 	int delta;
 	long weight = 10000;
+public:
+	int controllerType = 0;
+	int factSpeed = 0;
+	Print * responder;
+	String name;
+	bool isEnabled = false;
+
+	MotorBase(String name, RoboEffects *effect);
+	~MotorBase() {};
+
+	//Задати вагу механхму в грамах
+	void setWeight(long weight);
+	//задати цільову швидкість
+	void setSpeed(int speed);
+	void reset();
+
+	void loop();
+	virtual void write(int newSpeed);
+};
+
+class HBridge : public MotorBase {
+private:
+
 	int pwmPin;
 	int motorPinA;
 	int motorPinB;
 
 public:
-	int factSpeed = 0;
-	Print * responder;
-	String name;
-	RoboMotor(String name, int pwmPin, int reley1Pin, int reley2Pin, RoboEffects *effect);
-	RoboMotor(String name, int pinA, int pinB, RoboEffects *effect);
-	//Задати вагу механхму в грамах
-	void setWeight(long weight);
-	//Обробка сенсорів
-	void loop();
-	//задати цільову швидкість
-	void setSpeed(int speed);
-    void reset();
+
+	HBridge(String name, int pwmPin, int reley1Pin, int reley2Pin, RoboEffects *effect);
+	HBridge(String name, int pinA, int pinB, RoboEffects *effect);
+
+	~HBridge() {};
+	
+	
+	virtual void write(int newSpeed);
+
+};
+
+class SpeedController : public MotorBase {
+
+private:
+	int pin;
+	Servo * servo = nullptr;
+
+public: 
+	SpeedController(String name, int pin, RoboEffects *effect);
+	~SpeedController();
+
+	virtual void write(int newSpeed);
 
 };
 

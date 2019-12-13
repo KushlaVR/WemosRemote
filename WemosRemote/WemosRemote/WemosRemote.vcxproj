@@ -146,10 +146,11 @@
     <Text Include="data\intro.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Media Include="data\mp3\1.mp3" />
-    <Media Include="data\mp3\0.mp3" />
     <Media Include="data\mp3\alarm.mp3" />
+    <Media Include="data\mp3\klakson.mp3" />
+    <Media Include="data\mp3\one-beep.mp3" />
     <Media Include="data\mp3\pno-cs.mp3" />
+    <Media Include="data\mp3\two-beep.mp3" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

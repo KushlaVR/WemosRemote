@@ -25,20 +25,22 @@ void SetupController::loadConfig()
 		cfg.AddValue("mode", "debug");
 
 		cfg.AddValue("center", "90");
-		cfg.AddValue("max_left", "150");
+		cfg.AddValue("max_left", "120");
 		cfg.AddValue("max_right", "60");
 		cfg.AddValue("stearing_linearity", "1");
 
-		cfg.AddValue("min_speed", "50");
+		cfg.AddValue("controller_type", "2");
+		cfg.AddValue("min_speed", "20");
+		cfg.AddValue("inertion", "800");
 		cfg.AddValue("potentiometer_linearity", "1");
 
 		cfg.AddValue("front_light_on", "40");
 		cfg.AddValue("high_light_on", "80");
 		cfg.AddValue("parking_light_on", "10");
-		cfg.AddValue("turn_light_on", "10");
+		cfg.AddValue("turn_light_on", "80");
 		cfg.AddValue("stop_light_duration", "2000");
 		cfg.AddValue("back_light_timeout", "500");
-		cfg.AddValue("back_light_pwm", "255");
+		cfg.AddValue("back_light_pwm", "70");
 		cfg.AddValue("beep_freq", "1000");
 		cfg.AddValue("beep_duration", "150");
 		cfg.AddValue("beep_interval", "50");
@@ -75,7 +77,9 @@ void SetupController::loadConfig()
 	this->cfg->stearing_linearity = cfg.getInt("stearing_linearity");
 
 	//motor config reading
+	this->cfg->controller_type = cfg.getInt("controller_type");
 	this->cfg->min_speed = cfg.getInt("min_speed");
+	this->cfg->inertion = cfg.getInt("inertion");
 	this->cfg->potentiometer_linearity = cfg.getInt("potentiometer_linearity");
 
 	this->cfg->front_light_on = cfg.getInt("front_light_on");
@@ -117,7 +121,9 @@ void SetupController::printConfig(JsonString * out)
 	out->AddValue("max_right", String(cfg->max_right));
 	out->AddValue("stearing_linearity", String(cfg->stearing_linearity));
 
+	out->AddValue("controller_type", String(cfg->controller_type));
 	out->AddValue("min_speed", String(cfg->min_speed));
+	out->AddValue("inertion", String(cfg->inertion));
 	out->AddValue("potentiometer_linearity", String(cfg->potentiometer_linearity));
 
 	out->AddValue("front_light_on", String(cfg->front_light_on));
@@ -155,6 +161,8 @@ void SetupController::Setup_Post()
 	if (webServer.hasArg("max_right")) { setupController.cfg->max_right = webServer.arg("max_right").toInt(); }
 	if (webServer.hasArg("stearing_linearity")) { setupController.cfg->stearing_linearity = webServer.arg("stearing_linearity").toInt(); }
 
+	if (webServer.hasArg("controller_type")) { setupController.cfg->controller_type = webServer.arg("controller_type").toInt(); }
+	if (webServer.hasArg("inertion")) { setupController.cfg->inertion = webServer.arg("inertion").toInt(); }
 	if (webServer.hasArg("min_speed")) { setupController.cfg->min_speed = webServer.arg("min_speed").toInt(); }
 	if (webServer.hasArg("potentiometer_linearity")) { setupController.cfg->potentiometer_linearity = webServer.arg("potentiometer_linearity").toInt(); }
 
