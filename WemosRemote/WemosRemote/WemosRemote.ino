@@ -113,7 +113,7 @@ bool connected = false;
 
 
 RoboEffects motorEffect = RoboEffects();
-RoboMotor motor = RoboMotor("motor", pinMotorA, pinMotorB, &motorEffect);
+MotorBase * motor = nullptr;//= RoboMotor("motor", pinMotorA, pinMotorB, &motorEffect);
 Stearing stearingServo = Stearing(pinServo);
 
 SerialController serialController = SerialController();
@@ -325,7 +325,45 @@ void setupBeepers() {
 
 }
 
+void setupMotor() {
+	if (motor != nullptr) {
+		motor->isEnabled = false;
+		motor->reset();
+		motor->loop();
+		if (motor->controllerType != config.controller_type) {
+			delete motor;
+			motor = nullptr;
+		}
+	}
+	if (motor == nullptr) {
+		switch (config.controller_type)
+		{
+		case 0:
+			motor = new HBridge("H-Bridge", pinMotorA, pinMotorB, &motorEffect);
+			break;
+		case 1:
+			motor = new SpeedController("Speed reg D6", pinMotorB, &motorEffect);
+			break;
+		case 2:
+			motor = new SpeedController("Speed reg D7", pinMotorA, &motorEffect);
+			break;
+		default:
+			return;
+			break;
+		}
+	}
+
+	motor->responder = &console;
+	motor->setWeight(config.inertion);
+	motor->reset();
+	motor->isEnabled = RemoteXY.connect_flag;
+	serialController.motor = motor;
+
+}
+
 void refreshConfig() {
+
+	setupMotor();
 
 	leftLight.item(0)->value = config.turn_light_on;
 	rightLight.item(0)->value = config.turn_light_on;
@@ -413,12 +451,10 @@ void setup()
 	stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
 	stearingServo.isEnabled = false;
 
-	motor.responder = &console;
-	motor.setWeight(800);
-	motor.reset();
+	setupMotor();
 
 	serialController.stearing = &stearingServo;
-	serialController.motor = &motor;
+	serialController.motor = motor;
 
 	remotexy = new CRemoteXY(RemoteXY_CONF_PROGMEM, &RemoteXY, REMOTEXY_ACCESS_PASSWORD, SSID, SSID_password, REMOTEXY_SERVER_PORT);//RemoteXY_Init();
 
@@ -462,7 +498,8 @@ void loop()
 			state.emergency = false;
 			alarmOff.begin();
 			alarmBeepOn.begin();
-			motor.reset();
+			motor->isEnabled = true;
+			motor->reset();
 			state.stopped = true;
 			stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
 			stearingServo.isEnabled = true;
@@ -474,7 +511,7 @@ void loop()
 		{
 		case 1: //лівий джойстик повороти, Повзунок - швидкість
 			speed = mapSpeed(RemoteXY.right_joy_y);
-			motor.setSpeed(speed);
+			motor->setSpeed(speed);
 			if (speed < 0)
 				state.backLightMode = LightMode::ON;
 			else if (speed == 0) {
@@ -501,7 +538,7 @@ void loop()
 
 		default: //Все керування лівим джойстиком
 			speed = mapSpeed(RemoteXY.left_joy_y);
-			motor.setSpeed(speed);
+			motor->setSpeed(speed);
 			if (speed < 0)
 				state.backLightMode = LightMode::ON;
 			else
@@ -586,7 +623,8 @@ void loop()
 			state.emergency = false;
 			alarmOn.begin();
 			alarmBeepOff.begin();
-			motor.reset();
+			motor->isEnabled = false;
+			motor->reset();
 			stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
 			state.LightMode = 0;
 			handleLight();
@@ -610,7 +648,7 @@ void loop()
 		}
 	}
 
-	motor.loop();
+	motor->loop();
 	stearingServo.loop();
 	leftLight.loop();
 	rightLight.loop();
