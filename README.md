@@ -171,5 +171,8 @@ Wemos remote - проект для керування авто моделлю з
 8) Габарит D0
 9) Бузер RX
 
-## Спосіб підключення
+## Спосіб підключення №1 (drv8833)
 ![Wiring diagram](/img/schematic.png)
+
+## Спосіб підключення №2 (Регулятор)
+![Wiring diagram](/img/schematic2.png)
