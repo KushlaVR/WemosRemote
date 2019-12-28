@@ -17,6 +17,7 @@ Wemos remote - проект для керування авто моделлю з
 * Частина 10 https://www.youtube.com/watch?v=YwTS_b8FWyQ
 * Частина 11 https://www.youtube.com/watch?v=zkwn3sTuvD4
 * Частина 12 https://www.youtube.com/watch?v=2CZE2KpfWKo
+* Тест драйв https://www.youtube.com/watch?v=DXa34Mzkdr0
 
 Ідея додати підтримку mp3 та реалізація належить Alex https://github.com/zilibob4ik
 
