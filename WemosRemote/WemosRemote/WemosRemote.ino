@@ -34,8 +34,8 @@
 #define pinMotorA D7//назад
 #define pinMotorB D6//вперед
 #define pinFrontLight D4
-#define pinLeftLight D2
-#define pinRightLight D1
+#define pinCompressorA D2
+#define pinCompressorB D1
 #define pinBackLight D3
 #define pinStopLight D8
 #define pinParkingLight D0
@@ -46,13 +46,14 @@
 // конфигурация интерфейса   
 // RemoteXY configurate   
 #pragma pack(push, 1) 
-uint8_t RemoteXY_CONF[] = {
-  255,7,0,0,0,51,0,8,25,0,
-  1,0,36,18,20,20,36,31,65,0,
-  1,0,54,-2,19,19,177,31,72,0,
-  1,0,54,44,20,20,132,16,76,0,
-  5,43,-10,5,52,52,2,26,31,5,
-  32,61,0,63,63,176,26,31
+uint8_t RemoteXY_CONF[] =
+{
+	255,7,0,0,0,51,0,8,25,0,
+	1,0,45,20,20,20,177,31,65,0,
+	1,0,54,-2,19,19,177,31,72,0,
+	1,0,54,44,20,20,132,16,76,0,
+	5,43,-10,5,52,52,2,26,31,5,
+	32,61,0,63,63,176,26,3
 };
 
 
@@ -61,15 +62,15 @@ uint8_t RemoteXY_CONF[] = {
 struct {
 
 	// input variable
-	uint8_t Alarm; // =1 if button pressed, else =0 
-	uint8_t Light_high; // =1 if button pressed, else =0 
+	uint8_t btnA; // =1 if button pressed, else =0 
+	uint8_t btnH; // =1 if button pressed, else =0 
 	uint8_t Light_low; // =1 if button pressed, else =0 
 	int8_t left_joy_x; // =-100..100 x-coordinate joystick position 
 	int8_t left_joy_y; // =-100..100 y-coordinate joystick position 
 	int8_t right_joy_x; // =-100..100 x-coordinate joystick position 
 	int8_t right_joy_y; // =-100..100 y-coordinate joystick position 
 
-	  // other variable
+	// other variable
 	uint8_t connect_flag;  // =1 if wire connected, else =0 
 
 } RemoteXY;
@@ -79,7 +80,8 @@ enum LightMode {
 	OFF = 0,
 	Parking = 1,
 	ON = 2,
-	WAIT_FOR_TIMEOUT = 3
+	ON_HIGH = 3,
+	WAIT_FOR_TIMEOUT = 4
 };
 
 struct StateStructure {
@@ -90,10 +92,12 @@ struct StateStructure {
 
 	int speed;
 	bool stopped;
-	bool emergency;
-	bool emergency_btn_pressed;
+	bool compressorA;
+	bool compressorA_pressed;
+	bool compressorB;
+	bool compressorB_pressed;
+	
 	bool light_btn;
-	bool high_light_btn;
 
 	bool serialEnabled;
 
@@ -118,52 +122,52 @@ Stearing stearingServo = Stearing(pinServo);
 
 SerialController serialController = SerialController();
 
-Blinker leftLight = Blinker("Left light");
-Blinker rightLight = Blinker("Right light");
+//Blinker leftLight = Blinker("Left light");
+//Blinker rightLight = Blinker("Right light");
 Blinker stopLight = Blinker("Stop light");
 Blinker backLight = Blinker("Back light");
 Blinker alarmOn = Blinker("Alarm on");
 Blinker alarmOff = Blinker("Alarm of");
 Beeper alarmBeepOn = Beeper("Alarm beep on");
 Beeper alarmBeepOff = Beeper("Alarm beep of");
-Beeper turnLightBeeper = Beeper("Turn light beep");
+//Beeper turnLightBeeper = Beeper("Turn light beep");
 
-bool turnOffTurnLights = false;
-int turnLightsCondition = 10;
+//bool turnOffTurnLights = false;
+//int turnLightsCondition = 10;
 
 void handleTurnLight(int stearing) {
-	if (state.emergency) {//Якщо включена аварійка - нічого не робимо
-		turnOffTurnLights = false;
-		return;
-	}
-	if (stearing < -turnLightsCondition) { //Включений лівий поворот
-		if (!leftLight.isRunning()) { leftLight.begin(); turnLightBeeper.begin(); }
-		rightLight.end();
-	}
-	if (stearing > turnLightsCondition) { //Включений правий поворот
-		if (!rightLight.isRunning()) { rightLight.begin(); turnLightBeeper.begin(); }
-		leftLight.end();
-	}
-	if (leftLight.isRunning()) {
-		if (stearing < -turnLightsCondition) turnOffTurnLights = true;//ставимо флажок, щоб вимкнути поворот після того як руль вернеться в прямк положенн
-	}
-	else if (rightLight.isRunning()) {
-		if (stearing > turnLightsCondition) turnOffTurnLights = true;//ставимо флажок, щоб вимкнути поворот після того як руль вернеться в прямк положенн
-	}
-	if (turnOffTurnLights && stearing > -turnLightsCondition && stearing < turnLightsCondition) {//Повернули руль в стартове положення
-		if (leftLight.isRunning() && !rightLight.isRunning()) {//блимає лівий поворот
-			leftLight.end();
-			turnLightBeeper.end();
-			turnOffTurnLights = false;
-			console.println("Лівий поворот вимкнено.");
-		}
-		else if (!leftLight.isRunning() && rightLight.isRunning()) {//блимає правий поворот
-			rightLight.end();
-			turnLightBeeper.end();
-			turnOffTurnLights = false;
-			console.println("Правий поворот вимкнено.");
-		}
-	}
+	//if (state.emergency) {//Якщо включена аварійка - нічого не робимо
+	//	turnOffTurnLights = false;
+	//	return;
+	//}
+	//if (stearing < -turnLightsCondition) { //Включений лівий поворот
+	//	if (!leftLight.isRunning()) { leftLight.begin(); turnLightBeeper.begin(); }
+	//	rightLight.end();
+	//}
+	//if (stearing > turnLightsCondition) { //Включений правий поворот
+	//	if (!rightLight.isRunning()) { rightLight.begin(); turnLightBeeper.begin(); }
+	//	leftLight.end();
+	//}
+	//if (leftLight.isRunning()) {
+	//	if (stearing < -turnLightsCondition) turnOffTurnLights = true;//ставимо флажок, щоб вимкнути поворот після того як руль вернеться в прямк положенн
+	//}
+	//else if (rightLight.isRunning()) {
+	//	if (stearing > turnLightsCondition) turnOffTurnLights = true;//ставимо флажок, щоб вимкнути поворот після того як руль вернеться в прямк положенн
+	//}
+	//if (turnOffTurnLights && stearing > -turnLightsCondition && stearing < turnLightsCondition) {//Повернули руль в стартове положення
+	//	if (leftLight.isRunning() && !rightLight.isRunning()) {//блимає лівий поворот
+	//		leftLight.end();
+	//		turnLightBeeper.end();
+	//		turnOffTurnLights = false;
+	//		console.println("Лівий поворот вимкнено.");
+	//	}
+	//	else if (!leftLight.isRunning() && rightLight.isRunning()) {//блимає правий поворот
+	//		rightLight.end();
+	//		turnLightBeeper.end();
+	//		turnOffTurnLights = false;
+	//		console.println("Правий поворот вимкнено.");
+	//	}
+	//}
 }
 
 bool handledhigh_light_btn_state = false;
@@ -173,44 +177,26 @@ void handleLight() {
 	if (!RemoteXY.connect_flag) {
 		state.LightMode = LightMode::OFF;
 	};
-	if (handledLightMode != state.LightMode || handledhigh_light_btn_state != state.high_light_btn) {
+	if (handledLightMode != state.LightMode) {
 		handledLightMode = state.LightMode;
-
-		if (handledhigh_light_btn_state != state.high_light_btn) {
-			handledhigh_light_btn_state = state.high_light_btn;
-			if (state.high_light_btn) {
-				//Бібікаємо
-				//analogWriteFreq(config.beep_freq);
-				tone(pinBuzzer, config.beep_freq);
-			}
-			else
-			{
-				noTone(pinBuzzer);
-			}
-		}
 
 		int val;
 		switch (state.LightMode)
 		{
 		case LightMode::OFF:
-			if (state.high_light_btn)
-				analogWrite(pinFrontLight, map(config.high_light_on, 0, 100, 0, 255));
-			else
-				digitalWrite(pinFrontLight, LOW);
+			digitalWrite(pinFrontLight, LOW);
 			digitalWrite(pinParkingLight, LOW);
 			break;
 		case LightMode::Parking:
-			if (state.high_light_btn)
-				analogWrite(pinFrontLight, map(config.high_light_on, 0, 100, 0, 255));
-			else
-				analogWrite(pinFrontLight, map(config.parking_light_on, 0, 100, 0, 255));
+			analogWrite(pinFrontLight, map(config.parking_light_on, 0, 100, 0, 255));
 			analogWrite(pinParkingLight, map(config.parking_light_on, 0, 100, 0, 255));
 			break;
 		case LightMode::ON:
-			if (state.high_light_btn)
-				analogWrite(pinFrontLight, map(config.high_light_on, 0, 100, 0, 255));
-			else
-				analogWrite(pinFrontLight, map(config.front_light_on, 0, 100, 0, 255));
+			analogWrite(pinFrontLight, map(config.front_light_on, 0, 100, 0, 255));
+			analogWrite(pinParkingLight, map(config.parking_light_on, 0, 100, 0, 255));
+			break;
+		case LightMode::ON_HIGH:
+			analogWrite(pinFrontLight, map(config.high_light_on, 0, 100, 0, 255));
 			analogWrite(pinParkingLight, map(config.parking_light_on, 0, 100, 0, 255));
 			break;
 		default:
@@ -244,14 +230,14 @@ void handleLight() {
 void setupBlinkers() {
 	//Налаштування фар
 	pinMode(pinFrontLight, OUTPUT);
-	pinMode(pinLeftLight, OUTPUT);
-	pinMode(pinRightLight, OUTPUT);
+	pinMode(pinCompressorA, OUTPUT);
+	pinMode(pinCompressorB, OUTPUT);
 	pinMode(pinBackLight, OUTPUT);
 	pinMode(pinStopLight, OUTPUT);
 
 	digitalWrite(pinFrontLight, LOW);
-	digitalWrite(pinLeftLight, LOW);
-	digitalWrite(pinRightLight, LOW);
+	digitalWrite(pinCompressorA, LOW);
+	digitalWrite(pinCompressorB, LOW);
 	digitalWrite(pinBackLight, LOW);
 	digitalWrite(pinStopLight, LOW);
 
@@ -260,18 +246,18 @@ void setupBlinkers() {
 
 
 	//Налаштування поворотників
-	leftLight
+	/*leftLight
 		.Add(pinLeftLight, 0, config.turn_light_on)
 		->Add(pinLeftLight, 500, 0)
-		->Add(pinLeftLight, 1000, 0);
-	serialController.leftLight = &leftLight;
-	rightLight
+		->Add(pinLeftLight, 1000, 0);*/
+	//serialController.leftLight = &leftLight;
+	/*rightLight
 		.Add(pinRightLight, 0, config.turn_light_on)
 		->Add(pinRightLight, 500, 0)
-		->Add(pinRightLight, 1000, 0);
-	serialController.rightLight = &rightLight;
+		->Add(pinRightLight, 1000, 0);*/
+	//serialController.rightLight = &rightLight;
 
-	alarmOff
+	/*alarmOff
 		.Add(pinLeftLight, 0, config.turn_light_on)
 		->Add(pinRightLight, 0, config.turn_light_on)
 		->Add(pinLeftLight, 300, 0)
@@ -279,15 +265,15 @@ void setupBlinkers() {
 		->Add(pinLeftLight, 600, config.turn_light_on)
 		->Add(pinRightLight, 600, config.turn_light_on)
 		->Add(pinLeftLight, 900, 0)
-		->Add(pinRightLight, 900, 0);
+		->Add(pinRightLight, 900, 0);*/
 	alarmOff.repeat = false;
 	//alarmOff.debug = true;
 
-	alarmOn
+	/*alarmOn
 		.Add(pinLeftLight, 0, config.turn_light_on)
 		->Add(pinRightLight, 0, config.turn_light_on)
 		->Add(pinLeftLight, 600, 0)
-		->Add(pinRightLight, 600, 0);
+		->Add(pinRightLight, 600, 0);*/
 	alarmOn.repeat = false;
 	//alarmOn.debug = true;
 
@@ -317,11 +303,11 @@ void setupBeepers() {
 		->Add(pinBuzzer, config.beep_duration, 0);
 	alarmBeepOff.repeat = false;
 
-	turnLightBeeper.Add(pinBuzzer, 0, 1000)
+	/*turnLightBeeper.Add(pinBuzzer, 0, 1000)
 		->Add(pinBuzzer, 1, 0)
 		->Add(pinBuzzer, 500, 1000)
 		->Add(pinBuzzer, 501, 0)
-		->Add(pinBuzzer, 1000, 0);
+		->Add(pinBuzzer, 1000, 0);*/
 
 }
 
@@ -365,8 +351,8 @@ void refreshConfig() {
 
 	setupMotor();
 
-	leftLight.item(0)->value = config.turn_light_on;
-	rightLight.item(0)->value = config.turn_light_on;
+	//leftLight.item(0)->value = config.turn_light_on;
+	//rightLight.item(0)->value = config.turn_light_on;
 
 	alarmOn.item(0)->value = config.turn_light_on;
 	alarmOn.item(1)->value = config.turn_light_on;
@@ -492,10 +478,10 @@ void loop()
 	if (RemoteXY.connect_flag) {
 		if (!connected) {
 			console.println("Connected!");
-			leftLight.end();
-			rightLight.end();
-			turnLightBeeper.end();
-			state.emergency = false;
+			//leftLight.end();
+			//rightLight.end();
+			//turnLightBeeper.end();
+			state.LightMode = LightMode::OFF;
 			alarmOff.begin();
 			alarmBeepOn.begin();
 			motor->isEnabled = true;
@@ -578,38 +564,52 @@ void loop()
 			state.speed = speed;
 		}
 
-		if (RemoteXY.Alarm) {
-			if (!state.emergency_btn_pressed) {
-				state.emergency_btn_pressed = true;
-				if (state.emergency) {
-					leftLight.end();
-					rightLight.end();
-					turnLightBeeper.end();
-					state.emergency = false;
+		//Compressor A
+		if (RemoteXY.btnA) {
+			if (!state.compressorA_pressed) {
+				state.compressorA_pressed = true;
+				if (state.compressorA) {
+					state.compressorA = false;
 				}
 				else {
-					leftLight.begin();
-					rightLight.begin();
-					turnLightBeeper.begin();
-					state.emergency = true;
+					state.compressorA = true;
 				}
 			}
 		}
 		else {
-			if (state.emergency_btn_pressed) {
-				state.emergency_btn_pressed = false;
+			if (state.compressorA_pressed) {
+				state.compressorA_pressed = false;
 			}
 		}
+
+
+		//Compressor B
+		if (RemoteXY.btnH) {
+			if (!state.compressorB_pressed) {
+				state.compressorB_pressed = true;
+				if (state.compressorB) {
+					state.compressorB = false;
+				}
+				else {
+					state.compressorB = true;
+				}
+			}
+		}
+		else {
+			if (state.compressorB_pressed) {
+				state.compressorB_pressed = false;
+			}
+		}
+
+		//Light
 		if (RemoteXY.Light_low != state.light_btn) {
 			if (RemoteXY.Light_low) {
 				state.LightMode++;
-				if (state.LightMode > LightMode::ON) state.LightMode = 0;
+				if (state.LightMode > LightMode::ON_HIGH) state.LightMode = LightMode::OFF;
 			}
 			state.light_btn = RemoteXY.Light_low;
 		}
-		if (RemoteXY.Light_high != state.high_light_btn) {
-			state.high_light_btn = RemoteXY.Light_high;
-		}
+		
 
 		handleLight();
 	}
@@ -617,10 +617,11 @@ void loop()
 		if (connected) {
 			console.println("Disconnected!");
 			connected = false;
-			leftLight.end();
-			rightLight.end();
-			turnLightBeeper.end();
-			state.emergency = false;
+			//leftLight.end();
+			//rightLight.end();
+			//turnLightBeeper.end();
+			state.compressorA = false;
+			state.compressorB = false;
 			alarmOn.begin();
 			alarmBeepOff.begin();
 			motor->isEnabled = false;
@@ -650,9 +651,11 @@ void loop()
 
 	motor->loop();
 	stearingServo.loop();
-	leftLight.loop();
-	rightLight.loop();
-	turnLightBeeper.loop();
+	if (state.compressorA) digitalWrite(pinCompressorA, HIGH); else digitalWrite(pinCompressorA, LOW);
+	if (state.compressorB) digitalWrite(pinCompressorB, HIGH); else digitalWrite(pinCompressorB, LOW);
+	//leftLight.loop();
+	//rightLight.loop();
+	//turnLightBeeper.loop();
 	alarmOff.loop();
 	alarmBeepOff.loop();
 	alarmOn.loop();
