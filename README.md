@@ -6,7 +6,7 @@ Wemos remote - проект для керування авто моделлю з
 
 # Необхідні компоненти
 1. Wemos D1 mini https://aliexpress.ru/item/32651747570.html
-2. Розширювач портів для I2C шини http://bereka-radio.com.ua/index.php?route=product/product&product_id=109488
+2. Розширювач портів для I2C шини https://aliexpress.ru/item/32353277284.html
 3. Регулятор обертів
 4. Серво привід 2шт.
 5. BMS 2S 
