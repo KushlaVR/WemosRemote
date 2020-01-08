@@ -2,24 +2,17 @@
 
 Wemos remote - проект для керування авто моделлю з додатку на телефоні. 
 
-Проект зроблено спеціально для моделеі ВАЗ2108 з Youtube каналу Евгения Былеева https://www.youtube.com/channel/UC27d-7p-ovLAEvgUijC3Dwg
+Проект зроблено спеціально для моделеі трактора CLAAS
 
-Усі етапи переобки моделі:
-* Частина 1 https://www.youtube.com/watch?v=yfO8KKdHDNg
-* Частина 2 https://www.youtube.com/watch?v=fh4VSRUZ7cI
-* Частина 3 https://www.youtube.com/watch?v=LJ8kn36iIjE
-* Частина 4 https://www.youtube.com/watch?v=ulSTMTheBtc
-* Частина 5 https://www.youtube.com/watch?v=QjuS22DsXOE
-* Частина 6 https://www.youtube.com/watch?v=itL2xLTIavY
-* Частина 7 https://www.youtube.com/watch?v=qjkIQKs_uEk
-* Частина 8 https://www.youtube.com/watch?v=_W1Ysf4-UWk
-* Частина 9 https://www.youtube.com/watch?v=aRh0EMX3t9A
-* Частина 10 https://www.youtube.com/watch?v=YwTS_b8FWyQ
-* Частина 11 https://www.youtube.com/watch?v=zkwn3sTuvD4
-* Частина 12 https://www.youtube.com/watch?v=2CZE2KpfWKo
-* Тест драйв https://www.youtube.com/watch?v=DXa34Mzkdr0
-
-Ідея додати підтримку mp3 та реалізація належить Alex https://github.com/zilibob4ik
+# Необхідні компоненти
+1. Wemos D1 mini
+2. Розширювач портів для I2C шини http://bereka-radio.com.ua/index.php?route=product/product&product_id=109488
+3. Регулятор обертів
+4. Серво привід 2шт.
+5. BMS 2S
+6. Повишаючий DC-DC перетворювач
+7. Li-Ion акумулятори 2шт
+8. Стабілізатор 5В
 
 Керування реалізовано на процесорі ESP8266. Цей процесор компактний, має вбудований WIFI модуль і адаповане ядро під фреймворк Arduino. Прошивка реалізована у середовищі VisualStudio 2019 з використанням фреймворків:
 * Arduino https://www.arduino.cc/en/Main/Software
