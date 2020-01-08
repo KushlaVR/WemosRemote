@@ -5,14 +5,14 @@ Wemos remote - проект для керування авто моделлю з
 Проект зроблено спеціально для моделеі трактора CLAAS
 
 # Необхідні компоненти
-1. Wemos D1 mini
+1. Wemos D1 mini https://aliexpress.ru/item/32651747570.html
 2. Розширювач портів для I2C шини http://bereka-radio.com.ua/index.php?route=product/product&product_id=109488
 3. Регулятор обертів
 4. Серво привід 2шт.
-5. BMS 2S
-6. Повишаючий DC-DC перетворювач
-7. Li-Ion акумулятори 2шт
-8. Стабілізатор 5В
+5. BMS 2S 
+6. Повишаючий DC-DC перетворювач https://aliexpress.ru/item/32807762237.html
+7. Li-Ion акумулятори 2шт 
+8. Стабілізатор 5В https://aliexpress.ru/item/1256319110.html
 
 Керування реалізовано на процесорі ESP8266. Цей процесор компактний, має вбудований WIFI модуль і адаповане ядро під фреймворк Arduino. Прошивка реалізована у середовищі VisualStudio 2019 з використанням фреймворків:
 * Arduino https://www.arduino.cc/en/Main/Software
