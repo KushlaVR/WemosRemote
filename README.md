@@ -4,7 +4,7 @@ Wemos remote - проект для керування авто моделлю з
 
 Проект зроблено спеціально для моделеі ЗАЗ965А з Youtube каналу Евгения Былеева https://www.youtube.com/channel/UC27d-7p-ovLAEvgUijC3Dwg
 
-![ЗАЗ965А](/img/zaz3png)
+![ЗАЗ965А](/img/zaz3.png)
 
 
 Усі етапи переобки моделі:
