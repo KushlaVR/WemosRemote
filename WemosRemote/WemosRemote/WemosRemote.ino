@@ -32,14 +32,23 @@
 
 #define pinServo D5
 #define pinMotorA D7//назад
-#define pinMotorB D6//вперед
-#define pinFrontLight D4
-#define pinLeftLight D2
-#define pinRightLight D1
-#define pinBackLight D3
-#define pinStopLight D8
-#define pinParkingLight D0
-#define pinBuzzer RX
+#define pinServo2 D6
+
+#define pinI2C_SCL D1 //pcf8574
+#define pinI2C_SDA D2 //pcf8574
+
+//pcf8574 Port usage
+#define bitParkingLight 0;
+#define bitHeadLight 1;
+#define bitHighLight 2;
+#define bitLeftLight 3;
+#define bitRightLight 4;
+#define bitBackLight 5;
+#define bitStopLight 6;
+#define bitFogLight 7;
+
+#define pinBlinker D3
+#define pinBuzzer D8
 
 
 
