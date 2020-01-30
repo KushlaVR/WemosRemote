@@ -20,7 +20,7 @@ void SetupController::loadConfig()
 	if (!SPIFFS.exists("/config.json")) {
 		console.println(("Default setting loaded..."));
 		cfg.beginObject();
-		cfg.AddValue("ssid", "WEMOS");
+		cfg.AddValue("ssid", "ZAZ965A");
 		cfg.AddValue("password", "12345678");
 		cfg.AddValue("mode", "debug");
 
@@ -38,9 +38,12 @@ void SetupController::loadConfig()
 		cfg.AddValue("high_light_on", "80");
 		cfg.AddValue("parking_light_on", "10");
 		cfg.AddValue("turn_light_on", "80");
+		cfg.AddValue("turn_light_limit", "80");
 		cfg.AddValue("stop_light_duration", "2000");
-		cfg.AddValue("back_light_timeout", "500");
-		cfg.AddValue("back_light_pwm", "70");
+		
+		cfg.AddValue("wipers_speed1", "30");
+		cfg.AddValue("wipers_speed2", "80");
+		
 		cfg.AddValue("beep_freq", "1000");
 		cfg.AddValue("beep_duration", "150");
 		cfg.AddValue("beep_interval", "50");
@@ -86,10 +89,12 @@ void SetupController::loadConfig()
 	this->cfg->high_light_on = cfg.getInt("high_light_on");
 	this->cfg->parking_light_on = cfg.getInt("parking_light_on");
 	this->cfg->turn_light_on = cfg.getInt("turn_light_on");
+	this->cfg->turn_light_limit = cfg.getInt("turn_light_limit");
 
 	this->cfg->stop_light_duration = cfg.getInt("stop_light_duration");
-	this->cfg->back_light_timeout = cfg.getInt("back_light_timeout");
-	this->cfg->back_light_pwm = cfg.getInt("back_light_pwm");
+
+	this->cfg->wipers_speed1 = cfg.getInt("wipers_speed1");
+	this->cfg->wipers_speed2 = cfg.getInt("wipers_speed2");
 
 	this->cfg->beep_freq = cfg.getInt("beep_freq");
 	this->cfg->beep_duration = cfg.getInt("beep_duration");
@@ -130,10 +135,12 @@ void SetupController::printConfig(JsonString * out)
 	out->AddValue("high_light_on", String(cfg->high_light_on));
 	out->AddValue("parking_light_on", String(cfg->parking_light_on));
 	out->AddValue("turn_light_on", String(cfg->turn_light_on));
+	out->AddValue("turn_light_limit", String(cfg->turn_light_limit));
 	out->AddValue("stop_light_duration", String(cfg->stop_light_duration));
-	out->AddValue("back_light_timeout", String(cfg->back_light_timeout));
-	out->AddValue("back_light_pwm", String(cfg->back_light_pwm));
 
+	out->AddValue("wipers_speed1", String(cfg->wipers_speed1));
+	out->AddValue("wipers_speed2", String(cfg->wipers_speed2));
+	
 	out->AddValue("beep_freq", String(cfg->beep_freq));
 	out->AddValue("beep_duration", String(cfg->beep_duration));
 	out->AddValue("beep_interval", String(cfg->beep_interval));
@@ -170,10 +177,12 @@ void SetupController::Setup_Post()
 	if (webServer.hasArg("high_light_on")) { setupController.cfg->high_light_on = webServer.arg("high_light_on").toInt(); }
 	if (webServer.hasArg("parking_light_on")) { setupController.cfg->parking_light_on = webServer.arg("parking_light_on").toInt(); }
 	if (webServer.hasArg("turn_light_on")) { setupController.cfg->turn_light_on = webServer.arg("turn_light_on").toInt(); }
+	if (webServer.hasArg("turn_light_limit")) { setupController.cfg->turn_light_limit = webServer.arg("turn_light_limit").toInt(); }
 	if (webServer.hasArg("stop_light_duration")) { setupController.cfg->stop_light_duration = webServer.arg("stop_light_duration").toInt(); }
-	if (webServer.hasArg("back_light_timeout")) { setupController.cfg->back_light_timeout = webServer.arg("back_light_timeout").toInt(); }
-	if (webServer.hasArg("back_light_pwm")) { setupController.cfg->back_light_pwm = webServer.arg("back_light_pwm").toInt(); }
-	
+
+	if (webServer.hasArg("wipers_speed1")) { setupController.cfg->wipers_speed1 = webServer.arg("wipers_speed1").toInt(); }
+	if (webServer.hasArg("wipers_speed2")) { setupController.cfg->wipers_speed2 = webServer.arg("wipers_speed2").toInt(); }
+
 	if (webServer.hasArg("beep_freq")) { setupController.cfg->beep_freq = webServer.arg("beep_freq").toInt(); }
 	if (webServer.hasArg("beep_duration")) { setupController.cfg->beep_duration = webServer.arg("beep_duration").toInt(); }
 	if (webServer.hasArg("beep_interval")) { setupController.cfg->beep_interval = webServer.arg("beep_interval").toInt(); }

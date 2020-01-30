@@ -27,10 +27,12 @@ public:
 	int high_light_on;//в процентах
 	int parking_light_on;//в процентах
 	int turn_light_on;//в процентах
+	int turn_light_limit;//від 0 до 100
+
+	int wipers_speed1;///від 0 до 100 швидкість склоочисників
+	int wipers_speed2;///від 0 до 100 швидкість склоочисників
 
 	int stop_light_duration;//в мілісекундах
-	int back_light_timeout;//в мілісекундах
-	int back_light_pwm;
 
 	int beep_freq;
 	int beep_duration;
