@@ -1,5 +1,5 @@
 ﻿{
-  "ssid": "WEMOS",
+  "ssid": "ZAZ965A",
   "password": "12345678",
   "mode": "debug",
   "center": "90",
@@ -15,8 +15,8 @@
   "parking_light_on": "10",
   "turn_light_on": "80",
   "stop_light_duration": "2000",
-  "back_light_timeout": "500",
-  "back_light_pwm": "70",
+  "wipers_speed1": "30",
+  "wipers_speed2": "80",
   "beep_freq": "510",
   "beep_duration": "150",
   "beep_interval": "100",

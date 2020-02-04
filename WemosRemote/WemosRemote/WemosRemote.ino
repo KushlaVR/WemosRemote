@@ -139,39 +139,55 @@ Beeper turnLightBeeper = Beeper("Turn light beep");
 
 
 
-void handleTurnLight(int stearing) {
+void handleTurnLight(int stearing, int speed) {
 	/*if (state.emergency) {//Якщо включена аварійка - нічого не робимо
 		turnOffTurnLights = false;
 		return;
 	}*/
-	if (stearing < -config.turn_light_limit) { //Включений лівий поворот
-		if (!leftLight.isRunning()) { leftLight.begin(); turnLightBeeper.begin(); }
+	if (speed < 0) {
 		rightLight.end();
-	}
-	if (stearing > config.turn_light_limit) { //Включений правий поворот
-		if (!rightLight.isRunning()) { rightLight.begin(); turnLightBeeper.begin(); }
 		leftLight.end();
+		turnLightBeeper.end();
+		state.turnOffTurnLights = false;
+		handleParkingLight();
+
 	}
-	if (leftLight.isRunning()) {
-		if (stearing < -config.turn_light_limit) state.turnOffTurnLights = true;//ставимо флажок, щоб вимкнути поворот після того як руль вернеться в прямк положенн
-	}
-	else if (rightLight.isRunning()) {
-		if (stearing > config.turn_light_limit) state.turnOffTurnLights = true;//ставимо флажок, щоб вимкнути поворот після того як руль вернеться в прямк положенн
-	}
-	if (state.turnOffTurnLights && stearing > -config.turn_light_limit && stearing < config.turn_light_limit) {//Повернули руль в стартове положення
-		if (leftLight.isRunning() && !rightLight.isRunning()) {//блимає лівий поворот
-			leftLight.end();
-			turnLightBeeper.end();
-			state.turnOffTurnLights = false;
-			console.println("Лівий поворот вимкнено.");
-		}
-		else if (!leftLight.isRunning() && rightLight.isRunning()) {//блимає правий поворот
+	else {
+		if (stearing < -config.turn_light_limit) { //Включений лівий поворот
+			if (!leftLight.isRunning()) { leftLight.begin(); turnLightBeeper.begin(); }
 			rightLight.end();
-			turnLightBeeper.end();
-			state.turnOffTurnLights = false;
-			console.println("Правий поворот вимкнено.");
+			handleParkingLight();
+		}
+		if (stearing > config.turn_light_limit) { //Включений правий поворот
+			if (!rightLight.isRunning()) { rightLight.begin(); turnLightBeeper.begin(); }
+			leftLight.end();
+			handleParkingLight();
+
+		}
+		if (leftLight.isRunning()) {
+			if (stearing < -config.turn_light_limit) state.turnOffTurnLights = true;//ставимо флажок, щоб вимкнути поворот після того як руль вернеться в прямк положенн
+		}
+		else if (rightLight.isRunning()) {
+			if (stearing > config.turn_light_limit) state.turnOffTurnLights = true;//ставимо флажок, щоб вимкнути поворот після того як руль вернеться в прямк положенн
+		}
+		if (state.turnOffTurnLights && stearing > -config.turn_light_limit && stearing < config.turn_light_limit) {//Повернули руль в стартове положення
+			if (leftLight.isRunning() && !rightLight.isRunning()) {//блимає лівий поворот
+				leftLight.end();
+				turnLightBeeper.end();
+				state.turnOffTurnLights = false;
+				handleParkingLight();
+				console.println("Лівий поворот вимкнено.");
+			}
+			else if (!leftLight.isRunning() && rightLight.isRunning()) {//блимає правий поворот
+				rightLight.end();
+				turnLightBeeper.end();
+				state.turnOffTurnLights = false;
+				handleParkingLight();
+				console.println("Правий поворот вимкнено.");
+			}
 		}
 	}
+
 }
 
 void handleLight() {
@@ -204,6 +220,8 @@ void handleLight() {
 			else
 				digitalWrite(pinFrontLight, LOW);
 			digitalWrite(pinParkingLight, LOW);
+			setupTurnLight();
+			handleParkingLight();
 			break;
 		case LightMode::Parking:
 			if (!signLight.isRunning()) signLight.begin();
@@ -211,8 +229,10 @@ void handleLight() {
 			if (state.highlight_btn)
 				analogWrite(pinFrontLight, map(config.high_light_on, 0, 100, 0, 255));
 			else
-				analogWrite(pinFrontLight, map(config.parking_light_on, 0, 100, 0, 255));
+				digitalWrite(pinFrontLight, LOW);
 			analogWrite(pinParkingLight, map(config.parking_light_on, 0, 100, 0, 255));
+			setupTurnLight();
+			handleParkingLight();
 			break;
 		case LightMode::ON:
 			if (!signLight.isRunning()) signLight.begin();
@@ -221,6 +241,8 @@ void handleLight() {
 			else
 				analogWrite(pinFrontLight, map(config.front_light_on, 0, 100, 0, 255));
 			analogWrite(pinParkingLight, map(config.parking_light_on, 0, 100, 0, 255));
+			setupTurnLight();
+			handleParkingLight();
 			break;
 		default:
 			break;
@@ -363,9 +385,55 @@ void setupMotor() {
 
 }
 
+//Налаштовує яскравість поворотів, в залежності від режиму світла
+void setupTurnLight()
+{
+	if (state.LightMode >= LightMode::Parking) {
+		leftLight.item(1)->value = config.parking_light_on;
+		leftLight.item(2)->value = config.parking_light_on;
+
+		rightLight.item(1)->value = config.parking_light_on;
+		rightLight.item(2)->value = config.parking_light_on;
+	}
+	else
+	{
+		leftLight.item(1)->value = 0;
+		leftLight.item(2)->value = 0;
+
+		rightLight.item(1)->value = 0;
+		rightLight.item(2)->value = 0;
+	}
+}
+
+//Після вимкнення поворотів, повертає лампочки у стан який вибрано перемикачем освітлення
+void handleParkingLight() {
+	if (!leftLight.isRunning()) {
+		if (state.LightMode >= LightMode::Parking) {
+			analogWrite(pinLeftLight, config.parking_light_on);
+		}
+		else
+		{
+			digitalWrite(pinLeftLight, LOW);
+		}
+	}
+
+	if (!rightLight.isRunning()) {
+		if (state.LightMode >= LightMode::Parking) {
+			analogWrite(pinRightLight, config.parking_light_on);
+		}
+		else
+		{
+			digitalWrite(pinRightLight, LOW);
+		}
+	}
+}
+
 void refreshConfig() {
 
 	setupMotor();
+
+	//Задати яскравіть поворотників
+	setupTurnLight();
 
 	leftLight.item(0)->value = config.turn_light_on;
 	rightLight.item(0)->value = config.turn_light_on;
@@ -525,7 +593,7 @@ void loop()
 				state.stopped = false;
 			}
 			stearingServo.setPosition(RemoteXY.left_joy_x, (PotentiometerLinearity)config.stearing_linearity);
-			handleTurnLight(RemoteXY.left_joy_x);
+			handleTurnLight(RemoteXY.left_joy_x, speed);
 			break;
 
 		default: //Все керування лівим джойстиком
@@ -542,7 +610,7 @@ void loop()
 				state.stopped = false;
 			}
 			stearingServo.setPosition(RemoteXY.left_joy_x, (PotentiometerLinearity)config.stearing_linearity);
-			handleTurnLight(RemoteXY.left_joy_x);
+			handleTurnLight(RemoteXY.left_joy_x, speed);
 			break;
 		}
 
@@ -568,7 +636,7 @@ void loop()
 			if (!state.wipers_btn) {
 				state.wipers_btn = true;
 				if (state.wiper_increment == 0) state.wiper_increment = 1;
-				state.wipers+= state.wiper_increment;
+				state.wipers += state.wiper_increment;
 				if (state.wipers == 2) {
 					state.wiper_increment = -1;
 				}
@@ -594,6 +662,7 @@ void loop()
 		}
 
 		handleLight();
+
 		handleWipers();
 	}
 	else {
