@@ -39,8 +39,8 @@
 #define pinFrontLight D4 //Передні фари
 #define pinLeftLight D2 //Повороти
 #define pinRightLight D1 //Повороти
-#define pinWipers D0//Двірники
-#define pinStopLight D8//Стопи та габарити
+#define pinWipers D8//Двірники
+#define pinStopLight D0//Стопи та габарити
 #define pinParkingLight D3//Підсвітка номера
 #define pinBattarySence A0//Заряд батареї
 #define pinBuzzer RX
