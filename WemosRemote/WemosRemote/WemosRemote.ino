@@ -185,14 +185,14 @@ void handleTurnLight(int stearing, int speed) {
 				turnLightBeeper.end();
 				state.turnOffTurnLights = false;
 				handleParkingLight();
-				console.println("Лівий поворот вимкнено.");
+				//console.println("Лівий поворот вимкнено.");
 			}
 			else if (!leftLight.isRunning() && rightLight.isRunning()) {//блимає правий поворот
 				rightLight.end();
 				turnLightBeeper.end();
 				state.turnOffTurnLights = false;
 				handleParkingLight();
-				console.println("Правий поворот вимкнено.");
+				//console.println("Правий поворот вимкнено.");
 			}
 		}
 	}
