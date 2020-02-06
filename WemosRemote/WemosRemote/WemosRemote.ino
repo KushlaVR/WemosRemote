@@ -97,6 +97,8 @@ struct StateStructure {
 	bool highlight_btn;
 	bool handledhigh_light_btn_state = false;
 
+	int handledLeftState;
+	int handledRightState;
 	bool turnOffTurnLights = false;
 
 	bool wipers_btn;
@@ -145,22 +147,27 @@ void handleTurnLight(int stearing, int speed) {
 		return;
 	}*/
 	if (speed < 0) {
-		rightLight.end();
-		leftLight.end();
+		if (rightLight.isRunning()) {
+			rightLight.end();
+			handleParkingLight();
+		}
+		if (leftLight.isRunning()) {
+			leftLight.end();
+			handleParkingLight();
+		}
 		turnLightBeeper.end();
 		state.turnOffTurnLights = false;
-		handleParkingLight();
 
 	}
 	else {
 		if (stearing < -config.turn_light_limit) { //Включений лівий поворот
-			if (!leftLight.isRunning()) { leftLight.begin(); turnLightBeeper.begin(); }
-			rightLight.end();
+			if (!leftLight.isRunning()) { leftLight.begin(); turnLightBeeper.begin(); state.handledLeftState = 0; }
+			if (rightLight.isRunning()) rightLight.end();
 			handleParkingLight();
 		}
 		if (stearing > config.turn_light_limit) { //Включений правий поворот
-			if (!rightLight.isRunning()) { rightLight.begin(); turnLightBeeper.begin(); }
-			leftLight.end();
+			if (!rightLight.isRunning()) { rightLight.begin(); turnLightBeeper.begin(); state.handledRightState = 0; }
+			if (leftLight.isRunning()) leftLight.end();
 			handleParkingLight();
 
 		}
@@ -252,7 +259,7 @@ void handleLight() {
 
 void handleWipers() {
 	if (state.handledWipers != state.wipers) {
-		state.handledWipers == state.wipers;
+		state.handledWipers = state.wipers;
 		if (state.wipers == 0) {
 			analogWrite(pinWipers, 0);
 		}
@@ -409,21 +416,33 @@ void setupTurnLight()
 void handleParkingLight() {
 	if (!leftLight.isRunning()) {
 		if (state.LightMode >= LightMode::Parking) {
-			analogWrite(pinLeftLight, config.parking_light_on);
+			if (state.handledLeftState != config.parking_light_on) {
+				analogWrite(pinLeftLight, config.parking_light_on);
+				state.handledLeftState = config.parking_light_on;
+			}
 		}
 		else
 		{
-			digitalWrite(pinLeftLight, LOW);
+			if (state.handledLeftState != 0) {
+				digitalWrite(pinLeftLight, LOW);
+				state.handledLeftState = 0;
+			}
 		}
 	}
 
 	if (!rightLight.isRunning()) {
 		if (state.LightMode >= LightMode::Parking) {
-			analogWrite(pinRightLight, config.parking_light_on);
+			if (state.handledRightState != config.parking_light_on) {
+				analogWrite(pinRightLight, config.parking_light_on);
+				state.handledRightState = config.parking_light_on;
+			}
 		}
 		else
 		{
-			digitalWrite(pinRightLight, LOW);
+			if (state.handledRightState != 0) {
+				digitalWrite(pinRightLight, LOW);
+				state.handledRightState = 0;
+			}
 		}
 	}
 }
