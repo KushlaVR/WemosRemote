@@ -470,6 +470,7 @@ void setup()
 	Serial.end();
 	pinMode(pinBuzzer, OUTPUT);
 	digitalWrite(pinBuzzer, LOW);
+	pinMode(A0, INPUT);
 	//Serial.begin(115200);
 	//Serial.println();
 	//Serial.println();
@@ -549,7 +550,7 @@ int mapSpeed(int speed) {
 	return 0;
 }
 
-
+ulong lastA0_read = 0;
 
 void loop()
 {
@@ -713,4 +714,8 @@ void loop()
 	stopLight.loop();
 	signLight.loop();
 	webServer.loop();
+	if ((millis() - lastA0_read) > 1000) {
+		lastA0_read = millis();
+		config.battary = (int)(((long)analogRead(A0) * (long)(config.battary_calibration)) / (10240.0));
+	}
 }

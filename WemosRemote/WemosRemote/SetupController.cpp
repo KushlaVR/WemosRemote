@@ -29,7 +29,7 @@ void SetupController::loadConfig()
 		cfg.AddValue("max_right", "60");
 		cfg.AddValue("stearing_linearity", "1");
 
-		cfg.AddValue("controller_type", "2");
+		cfg.AddValue("controller_type", "1");
 		cfg.AddValue("min_speed", "20");
 		cfg.AddValue("inertion", "800");
 		cfg.AddValue("potentiometer_linearity", "1");
@@ -47,6 +47,7 @@ void SetupController::loadConfig()
 		cfg.AddValue("beep_freq", "1000");
 		cfg.AddValue("beep_duration", "150");
 		cfg.AddValue("beep_interval", "50");
+		cfg.AddValue("battary_calibration", "1000");
 		cfg.AddValue("drive_mode", "1");
 
 		cfg.endObject();
@@ -99,6 +100,7 @@ void SetupController::loadConfig()
 	this->cfg->beep_freq = cfg.getInt("beep_freq");
 	this->cfg->beep_duration = cfg.getInt("beep_duration");
 	this->cfg->beep_interval = cfg.getInt("beep_interval");
+	this->cfg->battary_calibration = cfg.getInt("battary_calibration");
 
 	this->cfg->drive_mode = cfg.getInt("drive_mode");
 
@@ -115,7 +117,7 @@ void SetupController::saveConfig()
 	if (setupController.reloadConfig != nullptr) setupController.reloadConfig();
 }
 
-void SetupController::printConfig(JsonString * out)
+void SetupController::printConfig(JsonString * out, bool battary)
 {
 	out->beginObject();
 	out->AddValue("ssid", cfg->ssid);
@@ -147,13 +149,17 @@ void SetupController::printConfig(JsonString * out)
 
 	out->AddValue("drive_mode", String(cfg->drive_mode));
 	out->AddValue("debug", String(cfg->debug));
+	out->AddValue("battary_calibration", String(cfg->battary_calibration));
+
+	if (battary) out->AddValue("battary", String(cfg->battary));
+	
 	out->endObject();
 }
 
 void SetupController::Setup_Get()
 {
 	JsonString ret = JsonString();
-	setupController.printConfig(&ret);
+	setupController.printConfig(&ret, true);
 	webServer.jsonOk(&ret);
 }
 
@@ -188,6 +194,8 @@ void SetupController::Setup_Post()
 	if (webServer.hasArg("beep_interval")) { setupController.cfg->beep_interval = webServer.arg("beep_interval").toInt(); }
 	
 	if (webServer.hasArg("drive_mode")) { setupController.cfg->drive_mode = webServer.arg("drive_mode").toInt(); }
+	
+	if (webServer.hasArg("battary_calibration")) { setupController.cfg->battary_calibration = webServer.arg("battary_calibration").toInt(); }
 
 	setupController.saveConfig();
 

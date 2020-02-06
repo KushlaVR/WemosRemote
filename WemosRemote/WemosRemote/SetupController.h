@@ -38,6 +38,8 @@ public:
 	int beep_duration;
 	int beep_interval;
 
+	int battary;
+	int battary_calibration;
 
 	int drive_mode;//Режим керування
 };
@@ -54,7 +56,7 @@ public:
 
 	void loadConfig();
 	void saveConfig();
-	void printConfig(JsonString * out);
+	void printConfig(JsonString * out, bool battary = false);
 
 	static void Setup_Get();
 	static void Setup_Post();
