@@ -42,32 +42,34 @@
 #define pinWipers D0//Двірники
 #define pinStopLight D8//Стопи та габарити
 #define pinParkingLight D3//Підсвітка номера
+#define pinBattarySence A0//Заряд батареї
 #define pinBuzzer RX
 
 
 
-// конфигурация интерфейса   
-// RemoteXY configurate  
+// конфигурация интерфейса  
 #pragma pack(push, 1)
 uint8_t RemoteXY_CONF[] =
-{ 255,7,0,0,0,51,0,8,25,0,
-1,0,47,21,20,20,177,31,72,0,
+{ 255,6,0,1,0,49,0,8,25,0,
 1,0,54,-2,19,19,233,31,87,0,
 1,0,54,44,20,20,132,16,76,0,
 5,43,-10,5,52,52,2,26,31,5,
-32,61,0,63,63,176,26,31 };
+32,61,0,63,63,176,26,31,66,131,
+2,44,28,5,31,246 };
 
-// this structure defines all the variables of your control interface 
+// структура определяет все переменные вашего интерфейса управления 
 struct {
 
 	// input variable
-	uint8_t Light_high; // =1 if button pressed, else =0 
-	uint8_t Wipers; // =1 if button pressed, else =0 
-	uint8_t Light_low; // =1 if button pressed, else =0 
-	int8_t left_joy_x; // =-100..100 x-coordinate joystick position 
-	int8_t left_joy_y; // =-100..100 y-coordinate joystick position 
-	int8_t right_joy_x; // =-100..100 x-coordinate joystick position 
-	int8_t right_joy_y; // =-100..100 y-coordinate joystick position 
+	uint8_t Wipers; // =1 если кнопка нажата, иначе =0 
+	uint8_t Light_low; // =1 если кнопка нажата, иначе =0 
+	int8_t left_joy_x; // =-100..100 координата x положения джойстика 
+	int8_t left_joy_y; // =-100..100 координата y положения джойстика 
+	int8_t right_joy_x; // =-100..100 координата x положения джойстика 
+	int8_t right_joy_y; // =-100..100 координата y положения джойстика 
+
+	  // output variable
+	int8_t fuel_level; // =0..100 положение уровня 
 
 	  // other variable
 	uint8_t connect_flag;  // =1 if wire connected, else =0 
@@ -75,11 +77,11 @@ struct {
 } RemoteXY;
 #pragma pack(pop)
 
-
 enum LightMode {
 	OFF = 0,
 	Parking = 1,
 	ON = 2,
+	HIGH_LIGHT = 3,
 	WAIT_FOR_TIMEOUT = 3
 };
 
@@ -251,6 +253,13 @@ void handleLight() {
 			setupTurnLight();
 			handleParkingLight();
 			break;
+		case LightMode::HIGH_LIGHT:
+			if (!signLight.isRunning()) signLight.begin();
+			analogWrite(pinFrontLight, map(config.high_light_on, 0, 100, 0, 255));
+			analogWrite(pinParkingLight, map(config.parking_light_on, 0, 100, 0, 255));
+			setupTurnLight();
+			handleParkingLight();
+			break;
 		default:
 			break;
 		}
@@ -396,11 +405,11 @@ void setupMotor() {
 void setupTurnLight()
 {
 	if (state.LightMode >= LightMode::Parking) {
-		leftLight.item(1)->value = config.parking_light_on;
-		leftLight.item(2)->value = config.parking_light_on;
+		leftLight.item(1)->value = 0;// config.parking_light_on;
+		leftLight.item(2)->value = 0;//config.parking_light_on;
 
-		rightLight.item(1)->value = config.parking_light_on;
-		rightLight.item(2)->value = config.parking_light_on;
+		rightLight.item(1)->value = 0;//config.parking_light_on;
+		rightLight.item(2)->value = 0;//config.parking_light_on;
 	}
 	else
 	{
@@ -415,7 +424,7 @@ void setupTurnLight()
 //Після вимкнення поворотів, повертає лампочки у стан який вибрано перемикачем освітлення
 void handleParkingLight() {
 	if (!leftLight.isRunning()) {
-		if (state.LightMode >= LightMode::Parking) {
+		if (state.LightMode == LightMode::Parking) {
 			if (state.handledLeftState != config.parking_light_on) {
 				analogWrite(pinLeftLight, config.parking_light_on);
 				state.handledLeftState = config.parking_light_on;
@@ -431,7 +440,7 @@ void handleParkingLight() {
 	}
 
 	if (!rightLight.isRunning()) {
-		if (state.LightMode >= LightMode::Parking) {
+		if (state.LightMode == LightMode::Parking) {
 			if (state.handledRightState != config.parking_light_on) {
 				analogWrite(pinRightLight, config.parking_light_on);
 				state.handledRightState = config.parking_light_on;
@@ -489,7 +498,7 @@ void setup()
 	Serial.end();
 	pinMode(pinBuzzer, OUTPUT);
 	digitalWrite(pinBuzzer, LOW);
-	pinMode(A0, INPUT);
+	pinMode(pinBattarySence, INPUT);
 	//Serial.begin(115200);
 	//Serial.println();
 	//Serial.println();
@@ -673,13 +682,13 @@ void loop()
 		if (RemoteXY.Light_low != state.light_btn) {
 			if (RemoteXY.Light_low) {
 				state.LightMode++;
-				if (state.LightMode > LightMode::ON) state.LightMode = 0;
+				if (state.LightMode > LightMode::HIGH_LIGHT) state.LightMode = 0;
 			}
 			state.light_btn = RemoteXY.Light_low;
 		}
-		if (RemoteXY.Light_high != state.highlight_btn) {
+		/*if (RemoteXY.Light_high != state.highlight_btn) {
 			state.highlight_btn = RemoteXY.Light_high;
-		}
+		}*/
 
 		handleLight();
 
@@ -733,8 +742,20 @@ void loop()
 	stopLight.loop();
 	signLight.loop();
 	webServer.loop();
-	if ((millis() - lastA0_read) > 1000) {
+	if (lastA0_read == 0 | ((millis() - lastA0_read) > 10000)) {
 		lastA0_read = millis();
-		config.battary = (int)(((long)analogRead(A0) * (long)(config.battary_calibration)) / (10240.0));
+		config.battary = (int)(((long)analogRead(pinBattarySence) * (long)(config.battary_calibration)) / 10240.0);
+	
+		if (config.battary < 370) {
+			RemoteXY.fuel_level = 0;
+		}
+		else if (config.battary > 420) {
+			RemoteXY.fuel_level = 100;
+		}
+		else {
+			RemoteXY.fuel_level = map(config.battary, 370, 420, 0, 100);
+		}
+
 	}
+	
 }
