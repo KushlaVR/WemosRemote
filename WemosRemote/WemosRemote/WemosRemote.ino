@@ -405,11 +405,11 @@ void setupMotor() {
 void setupTurnLight()
 {
 	if (state.LightMode >= LightMode::Parking) {
-		leftLight.item(1)->value = 0;// config.parking_light_on;
-		leftLight.item(2)->value = 0;//config.parking_light_on;
+		leftLight.item(1)->value = config.parking_light_on;
+		leftLight.item(2)->value = config.parking_light_on;
 
-		rightLight.item(1)->value = 0;//config.parking_light_on;
-		rightLight.item(2)->value = 0;//config.parking_light_on;
+		rightLight.item(1)->value = config.parking_light_on;
+		rightLight.item(2)->value = config.parking_light_on;
 	}
 	else
 	{
