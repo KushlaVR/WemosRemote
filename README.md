@@ -7,6 +7,8 @@ Wemos remote - проект для керування авто моделлю з
 ![ЗАЗ965А](/img/zaz3.png)
 
 
+
+
 Усі етапи переобки моделі:
 * Частина 1 https://www.youtube.com/watch?v=Rnvk8hbOn04
 * Частина 2 https://www.youtube.com/watch?v=U9sRm0HNj2A
@@ -166,8 +168,6 @@ Wemos remote - проект для керування авто моделлю з
 8) Габарит D0
 9) Бузер RX
 
-## Спосіб підключення №1 (drv8833)
-![Wiring diagram](/img/schematic.png)
+## Спосіб підключення (drv8833)
+![Wiring diagram](/img/schematic.svg)
 
-## Спосіб підключення №2 (Регулятор)
-![Wiring diagram](/img/schematic2.png)
