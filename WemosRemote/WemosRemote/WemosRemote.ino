@@ -134,7 +134,7 @@ SerialController serialController = SerialController();
 Blinker leftLight = Blinker("Left light");
 Blinker rightLight = Blinker("Right light");
 Blinker stopLight = Blinker("Stop light");
-Blinker signLight = Blinker("Sign light");
+//Blinker signLight = Blinker("Sign light");
 Blinker alarmOn = Blinker("Alarm on");
 Blinker alarmOff = Blinker("Alarm of");
 Beeper alarmBeepOn = Beeper("Alarm beep on");
@@ -223,7 +223,7 @@ void handleLight() {
 		switch (state.LightMode)
 		{
 		case LightMode::OFF:
-			signLight.end();
+			//signLight.end();
 			if (state.highlight_btn)
 				analogWrite(pinFrontLight, map(config.high_light_on, 0, 100, 0, 255));
 			else
@@ -233,30 +233,30 @@ void handleLight() {
 			handleParkingLight();
 			break;
 		case LightMode::Parking:
-			if (!signLight.isRunning()) signLight.begin();
+			//if (!signLight.isRunning()) signLight.begin();
 
 			if (state.highlight_btn)
 				analogWrite(pinFrontLight, map(config.high_light_on, 0, 100, 0, 255));
 			else
 				digitalWrite(pinFrontLight, LOW);
-			analogWrite(pinParkingLight, map(config.parking_light_on, 0, 100, 0, 255));
+			digitalWrite(pinParkingLight, HIGH/*map(config.parking_light_on, 0, 100, 0, 255)*/);
 			setupTurnLight();
 			handleParkingLight();
 			break;
 		case LightMode::ON:
-			if (!signLight.isRunning()) signLight.begin();
+			//if (!signLight.isRunning()) signLight.begin();
 			if (state.highlight_btn)
 				analogWrite(pinFrontLight, map(config.high_light_on, 0, 100, 0, 255));
 			else
 				analogWrite(pinFrontLight, map(config.front_light_on, 0, 100, 0, 255));
-			analogWrite(pinParkingLight, map(config.parking_light_on, 0, 100, 0, 255));
+			digitalWrite(pinParkingLight, HIGH/*map(config.parking_light_on, 0, 100, 0, 255)*/);
 			setupTurnLight();
 			handleParkingLight();
 			break;
 		case LightMode::HIGH_LIGHT:
-			if (!signLight.isRunning()) signLight.begin();
+			//if (!signLight.isRunning()) signLight.begin();
 			analogWrite(pinFrontLight, map(config.high_light_on, 0, 100, 0, 255));
-			analogWrite(pinParkingLight, map(config.parking_light_on, 0, 100, 0, 255));
+			digitalWrite(pinParkingLight, HIGH/*map(config.parking_light_on, 0, 100, 0, 255)*/);
 			setupTurnLight();
 			handleParkingLight();
 			break;
@@ -337,10 +337,10 @@ void setupBlinkers() {
 		->repeat = false;
 	stopLight.debug = true;
 
-	signLight.Add(pinParkingLight, 0, 0)
-		->Add(pinParkingLight, map(100 - config.parking_light_on, 0, 100, 0, 20), 255)
-		->Add(pinParkingLight, 20, 0)
-		->repeat = true;
+	//signLight.Add(pinParkingLight, 0, 0)
+	//	->Add(pinParkingLight, map(100 - config.parking_light_on, 0, 100, 0, 20), 255)
+	//	->Add(pinParkingLight, 20, 0)
+	//	->repeat = true;
 
 }
 
@@ -404,7 +404,7 @@ void setupMotor() {
 //Налаштовує яскравість поворотів, в залежності від режиму світла
 void setupTurnLight()
 {
-	if (state.LightMode >= LightMode::Parking) {
+	if (state.LightMode == LightMode::Parking) {
 		leftLight.item(1)->value = config.parking_light_on;
 		leftLight.item(2)->value = config.parking_light_on;
 
@@ -477,7 +477,7 @@ void refreshConfig() {
 	stopLight.item(1)->value = config.front_light_on;
 	stopLight.item(2)->offset = config.stop_light_duration;
 
-	signLight.item(0)->offset = map(100 - config.parking_light_on, 0, 100, 0, 20);
+	//signLight.item(0)->offset = map(100 - config.parking_light_on, 0, 100, 0, 20);
 
 	alarmBeepOn.item(0)->value = config.beep_freq;
 	alarmBeepOn.item(2)->value = config.beep_freq;
@@ -740,7 +740,7 @@ void loop()
 	alarmOn.loop();
 	alarmBeepOn.loop();
 	stopLight.loop();
-	signLight.loop();
+	//signLight.loop();
 	webServer.loop();
 	if (lastA0_read == 0 | ((millis() - lastA0_read) > 10000)) {
 		lastA0_read = millis();
