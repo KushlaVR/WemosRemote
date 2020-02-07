@@ -169,6 +169,6 @@ Wemos remote - проект для керування авто моделлю з
 9) Бузер RX
 
 ## Спосіб підключення (drv8833)
-
+![Light](/img/schematic.png)
 https://github.com/KushlaVR/WemosRemote/blob/ZAZ965A/img/schematic.SVG
 
