@@ -404,7 +404,7 @@ void setupMotor() {
 //Налаштовує яскравість поворотів, в залежності від режиму світла
 void setupTurnLight()
 {
-	if (state.LightMode == LightMode::Parking) {
+	if (state.LightMode >= LightMode::Parking) {
 		leftLight.item(1)->value = config.parking_light_on;
 		leftLight.item(2)->value = config.parking_light_on;
 
@@ -424,7 +424,7 @@ void setupTurnLight()
 //Після вимкнення поворотів, повертає лампочки у стан який вибрано перемикачем освітлення
 void handleParkingLight() {
 	if (!leftLight.isRunning()) {
-		if (state.LightMode == LightMode::Parking) {
+		if (state.LightMode >= LightMode::Parking) {
 			if (state.handledLeftState != config.parking_light_on) {
 				analogWrite(pinLeftLight, config.parking_light_on);
 				state.handledLeftState = config.parking_light_on;
