@@ -14,6 +14,7 @@ Wemos remote - проект для керування авто моделлю з
 * Частина 2 https://www.youtube.com/watch?v=U9sRm0HNj2A
 * Частина 3 https://www.youtube.com/watch?v=dFrtj1GCY1U
 * Частина 4 https://www.youtube.com/watch?v=j8VWTGg8k7Q
+* Частина 5 https://www.youtube.com/watch?v=8Ac1_ibX0vs
 
 Керування реалізовано на процесорі ESP8266. Цей процесор компактний, має вбудований WIFI модуль і адаповане ядро під фреймворк Arduino. Прошивка реалізована у середовищі VisualStudio 2019 з використанням фреймворків:
 * Arduino https://www.arduino.cc/en/Main/Software
@@ -86,7 +87,7 @@ Wemos remote - проект для керування авто моделлю з
 Покрокова інструкція
 1. Підключаєте плату до USB вашого компютера.
 2. Встановлюєте драйвера згідно з інструкціями виробника плати
-  * Драйвер CH340 з офіційного сайту можна скачати тут https://wiki.wemos.cc/downloads
+  * Драйвер CH340 з офіційного сайту можна скачати тут https://docs.wemos.cc/en/latest/ch340_driver.html
 3. Заходете у диспечер пристроїів і перевіряєти чи всі драйвера встанорвлено і ваша плата розпізнається системою. 
   * Відкриваємо панель керування комп'ютером. 
 ![Call device manager](/img/device-manager.png)
@@ -169,6 +170,9 @@ Wemos remote - проект для керування авто моделлю з
 9) Бузер RX
 
 ## Спосіб підключення (drv8833)
+### Мінімальний набір
 ![Light](/img/schematic.png)
-https://github.com/KushlaVR/WemosRemote/blob/ZAZ965A/img/schematic.SVG
-
+### Підключення освітлення
+![Light](/img/schematic1.png)
+### Підключення озвучки (факультативно)
+![Light](/img/schematic2.png)
