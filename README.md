@@ -173,6 +173,6 @@ Wemos remote - проект для керування авто моделлю з
 ### Мінімальний набір
 ![Light](/img/schematic.png)
 ### Підключення освітлення
-![Light](/img/schematic1.png)
-### Підключення озвучки (факультативно)
 ![Light](/img/schematic2.png)
+### Підключення озвучки (факультативно)
+![Light](/img/schematic3.png)
