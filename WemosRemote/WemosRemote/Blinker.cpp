@@ -104,3 +104,8 @@ void Beeper::write(int pin, int value)
 		tone(pin, value);
 	}
 }
+
+void extBlinker::write(int pin, int value)
+{
+	extPort->write(pin, value);
+}

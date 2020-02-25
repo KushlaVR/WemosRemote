@@ -21,6 +21,7 @@ Wemos remote - проект для керування авто моделлю з
 * jQuery https://jquery.com/
 * Bootstrap https://getbootstrap.com/
 * ESPAudio https://github.com/earlephilhower/ESP8266Audio
+* Драйвер розширювача портів PCF8574 https://github.com/RobTillaart (https://github.com/RobTillaart/Arduino/tree/master/libraries/PCF8574)
 
 При необхідлності скетч можна редагувати у середовищі Arduino IDE.
 

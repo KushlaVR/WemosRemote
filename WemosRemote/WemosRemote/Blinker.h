@@ -6,6 +6,7 @@
 #include "WProgram.h"
 #endif
 #include "Console.h"
+#include "PCF8574.h"
 
 class BlinkerItem
 {
@@ -46,7 +47,18 @@ public:
 class Beeper :public Blinker {
 
 public:
-	Beeper(String name) : Blinker(name) {}
-	~Beeper() {}
+	Beeper(String name) : Blinker(name) {};
+	~Beeper() {};
+	virtual void write(int pin, int value);
+};
+
+
+class extBlinker : public Blinker {
+
+public :
+	PCF8574 * extPort = nullptr;
+
+	extBlinker(String name, PCF8574 * extPort) : Blinker(name) { this->extPort = extPort; };
+	~extBlinker() {};
 	virtual void write(int pin, int value);
 };

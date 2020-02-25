@@ -12,6 +12,8 @@
 
 // определение режима соединения и подключение библиотеки RemoteXY  
 #define REMOTEXY_MODE__ESP8266WIFI_LIB_POINT
+
+
 #include <ESP8266WiFi.h> 
 #include <ESP8266WebServer.h> 
 #include <DNSServer.h>
@@ -19,6 +21,8 @@
 
 #include <FS.h>
 #include <Servo.h>
+#include <Wire.h>
+#include "PCF8574.h"
 
 #include "Console.h"
 #include "RoboconMotor.h"
@@ -26,6 +30,7 @@
 #include "Json.h"
 #include "SerialController.h"
 #include "Blinker.h"
+#include "Button.h"
 #include <RemoteXY.h> 
 #include "WebUIController.h"
 #include "SetupController.h"
@@ -38,75 +43,90 @@
 #define pinI2C_SDA D2 //pcf8574
 
 //pcf8574 Port usage
-#define bitParkingLight 0;
-#define bitHeadLight 1;
-#define bitHighLight 2;
-#define bitLeftLight 3;
-#define bitRightLight 4;
-#define bitBackLight 5;
-#define bitStopLight 6;
-#define bitFogLight 7;
+#define bitParkingLight 0
+#define bitHeadLight 1
+#define bitHighLight 2
+#define bitLeftLight 3
+#define bitRightLight 4
+#define bitBackLight 5
+#define bitStopLight 6
+#define bitFogLight 7
 
 #define pinBlinker D3
 #define pinBuzzer D8
 
 
 
-// конфигурация интерфейса   
-// RemoteXY configurate   
-#pragma pack(push, 1) 
-uint8_t RemoteXY_CONF[] = {
-  255,7,0,0,0,51,0,8,25,0,
-  1,0,36,18,20,20,36,31,65,0,
-  1,0,54,-2,19,19,177,31,72,0,
-  1,0,54,44,20,20,132,16,76,0,
-  5,43,-10,5,52,52,2,26,31,5,
-  32,61,0,63,63,176,26,31
-};
+// RemoteXY configurate  
+#pragma pack(push, 1)
+uint8_t RemoteXY_CONF[] =
+{ 255,14,0,0,0,140,0,10,8,0,
+4,128,64,1,42,7,2,26,1,1,
+23,36,22,12,134,31,226,151,132,0,
+1,1,14,49,31,12,160,31,83,0,
+1,1,56,49,31,12,48,31,65,0,
+1,1,56,36,22,12,134,31,226,150,
+186,0,1,1,56,23,22,12,2,31,
+77,0,1,1,23,23,22,12,118,31,
+76,0,1,1,14,10,31,12,132,31,
+226,152,188,0,1,1,56,10,31,12,
+175,31,72,0,5,32,-16,12,46,46,
+207,26,31,5,32,71,13,46,46,207,
+26,31,1,1,42,0,17,9,101,31,
+226,153,171,0,129,0,1,1,28,8,
+40,67,76,65,65,83,0 };
 
-
-
-// this structure defines all the variables of your control interface  
+// this structure defines all the variables and events of your control interface 
 struct {
 
-	// input variable
+	// input variables
+	int8_t slider_1; // =0..100 slider position 
+	uint8_t leftTurn; // =1 if button pressed, else =0 
+	uint8_t fogLight; // =1 if button pressed, else =0 
 	uint8_t Alarm; // =1 if button pressed, else =0 
-	uint8_t Light_high; // =1 if button pressed, else =0 
-	uint8_t Light_low; // =1 if button pressed, else =0 
+	uint8_t rightTurn; // =1 if button pressed, else =0 
+	uint8_t Blink; // =1 if button pressed, else =0 
+	uint8_t headLight; // =1 if button pressed, else =0 
+	uint8_t parkingLight; // =1 if button pressed, else =0 
+	uint8_t highLight; // =1 if button pressed, else =0 
 	int8_t left_joy_x; // =-100..100 x-coordinate joystick position 
 	int8_t left_joy_y; // =-100..100 y-coordinate joystick position 
 	int8_t right_joy_x; // =-100..100 x-coordinate joystick position 
 	int8_t right_joy_y; // =-100..100 y-coordinate joystick position 
+	uint8_t beepButton; // =1 if button pressed, else =0 
 
 	  // other variable
 	uint8_t connect_flag;  // =1 if wire connected, else =0 
 
 } RemoteXY;
-#pragma pack(pop) 
+#pragma pack(pop)
+
+
+/////////////////////////////////////////////
+//           END RemoteXY include          //
+/////////////////////////////////////////////
 
 enum LightMode {
 	OFF = 0,
 	Parking = 1,
 	ON = 2,
-	WAIT_FOR_TIMEOUT = 3
+	FIGH_LIGHT = 3,
+	WAIT_FOR_TIMEOUT = 10
 };
 
 struct StateStructure {
 
-	int LightMode;
 	unsigned long stoppedTime;
 	int backLightMode;
 
 	int speed;
 	bool stopped;
 	bool emergency;
-	bool emergency_btn_pressed;
-	bool light_btn;
-	bool high_light_btn;
-
 	bool serialEnabled;
 
 } state;
+
+
 
 
 ConfigStruct config;
@@ -120,22 +140,106 @@ char SSID[32];
 char SSID_password[20];
 bool connected = false;
 
-
+PCF8574 portExt = PCF8574(0x38);
 RoboEffects motorEffect = RoboEffects();
 MotorBase * motor = nullptr;//= RoboMotor("motor", pinMotorA, pinMotorB, &motorEffect);
 Stearing stearingServo = Stearing(pinServo);
 
 SerialController serialController = SerialController();
 
-Blinker leftLight = Blinker("Left light");
-Blinker rightLight = Blinker("Right light");
-Blinker stopLight = Blinker("Stop light");
-Blinker backLight = Blinker("Back light");
-Blinker alarmOn = Blinker("Alarm on");
-Blinker alarmOff = Blinker("Alarm of");
+Blinker leftLight = extBlinker("Left light", &portExt);
+Blinker rightLight = extBlinker("Right light", &portExt);
+Blinker stopLight = extBlinker("Stop light", &portExt);
+Blinker alarmOn = extBlinker("Alarm on", &portExt);
+Blinker alarmOff = extBlinker("Alarm of", &portExt);
+Blinker lightBlinker = Blinker("Light Blinker");
 Beeper alarmBeepOn = Beeper("Alarm beep on");
 Beeper alarmBeepOff = Beeper("Alarm beep of");
 Beeper turnLightBeeper = Beeper("Turn light beep");
+
+VirtualButton btn_ParkingLight = VirtualButton(btn_ParkingLight_On, nullptr, btn_ParkingLight_Off);
+VirtualButton btn_HeadLight = VirtualButton(btn_HeadLight_On, nullptr, btn_HeadLight_Off);
+VirtualButton btn_HighLight = VirtualButton(btn_HighLight_On, nullptr, btn_HighLight_Off);
+VirtualButton btn_FogLight = VirtualButton(btn_FogLight_On, nullptr, btn_FogLight_Off);
+VirtualButton btn_LeftLight = VirtualButton(btn_LeftLight_On, nullptr, btn_LeftLight_Off);
+VirtualButton btn_RightLight = VirtualButton(btn_RightLight_On, nullptr, btn_RightLight_Off);
+VirtualButton btn_Blink = VirtualButton(btn_Blink_On, nullptr, btn_Blink_Off);
+VirtualButton btn_Alarm = VirtualButton(btn_Alarm_On, nullptr, btn_Alarm_Off);
+VirtualButton btn_Beeper = VirtualButton(btn_Beeper_On, nullptr, btn_Beeper_Off);
+
+void btn_ParkingLight_On() {
+	portExt.write(bitParkingLight, HIGH);
+}
+void btn_ParkingLight_Off() {
+	portExt.write(bitParkingLight, LOW);
+}
+
+void btn_HeadLight_On() {
+	portExt.write(bitHeadLight, HIGH);
+}
+void btn_HeadLight_Off() {
+	portExt.write(bitHeadLight, LOW);
+}
+
+void btn_HighLight_On() {
+	portExt.write(bitHighLight, HIGH);
+}
+void btn_HighLight_Off() {
+	portExt.write(bitHighLight, LOW);
+}
+
+void btn_FogLight_On() {
+	portExt.write(bitFogLight, HIGH);
+}
+void btn_FogLight_Off() {
+	portExt.write(bitFogLight, LOW);
+}
+
+void btn_LeftLight_On() {
+	btn_Alarm.reset();
+	btn_RightLight.reset();
+	if (!leftLight.isRunning()) leftLight.begin();
+}
+void btn_LeftLight_Off() {
+	if (leftLight.isRunning()) leftLight.end();
+}
+
+void btn_RightLight_On() {
+	btn_Alarm.reset();
+	btn_LeftLight.reset();
+	if (!rightLight.isRunning()) rightLight.begin();
+}
+void btn_RightLight_Off() {
+	if (rightLight.isRunning()) rightLight.end();
+}
+
+void btn_Blink_On() {
+	if (!lightBlinker.isRunning()) lightBlinker.begin();
+}
+void btn_Blink_Off() {
+	if (lightBlinker.isRunning()) lightBlinker.end();
+}
+
+void btn_Alarm_On() {
+	if (leftLight.isRunning()) leftLight.end();
+	if (rightLight.isRunning()) rightLight.end();
+	btn_LeftLight.reset();
+	btn_RightLight.reset();
+	leftLight.begin();
+	rightLight.begin();
+}
+void btn_Alarm_Off() {
+	if (leftLight.isRunning()) leftLight.end();
+	if (rightLight.isRunning()) rightLight.end();
+}
+
+void btn_Beeper_On() {
+	tone(pinBuzzer, )
+}
+void btn_Beeper_Off() {
+	noTone(pinBuzzer);
+}
+
 
 bool turnOffTurnLights = false;
 int turnLightsCondition = 10;
@@ -179,68 +283,23 @@ bool handledhigh_light_btn_state = false;
 int handledLightMode = 0;
 int handledBackLightMode = 0;
 void handleLight() {
-	if (!RemoteXY.connect_flag) {
-		state.LightMode = LightMode::OFF;
-	};
-	if (handledLightMode != state.LightMode || handledhigh_light_btn_state != state.high_light_btn) {
-		handledLightMode = state.LightMode;
 
-		if (handledhigh_light_btn_state != state.high_light_btn) {
-			handledhigh_light_btn_state = state.high_light_btn;
-			if (state.high_light_btn) {
-				//Бібікаємо
-				//analogWriteFreq(config.beep_freq);
-				tone(pinBuzzer, config.beep_freq);
-			}
-			else
-			{
-				noTone(pinBuzzer);
-			}
-		}
-
-		int val;
-		switch (state.LightMode)
-		{
-		case LightMode::OFF:
-			if (state.high_light_btn)
-				analogWrite(pinFrontLight, map(config.high_light_on, 0, 100, 0, 255));
-			else
-				digitalWrite(pinFrontLight, LOW);
-			digitalWrite(pinParkingLight, LOW);
-			break;
-		case LightMode::Parking:
-			if (state.high_light_btn)
-				analogWrite(pinFrontLight, map(config.high_light_on, 0, 100, 0, 255));
-			else
-				analogWrite(pinFrontLight, map(config.parking_light_on, 0, 100, 0, 255));
-			analogWrite(pinParkingLight, map(config.parking_light_on, 0, 100, 0, 255));
-			break;
-		case LightMode::ON:
-			if (state.high_light_btn)
-				analogWrite(pinFrontLight, map(config.high_light_on, 0, 100, 0, 255));
-			else
-				analogWrite(pinFrontLight, map(config.front_light_on, 0, 100, 0, 255));
-			analogWrite(pinParkingLight, map(config.parking_light_on, 0, 100, 0, 255));
-			break;
-		default:
-			break;
-		}
-	}
 	if (state.backLightMode != handledBackLightMode) {
 		switch (state.backLightMode)
 		{
 		case LightMode::OFF:
 			handledBackLightMode = state.backLightMode;
-			backLight.end();
+			//backLight.end();
+			portExt.write(bitBackLight, LOW);
 			break;
 		case LightMode::WAIT_FOR_TIMEOUT:
 			if ((millis() - state.stoppedTime) > config.back_light_timeout) {
 				handledBackLightMode = state.backLightMode;
-				backLight.end();
+				portExt.write(bitBackLight, LOW);
 			}
 			break;
 		case LightMode::ON:
-			backLight.begin();
+			portExt.write(bitBackLight, HIGH);
 			handledBackLightMode = state.backLightMode;
 			break;
 		default:
@@ -251,65 +310,44 @@ void handleLight() {
 
 
 void setupBlinkers() {
-	//Налаштування фар
-	pinMode(pinFrontLight, OUTPUT);
-	pinMode(pinLeftLight, OUTPUT);
-	pinMode(pinRightLight, OUTPUT);
-	pinMode(pinBackLight, OUTPUT);
-	pinMode(pinStopLight, OUTPUT);
-
-	digitalWrite(pinFrontLight, LOW);
-	digitalWrite(pinLeftLight, LOW);
-	digitalWrite(pinRightLight, LOW);
-	digitalWrite(pinBackLight, LOW);
-	digitalWrite(pinStopLight, LOW);
-
-	pinMode(pinParkingLight, OUTPUT);
-	digitalWrite(pinParkingLight, LOW);
-
 
 	//Налаштування поворотників
 	leftLight
-		.Add(pinLeftLight, 0, config.turn_light_on)
-		->Add(pinLeftLight, 500, 0)
-		->Add(pinLeftLight, 1000, 0);
+		.Add(bitLeftLight, 0, HIGH)
+		->Add(bitLeftLight, 500, LOW)
+		->Add(bitLeftLight, 1000, LOW);
 	serialController.leftLight = &leftLight;
 	rightLight
-		.Add(pinRightLight, 0, config.turn_light_on)
-		->Add(pinRightLight, 500, 0)
-		->Add(pinRightLight, 1000, 0);
+		.Add(bitRightLight, 0, HIGH)
+		->Add(bitRightLight, 500, LOW)
+		->Add(bitRightLight, 1000, LOW);
 	serialController.rightLight = &rightLight;
 
 	alarmOff
-		.Add(pinLeftLight, 0, config.turn_light_on)
-		->Add(pinRightLight, 0, config.turn_light_on)
-		->Add(pinLeftLight, 300, 0)
-		->Add(pinRightLight, 300, 0)
-		->Add(pinLeftLight, 600, config.turn_light_on)
-		->Add(pinRightLight, 600, config.turn_light_on)
-		->Add(pinLeftLight, 900, 0)
-		->Add(pinRightLight, 900, 0);
+		.Add(bitLeftLight, 0, config.turn_light_on)
+		->Add(bitRightLight, 0, config.turn_light_on)
+		->Add(bitLeftLight, 300, 0)
+		->Add(bitRightLight, 300, 0)
+		->Add(bitLeftLight, 600, config.turn_light_on)
+		->Add(bitRightLight, 600, config.turn_light_on)
+		->Add(bitLeftLight, 900, 0)
+		->Add(bitRightLight, 900, 0);
 	alarmOff.repeat = false;
 	//alarmOff.debug = true;
 
 	alarmOn
-		.Add(pinLeftLight, 0, config.turn_light_on)
-		->Add(pinRightLight, 0, config.turn_light_on)
-		->Add(pinLeftLight, 600, 0)
-		->Add(pinRightLight, 600, 0);
+		.Add(bitLeftLight, 0, config.turn_light_on)
+		->Add(bitRightLight, 0, config.turn_light_on)
+		->Add(bitLeftLight, 600, 0)
+		->Add(bitRightLight, 600, 0);
 	alarmOn.repeat = false;
 	//alarmOn.debug = true;
 
-	stopLight.Add(pinStopLight, 0, 0)
-		->Add(pinStopLight, 0, config.front_light_on)
-		->Add(pinStopLight, config.stop_light_duration, 0)
+	stopLight.Add(bitStopLight, 0, LOW)
+		->Add(bitStopLight, 0, HIGH)
+		->Add(bitStopLight, config.stop_light_duration, LOW)
 		->repeat = false;
 	stopLight.debug = true;
-
-	backLight.Add(pinBackLight, 0, 0)
-		->Add(pinBackLight, map(100 - config.back_light_pwm, 0, 100, 0, 20), 255)
-		->Add(pinBackLight, 20, 0)
-		->repeat = true;
 
 }
 
@@ -345,7 +383,8 @@ void setupMotor() {
 		}
 	}
 	if (motor == nullptr) {
-		switch (config.controller_type)
+		motor = new SpeedController("Speed reg D7", pinMotorA, &motorEffect);
+		/*switch (config.controller_type)
 		{
 		case 0:
 			motor = new HBridge("H-Bridge", pinMotorA, pinMotorB, &motorEffect);
@@ -359,7 +398,7 @@ void setupMotor() {
 		default:
 			return;
 			break;
-		}
+		}*/
 	}
 
 	motor->responder = &console;
@@ -388,7 +427,7 @@ void refreshConfig() {
 	stopLight.item(1)->value = config.front_light_on;
 	stopLight.item(2)->offset = config.stop_light_duration;
 
-	backLight.item(0)->offset = map(100 - config.back_light_pwm, 0, 100, 0, 20);
+	//backLight.item(0)->offset = map(100 - config.back_light_pwm, 0, 100, 0, 20);
 
 	alarmBeepOn.item(0)->value = config.beep_freq;
 	alarmBeepOn.item(2)->value = config.beep_freq;
@@ -450,6 +489,16 @@ void setup()
 	//	Serial.end();
 	//	console.output = nullptr;
 	//}
+	portExt.begin(pinI2C_SDA, pinI2C_SCL);
+
+	btn_ParkingLight.isToggleMode = true;
+	btn_HeadLight.isToggleMode = true;
+	btn_HighLight.isToggleMode = true;
+	btn_FogLight.isToggleMode = true;
+	btn_LeftLight.isToggleMode = true;
+	btn_RightLight.isToggleMode = true;
+	btn_Blink.isToggleMode = true;
+	btn_Alarm.isToggleMode = true;
 
 	setupBlinkers();
 	setupBeepers();
@@ -587,38 +636,14 @@ void loop()
 			state.speed = speed;
 		}
 
-		if (RemoteXY.Alarm) {
-			if (!state.emergency_btn_pressed) {
-				state.emergency_btn_pressed = true;
-				if (state.emergency) {
-					leftLight.end();
-					rightLight.end();
-					turnLightBeeper.end();
-					state.emergency = false;
-				}
-				else {
-					leftLight.begin();
-					rightLight.begin();
-					turnLightBeeper.begin();
-					state.emergency = true;
-				}
-			}
-		}
-		else {
-			if (state.emergency_btn_pressed) {
-				state.emergency_btn_pressed = false;
-			}
-		}
-		if (RemoteXY.Light_low != state.light_btn) {
-			if (RemoteXY.Light_low) {
-				state.LightMode++;
-				if (state.LightMode > LightMode::ON) state.LightMode = 0;
-			}
-			state.light_btn = RemoteXY.Light_low;
-		}
-		if (RemoteXY.Light_high != state.high_light_btn) {
-			state.high_light_btn = RemoteXY.Light_high;
-		}
+		btn_ParkingLight.setValue(RemoteXY.parkingLight);
+		btn_HeadLight.setValue(RemoteXY.headLight);
+		btn_HighLight.setValue(RemoteXY.highLight);
+		btn_FogLight.setValue(RemoteXY.fogLight);
+		btn_LeftLight.setValue(RemoteXY.leftTurn);
+		btn_RightLight.setValue(RemoteXY.rightTurn);
+		btn_Blink.setValue(RemoteXY.Blink);
+		btn_Alarm.setValue(RemoteXY.Alarm);
 
 		handleLight();
 	}
@@ -635,7 +660,16 @@ void loop()
 			motor->isEnabled = false;
 			motor->reset();
 			stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
-			state.LightMode = 0;
+
+			btn_ParkingLight.reset();
+			btn_HeadLight.reset();
+			btn_HighLight.reset();
+			btn_FogLight.reset();
+			btn_LeftLight.reset();
+			btn_RightLight.reset();
+			btn_Blink.reset();
+			btn_Alarm.reset();
+
 			handleLight();
 			stearingServo.isEnabled = false;
 		}
@@ -659,6 +693,16 @@ void loop()
 
 	motor->loop();
 	stearingServo.loop();
+
+	btn_ParkingLight.handle();
+	btn_HeadLight.handle();
+	btn_HighLight.handle();
+	btn_FogLight.handle();
+	btn_LeftLight.handle();
+	btn_RightLight.handle();
+	btn_Blink.handle();
+	btn_Alarm.handle();
+
 	leftLight.loop();
 	rightLight.loop();
 	turnLightBeeper.loop();
@@ -667,6 +711,6 @@ void loop()
 	alarmOn.loop();
 	alarmBeepOn.loop();
 	stopLight.loop();
-	backLight.loop();
+
 	webServer.loop();
 }
