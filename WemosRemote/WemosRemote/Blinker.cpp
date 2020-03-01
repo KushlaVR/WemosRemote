@@ -38,7 +38,7 @@ void Blinker::loop()
 
 Blinker * Blinker::Add(int pin, unsigned long offset, uint8_t value)
 {
-	pinMode(pin, OUTPUT);
+	setupPin(pin);
 	BlinkerItem * item = new BlinkerItem();
 	item->pin = pin;
 	item->offset = offset;
@@ -65,6 +65,11 @@ Blinker * Blinker::end()
 		item = item->next;
 	}
 	return this;
+}
+
+void Blinker::setupPin(int pin)
+{
+	pinMode(pin, OUTPUT);
 }
 
 void Blinker::write(int pin, int value)
@@ -108,4 +113,9 @@ void Beeper::write(int pin, int value)
 void extBlinker::write(int pin, int value)
 {
 	extPort->write(pin, value);
+}
+
+void extBlinker::setupPin(int pin)
+{
+	//!IMPORTANT. DO NOTHING HERE
 }

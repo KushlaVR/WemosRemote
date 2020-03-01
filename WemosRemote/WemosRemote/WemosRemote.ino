@@ -36,8 +36,11 @@
 #include "SetupController.h"
 
 #define pinServo D5
-#define pinMotorA D7//назад
-#define pinServo2 D6
+#define pinServo2 D8
+
+#define pinMotorA D7//H bridge
+#define pinMotorB D6//H bridge
+
 
 #define pinI2C_SCL D1 //pcf8574
 #define pinI2C_SDA D2 //pcf8574
@@ -53,7 +56,7 @@
 #define bitFogLight 7
 
 #define pinBlinker D3
-#define pinBuzzer D8
+#define pinBuzzer RX
 
 
 
@@ -80,7 +83,7 @@ uint8_t RemoteXY_CONF[] =
 struct {
 
 	// input variables
-	int8_t slider_1; // =0..100 slider position 
+	int8_t servo2; // =0..100 slider position 
 	uint8_t leftTurn; // =1 if button pressed, else =0 
 	uint8_t fogLight; // =1 if button pressed, else =0 
 	uint8_t Alarm; // =1 if button pressed, else =0 
@@ -121,7 +124,6 @@ struct StateStructure {
 
 	int speed;
 	bool stopped;
-	bool emergency;
 	bool serialEnabled;
 
 } state;
@@ -142,16 +144,17 @@ bool connected = false;
 
 PCF8574 portExt = PCF8574(0x38);
 RoboEffects motorEffect = RoboEffects();
-MotorBase * motor = nullptr;//= RoboMotor("motor", pinMotorA, pinMotorB, &motorEffect);
+MotorBase * motor = nullptr;
 Stearing stearingServo = Stearing(pinServo);
+Servo servo2 = Servo();
 
 SerialController serialController = SerialController();
 
-Blinker leftLight = extBlinker("Left light", &portExt);
-Blinker rightLight = extBlinker("Right light", &portExt);
-Blinker stopLight = extBlinker("Stop light", &portExt);
-Blinker alarmOn = extBlinker("Alarm on", &portExt);
-Blinker alarmOff = extBlinker("Alarm of", &portExt);
+extBlinker stopLight = extBlinker("Stop light", &portExt);
+extBlinker leftLight = extBlinker("Left light", &portExt);
+extBlinker rightLight = extBlinker("Right light", &portExt);
+extBlinker alarmOn = extBlinker("Alarm on", &portExt);
+extBlinker alarmOff = extBlinker("Alarm of", &portExt);
 Blinker lightBlinker = Blinker("Light Blinker");
 Beeper alarmBeepOn = Beeper("Alarm beep on");
 Beeper alarmBeepOff = Beeper("Alarm beep of");
@@ -167,57 +170,74 @@ VirtualButton btn_Blink = VirtualButton(btn_Blink_On, nullptr, btn_Blink_Off);
 VirtualButton btn_Alarm = VirtualButton(btn_Alarm_On, nullptr, btn_Alarm_Off);
 VirtualButton btn_Beeper = VirtualButton(btn_Beeper_On, nullptr, btn_Beeper_Off);
 
+VirtualButton out_BackLight = VirtualButton(out_BackLight_On, nullptr, out_BackLight_Off);
+
 void btn_ParkingLight_On() {
 	portExt.write(bitParkingLight, HIGH);
+	console.println("btn_ParkingLight_On");
 }
 void btn_ParkingLight_Off() {
 	portExt.write(bitParkingLight, LOW);
+	console.println("btn_ParkingLight_Off");
 }
 
 void btn_HeadLight_On() {
 	portExt.write(bitHeadLight, HIGH);
+	console.println("btn_HeadLight_On");
 }
 void btn_HeadLight_Off() {
 	portExt.write(bitHeadLight, LOW);
+	console.println("btn_HeadLight_Off");
 }
 
 void btn_HighLight_On() {
 	portExt.write(bitHighLight, HIGH);
+	console.println("btn_HighLight_On");
 }
 void btn_HighLight_Off() {
 	portExt.write(bitHighLight, LOW);
+	console.println("btn_HighLight_Off");
 }
 
 void btn_FogLight_On() {
 	portExt.write(bitFogLight, HIGH);
+	console.println("btn_FogLight_On");
 }
 void btn_FogLight_Off() {
 	portExt.write(bitFogLight, LOW);
+	console.println("btn_FogLight_Off");
 }
 
 void btn_LeftLight_On() {
 	btn_Alarm.reset();
 	btn_RightLight.reset();
 	if (!leftLight.isRunning()) leftLight.begin();
+	console.println("btn_LeftLight_On");
 }
 void btn_LeftLight_Off() {
 	if (leftLight.isRunning()) leftLight.end();
+	console.println("btn_LeftLight_Off");
 }
 
 void btn_RightLight_On() {
 	btn_Alarm.reset();
 	btn_LeftLight.reset();
 	if (!rightLight.isRunning()) rightLight.begin();
+	console.println("btn_RightLight_On");
+
 }
 void btn_RightLight_Off() {
 	if (rightLight.isRunning()) rightLight.end();
+	console.println("btn_RightLight_Off");
 }
 
 void btn_Blink_On() {
 	if (!lightBlinker.isRunning()) lightBlinker.begin();
+	console.println("btn_Blink_On");
 }
 void btn_Blink_Off() {
 	if (lightBlinker.isRunning()) lightBlinker.end();
+	console.println("btn_Blink_Off");
 }
 
 void btn_Alarm_On() {
@@ -227,17 +247,33 @@ void btn_Alarm_On() {
 	btn_RightLight.reset();
 	leftLight.begin();
 	rightLight.begin();
+	turnLightBeeper.begin();
+	console.println("btn_Alarm_On");
 }
 void btn_Alarm_Off() {
 	if (leftLight.isRunning()) leftLight.end();
 	if (rightLight.isRunning()) rightLight.end();
+	if (turnLightBeeper.isRunning()) turnLightBeeper.end();
+	console.println("btn_Alarm_Off");
 }
 
 void btn_Beeper_On() {
-	tone(pinBuzzer, )
+	tone(pinBuzzer, config.beep_freq);
+	console.println("btn_Beeper_On");
 }
 void btn_Beeper_Off() {
 	noTone(pinBuzzer);
+	console.println("btn_Beeper_Off");
+}
+
+
+void out_BackLight_On() {
+	portExt.write(bitBackLight, HIGH);
+	console.println("out_BackLight_On");
+}
+void out_BackLight_Off() {
+	portExt.write(bitBackLight, LOW);
+	console.println("out_BackLight_Off");
 }
 
 
@@ -245,7 +281,7 @@ bool turnOffTurnLights = false;
 int turnLightsCondition = 10;
 
 void handleTurnLight(int stearing) {
-	if (state.emergency) {//Якщо включена аварійка - нічого не робимо
+	if (btn_Alarm.isToggled) {//Якщо включена аварійка - нічого не робимо
 		turnOffTurnLights = false;
 		return;
 	}
@@ -279,75 +315,70 @@ void handleTurnLight(int stearing) {
 	}
 }
 
-bool handledhigh_light_btn_state = false;
-int handledLightMode = 0;
-int handledBackLightMode = 0;
 void handleLight() {
 
-	if (state.backLightMode != handledBackLightMode) {
-		switch (state.backLightMode)
-		{
-		case LightMode::OFF:
-			handledBackLightMode = state.backLightMode;
-			//backLight.end();
-			portExt.write(bitBackLight, LOW);
-			break;
-		case LightMode::WAIT_FOR_TIMEOUT:
-			if ((millis() - state.stoppedTime) > config.back_light_timeout) {
-				handledBackLightMode = state.backLightMode;
-				portExt.write(bitBackLight, LOW);
-			}
-			break;
-		case LightMode::ON:
-			portExt.write(bitBackLight, HIGH);
-			handledBackLightMode = state.backLightMode;
-			break;
-		default:
-			break;
+	switch (state.backLightMode)
+	{
+	case LightMode::OFF:
+		out_BackLight.setValue(LOW);
+		break;
+	case LightMode::WAIT_FOR_TIMEOUT:
+		if ((millis() - state.stoppedTime) > config.back_light_timeout) {
+			out_BackLight.setValue(LOW);
 		}
+		break;
+	case LightMode::ON:
+		out_BackLight.setValue(HIGH);
+		break;
+	default:
+		break;
 	}
 }
 
 
 void setupBlinkers() {
 
-	//Налаштування поворотників
-	leftLight
-		.Add(bitLeftLight, 0, HIGH)
-		->Add(bitLeftLight, 500, LOW)
-		->Add(bitLeftLight, 1000, LOW);
-	serialController.leftLight = &leftLight;
-	rightLight
-		.Add(bitRightLight, 0, HIGH)
-		->Add(bitRightLight, 500, LOW)
-		->Add(bitRightLight, 1000, LOW);
-	serialController.rightLight = &rightLight;
-
-	alarmOff
-		.Add(bitLeftLight, 0, config.turn_light_on)
-		->Add(bitRightLight, 0, config.turn_light_on)
-		->Add(bitLeftLight, 300, 0)
-		->Add(bitRightLight, 300, 0)
-		->Add(bitLeftLight, 600, config.turn_light_on)
-		->Add(bitRightLight, 600, config.turn_light_on)
-		->Add(bitLeftLight, 900, 0)
-		->Add(bitRightLight, 900, 0);
-	alarmOff.repeat = false;
-	//alarmOff.debug = true;
-
-	alarmOn
-		.Add(bitLeftLight, 0, config.turn_light_on)
-		->Add(bitRightLight, 0, config.turn_light_on)
-		->Add(bitLeftLight, 600, 0)
-		->Add(bitRightLight, 600, 0);
-	alarmOn.repeat = false;
-	//alarmOn.debug = true;
-
+	console.println("Stop");
 	stopLight.Add(bitStopLight, 0, LOW)
 		->Add(bitStopLight, 0, HIGH)
 		->Add(bitStopLight, config.stop_light_duration, LOW)
 		->repeat = false;
 	stopLight.debug = true;
+
+	//Налаштування поворотників
+	leftLight
+		.Add(bitLeftLight, 0, HIGH)
+		->Add(bitLeftLight, 500, LOW)
+		->Add(bitLeftLight, 1000, LOW);
+	leftLight.debug = true;
+	serialController.leftLight = &leftLight;
+
+	rightLight
+		.Add(bitRightLight, 0, HIGH)
+		->Add(bitRightLight, 500, LOW)
+		->Add(bitRightLight, 1000, LOW);
+	rightLight.debug = true;
+	serialController.rightLight = &rightLight;
+
+	alarmOff
+		.Add(bitLeftLight, 0, HIGH)
+		->Add(bitRightLight, 0, HIGH)
+		->Add(bitLeftLight, 300, 0)
+		->Add(bitRightLight, 300, 0)
+		->Add(bitLeftLight, 600, HIGH)
+		->Add(bitRightLight, 600, HIGH)
+		->Add(bitLeftLight, 900, 0)
+		->Add(bitRightLight, 900, 0);
+	alarmOff.repeat = false;
+	alarmOff.debug = true;
+
+	alarmOn
+		.Add(bitLeftLight, 0, HIGH)
+		->Add(bitRightLight, 0, HIGH)
+		->Add(bitLeftLight, 600, 0)
+		->Add(bitRightLight, 600, 0);
+	alarmOn.repeat = false;
+	alarmOn.debug = true;
 
 }
 
@@ -358,17 +389,20 @@ void setupBeepers() {
 		->Add(pinBuzzer, config.beep_duration + config.beep_interval + 1, config.beep_freq)
 		->Add(pinBuzzer, config.beep_duration + config.beep_interval + config.beep_duration, 0);
 	alarmBeepOn.repeat = false;
+	alarmBeepOn.debug = true;
 
 	alarmBeepOff
 		.Add(pinBuzzer, 1, config.beep_freq)
 		->Add(pinBuzzer, config.beep_duration, 0);
 	alarmBeepOff.repeat = false;
+	alarmBeepOff.debug = true;
 
 	turnLightBeeper.Add(pinBuzzer, 0, 1000)
 		->Add(pinBuzzer, 1, 0)
 		->Add(pinBuzzer, 500, 1000)
 		->Add(pinBuzzer, 501, 0)
 		->Add(pinBuzzer, 1000, 0);
+	turnLightBeeper.debug = true;
 
 }
 
@@ -383,8 +417,7 @@ void setupMotor() {
 		}
 	}
 	if (motor == nullptr) {
-		motor = new SpeedController("Speed reg D7", pinMotorA, &motorEffect);
-		/*switch (config.controller_type)
+		switch (config.controller_type)
 		{
 		case 0:
 			motor = new HBridge("H-Bridge", pinMotorA, pinMotorB, &motorEffect);
@@ -398,7 +431,7 @@ void setupMotor() {
 		default:
 			return;
 			break;
-		}*/
+		}
 	}
 
 	motor->responder = &console;
@@ -413,7 +446,7 @@ void refreshConfig() {
 
 	setupMotor();
 
-	leftLight.item(0)->value = config.turn_light_on;
+	/*leftLight.item(0)->value = config.turn_light_on;
 	rightLight.item(0)->value = config.turn_light_on;
 
 	alarmOn.item(0)->value = config.turn_light_on;
@@ -422,9 +455,9 @@ void refreshConfig() {
 	alarmOff.item(0)->value = config.turn_light_on;
 	alarmOff.item(1)->value = config.turn_light_on;
 	alarmOff.item(4)->value = config.turn_light_on;
-	alarmOff.item(5)->value = config.turn_light_on;
+	alarmOff.item(5)->value = config.turn_light_on;*/
 
-	stopLight.item(1)->value = config.front_light_on;
+	//stopLight.item(1)->value = config.front_light_on;
 	stopLight.item(2)->offset = config.stop_light_duration;
 
 	//backLight.item(0)->offset = map(100 - config.back_light_pwm, 0, 100, 0, 20);
@@ -448,9 +481,9 @@ void setup()
 	Serial.end();
 	pinMode(pinBuzzer, OUTPUT);
 	digitalWrite(pinBuzzer, LOW);
-	//Serial.begin(115200);
-	//Serial.println();
-	//Serial.println();
+	Serial.begin(115200);
+	Serial.println();
+	Serial.println();
 	console.output = &Serial;
 	analogWriteRange(255);
 	String s;
@@ -489,7 +522,12 @@ void setup()
 	//	Serial.end();
 	//	console.output = nullptr;
 	//}
+
+	console.println(("Start port extender..."));
+
 	portExt.begin(pinI2C_SDA, pinI2C_SCL);
+
+	console.println(("Done."));
 
 	btn_ParkingLight.isToggleMode = true;
 	btn_HeadLight.isToggleMode = true;
@@ -500,7 +538,12 @@ void setup()
 	btn_Blink.isToggleMode = true;
 	btn_Alarm.isToggleMode = true;
 
+	out_BackLight.isToggleMode = true;
+
+	console.println(("Blinkers."));
 	setupBlinkers();
+	console.println(("Beeper."));
+	console.flush();
 	setupBeepers();
 
 	stearingServo.max_left = config.max_left;
@@ -514,6 +557,8 @@ void setup()
 	serialController.stearing = &stearingServo;
 	serialController.motor = motor;
 
+	console.println("RemoteXY");
+
 	remotexy = new CRemoteXY(RemoteXY_CONF_PROGMEM, &RemoteXY, REMOTEXY_ACCESS_PASSWORD, SSID, SSID_password, REMOTEXY_SERVER_PORT);//RemoteXY_Init();
 
 	console.println("Start");
@@ -521,6 +566,8 @@ void setup()
 	webServer.apName = String(SSID);
 
 	setupController.reloadConfig = &refreshConfig;
+	console.println(("Setup complete."));
+
 }
 
 
@@ -553,7 +600,17 @@ void loop()
 			leftLight.end();
 			rightLight.end();
 			turnLightBeeper.end();
-			state.emergency = false;
+
+			btn_ParkingLight.reset();
+			btn_HeadLight.reset();
+			btn_HighLight.reset();
+			btn_FogLight.reset();
+			btn_LeftLight.reset();
+			btn_RightLight.reset();
+			btn_Blink.reset();
+			btn_Alarm.reset();
+			btn_Beeper.reset();
+
 			alarmOff.begin();
 			alarmBeepOn.begin();
 			motor->isEnabled = true;
@@ -561,6 +618,7 @@ void loop()
 			state.stopped = true;
 			stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
 			stearingServo.isEnabled = true;
+			servo2.attach(pinServo2);
 			connected = true;
 		}
 		int pos;
@@ -570,24 +628,14 @@ void loop()
 		case 1: //лівий джойстик повороти, Повзунок - швидкість
 			speed = mapSpeed(RemoteXY.right_joy_y);
 			motor->setSpeed(speed);
-			if (speed < 0)
-				state.backLightMode = LightMode::ON;
-			else if (speed == 0) {
-				if (state.backLightMode == LightMode::ON)
-					state.backLightMode = LightMode::WAIT_FOR_TIMEOUT;
-			}
-			else
-				state.backLightMode = LightMode::OFF;
 
 			if (RemoteXY.right_joy_y > -10 && RemoteXY.right_joy_y < 10) {
 				if (!state.stopped) {
-					//stopLight.begin();
 					state.stopped = true;
 					state.stoppedTime = millis();
 				}
 			}
 			else {
-				//stopLight.end();
 				state.stopped = false;
 			}
 			stearingServo.setPosition(RemoteXY.left_joy_x, (PotentiometerLinearity)config.stearing_linearity);
@@ -597,26 +645,30 @@ void loop()
 		default: //Все керування лівим джойстиком
 			speed = mapSpeed(RemoteXY.left_joy_y);
 			motor->setSpeed(speed);
-			if (speed < 0)
-				state.backLightMode = LightMode::ON;
-			else
-				state.backLightMode = LightMode::OFF;
 
 			if (RemoteXY.left_joy_y > -5 && RemoteXY.left_joy_y < 5) {
 				if (!state.stopped) {
-					//stopLight.begin();
 					state.stopped = true;
 					state.stoppedTime = millis();
 				}
 			}
 			else {
-				//stopLight.end();
 				state.stopped = false;
 			}
 			stearingServo.setPosition(RemoteXY.left_joy_x, (PotentiometerLinearity)config.stearing_linearity);
 			handleTurnLight(RemoteXY.left_joy_x);
 			break;
 		}
+
+		if (speed < 0)
+			state.backLightMode = LightMode::ON;
+		else if (speed == 0) {
+			if (state.backLightMode == LightMode::ON)
+				state.backLightMode = LightMode::WAIT_FOR_TIMEOUT;
+		}
+		else
+			state.backLightMode = LightMode::OFF;
+
 
 		if (state.speed != speed) {
 			//швидкість змінилась
@@ -644,7 +696,8 @@ void loop()
 		btn_RightLight.setValue(RemoteXY.rightTurn);
 		btn_Blink.setValue(RemoteXY.Blink);
 		btn_Alarm.setValue(RemoteXY.Alarm);
-
+		btn_Beeper.setValue(RemoteXY.beepButton);
+		servo2.write(map(RemoteXY.servo2, 0, 100, config.servo2_min, config.servo2_max));
 		handleLight();
 	}
 	else {
@@ -654,13 +707,12 @@ void loop()
 			leftLight.end();
 			rightLight.end();
 			turnLightBeeper.end();
-			state.emergency = false;
 			alarmOn.begin();
 			alarmBeepOff.begin();
 			motor->isEnabled = false;
 			motor->reset();
 			stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
-
+			servo2.detach();
 			btn_ParkingLight.reset();
 			btn_HeadLight.reset();
 			btn_HighLight.reset();
@@ -669,6 +721,7 @@ void loop()
 			btn_RightLight.reset();
 			btn_Blink.reset();
 			btn_Alarm.reset();
+			btn_Beeper.reset();
 
 			handleLight();
 			stearingServo.isEnabled = false;
@@ -702,6 +755,9 @@ void loop()
 	btn_RightLight.handle();
 	btn_Blink.handle();
 	btn_Alarm.handle();
+	btn_Beeper.handle();
+
+	out_BackLight.handle();
 
 	leftLight.loop();
 	rightLight.loop();

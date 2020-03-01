@@ -38,6 +38,7 @@ public:
 	Blinker * Add(int pin, unsigned long offset, uint8_t value);
 	Blinker * begin() { current = first; startTime = millis(); return this; };
 	Blinker * end();
+	virtual void setupPin(int pin);
 	virtual void write(int pin, int value);
 	BlinkerItem * item(int index);
 	bool isRunning() { return startTime != 0; };
@@ -61,4 +62,5 @@ public :
 	extBlinker(String name, PCF8574 * extPort) : Blinker(name) { this->extPort = extPort; };
 	~extBlinker() {};
 	virtual void write(int pin, int value);
+	virtual void setupPin(int pin);
 };

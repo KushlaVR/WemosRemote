@@ -29,18 +29,16 @@ void SetupController::loadConfig()
 		cfg.AddValue("max_right", "60");
 		cfg.AddValue("stearing_linearity", "1");
 
-		cfg.AddValue("controller_type", "2");
+		cfg.AddValue("controller_type", "0");
 		cfg.AddValue("min_speed", "20");
 		cfg.AddValue("inertion", "800");
 		cfg.AddValue("potentiometer_linearity", "1");
 
-		cfg.AddValue("front_light_on", "40");
-		cfg.AddValue("high_light_on", "80");
-		cfg.AddValue("parking_light_on", "10");
-		cfg.AddValue("turn_light_on", "80");
+		cfg.AddValue("servo2_min", "40");
+		cfg.AddValue("servo2_max", "80");
+
 		cfg.AddValue("stop_light_duration", "2000");
 		cfg.AddValue("back_light_timeout", "500");
-		cfg.AddValue("back_light_pwm", "70");
 		cfg.AddValue("beep_freq", "1000");
 		cfg.AddValue("beep_duration", "150");
 		cfg.AddValue("beep_interval", "50");
@@ -59,7 +57,9 @@ void SetupController::loadConfig()
 		s = cfgFile.readString();
 		cfg = JsonString(s.c_str());
 		cfgFile.close();
+
 	}
+	console.println(("Parsing config..."));
 
 	this->cfg->ssid = String(cfg.getValue("ssid"));
 	this->cfg->password = String(cfg.getValue("password"));
@@ -82,20 +82,19 @@ void SetupController::loadConfig()
 	this->cfg->inertion = cfg.getInt("inertion");
 	this->cfg->potentiometer_linearity = cfg.getInt("potentiometer_linearity");
 
-	this->cfg->front_light_on = cfg.getInt("front_light_on");
-	this->cfg->high_light_on = cfg.getInt("high_light_on");
-	this->cfg->parking_light_on = cfg.getInt("parking_light_on");
-	this->cfg->turn_light_on = cfg.getInt("turn_light_on");
+	this->cfg->servo2_min = cfg.getInt("servo2_min");
+	this->cfg->servo2_max = cfg.getInt("servo2_max");
 
 	this->cfg->stop_light_duration = cfg.getInt("stop_light_duration");
 	this->cfg->back_light_timeout = cfg.getInt("back_light_timeout");
-	this->cfg->back_light_pwm = cfg.getInt("back_light_pwm");
 
 	this->cfg->beep_freq = cfg.getInt("beep_freq");
 	this->cfg->beep_duration = cfg.getInt("beep_duration");
 	this->cfg->beep_interval = cfg.getInt("beep_interval");
 
 	this->cfg->drive_mode = cfg.getInt("drive_mode");
+
+	console.println(("Config loaded."));
 
 }
 
@@ -126,13 +125,11 @@ void SetupController::printConfig(JsonString * out)
 	out->AddValue("inertion", String(cfg->inertion));
 	out->AddValue("potentiometer_linearity", String(cfg->potentiometer_linearity));
 
-	out->AddValue("front_light_on", String(cfg->front_light_on));
-	out->AddValue("high_light_on", String(cfg->high_light_on));
-	out->AddValue("parking_light_on", String(cfg->parking_light_on));
-	out->AddValue("turn_light_on", String(cfg->turn_light_on));
+	out->AddValue("servo2_min", String(cfg->servo2_min));
+	out->AddValue("servo2_max", String(cfg->servo2_max));
+
 	out->AddValue("stop_light_duration", String(cfg->stop_light_duration));
 	out->AddValue("back_light_timeout", String(cfg->back_light_timeout));
-	out->AddValue("back_light_pwm", String(cfg->back_light_pwm));
 
 	out->AddValue("beep_freq", String(cfg->beep_freq));
 	out->AddValue("beep_duration", String(cfg->beep_duration));
@@ -166,13 +163,11 @@ void SetupController::Setup_Post()
 	if (webServer.hasArg("min_speed")) { setupController.cfg->min_speed = webServer.arg("min_speed").toInt(); }
 	if (webServer.hasArg("potentiometer_linearity")) { setupController.cfg->potentiometer_linearity = webServer.arg("potentiometer_linearity").toInt(); }
 
-	if (webServer.hasArg("front_light_on")) { setupController.cfg->front_light_on = webServer.arg("front_light_on").toInt(); }
-	if (webServer.hasArg("high_light_on")) { setupController.cfg->high_light_on = webServer.arg("high_light_on").toInt(); }
-	if (webServer.hasArg("parking_light_on")) { setupController.cfg->parking_light_on = webServer.arg("parking_light_on").toInt(); }
-	if (webServer.hasArg("turn_light_on")) { setupController.cfg->turn_light_on = webServer.arg("turn_light_on").toInt(); }
+	if (webServer.hasArg("servo2_min")) { setupController.cfg->servo2_min = webServer.arg("servo2_min").toInt(); }
+	if (webServer.hasArg("servo2_max")) { setupController.cfg->servo2_max = webServer.arg("servo2_max").toInt(); }
+	
 	if (webServer.hasArg("stop_light_duration")) { setupController.cfg->stop_light_duration = webServer.arg("stop_light_duration").toInt(); }
 	if (webServer.hasArg("back_light_timeout")) { setupController.cfg->back_light_timeout = webServer.arg("back_light_timeout").toInt(); }
-	if (webServer.hasArg("back_light_pwm")) { setupController.cfg->back_light_pwm = webServer.arg("back_light_pwm").toInt(); }
 	
 	if (webServer.hasArg("beep_freq")) { setupController.cfg->beep_freq = webServer.arg("beep_freq").toInt(); }
 	if (webServer.hasArg("beep_duration")) { setupController.cfg->beep_duration = webServer.arg("beep_duration").toInt(); }
