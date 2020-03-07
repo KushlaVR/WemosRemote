@@ -56,8 +56,7 @@
 #define bitFogLight 7
 
 #define pinBlinker D3
-#define pinBuzzer RX
-
+//#define pinBuzzer RX
 
 
 // RemoteXY configurate  
@@ -65,15 +64,15 @@
 uint8_t RemoteXY_CONF[] =
 { 255,14,0,0,0,140,0,10,8,0,
 4,128,64,1,42,7,2,26,1,1,
-23,36,22,12,134,31,226,151,132,0,
-1,1,14,49,31,12,160,31,83,0,
+31,36,22,12,134,31,226,151,132,0,
+1,1,22,49,31,12,160,31,83,0,
 1,1,56,49,31,12,48,31,65,0,
 1,1,56,36,22,12,134,31,226,150,
 186,0,1,1,56,23,22,12,2,31,
-77,0,1,1,23,23,22,12,118,31,
-76,0,1,1,14,10,31,12,132,31,
+77,0,1,1,31,23,22,12,118,31,
+76,0,1,1,22,10,31,12,132,31,
 226,152,188,0,1,1,56,10,31,12,
-175,31,72,0,5,32,-16,12,46,46,
+175,31,72,0,5,32,1,17,36,36,
 207,26,31,5,32,71,13,46,46,207,
 26,31,1,1,42,0,17,9,101,31,
 226,153,171,0,129,0,1,1,28,8,
@@ -142,7 +141,7 @@ char SSID[32];
 char SSID_password[20];
 bool connected = false;
 
-PCF8574 portExt = PCF8574(0x38);
+PCF8574 portExt = PCF8574(0x27);
 RoboEffects motorEffect = RoboEffects();
 MotorBase * motor = nullptr;
 Stearing stearingServo = Stearing(pinServo);
@@ -258,11 +257,11 @@ void btn_Alarm_Off() {
 }
 
 void btn_Beeper_On() {
-	tone(pinBuzzer, config.beep_freq);
+	//tone(pinBuzzer, config.beep_freq);
 	console.println("btn_Beeper_On");
 }
 void btn_Beeper_Off() {
-	noTone(pinBuzzer);
+	//noTone(pinBuzzer);
 	console.println("btn_Beeper_Off");
 }
 
@@ -380,10 +379,29 @@ void setupBlinkers() {
 	alarmOn.repeat = false;
 	alarmOn.debug = true;
 
+	lightBlinker
+		.Add(pinBlinker, 0, HIGH)
+		->Add(pinBlinker, 200, LOW)
+		->Add(pinBlinker, 300, HIGH)
+		->Add(pinBlinker, 500, LOW)
+		->Add(pinBlinker, 700, HIGH)
+		->Add(pinBlinker, 900, LOW)
+		->Add(pinBlinker, 1000, HIGH)
+		->Add(pinBlinker, 1400, LOW)
+		->Add(pinBlinker, 1500, HIGH)
+		->Add(pinBlinker, 1900, LOW)
+		->Add(pinBlinker, 2000, HIGH)
+		->Add(pinBlinker, 2200, LOW)
+		->Add(pinBlinker, 2300, HIGH)
+		->Add(pinBlinker, 2500, LOW)
+		->Add(pinBlinker, 2700, HIGH)
+		->Add(pinBlinker, 2900, LOW)
+		->Add(pinBlinker, 3000, LOW);
+	lightBlinker.debug = true;
 }
 
 void setupBeepers() {
-	alarmBeepOn
+	/*alarmBeepOn
 		.Add(pinBuzzer, 1, config.beep_freq)
 		->Add(pinBuzzer, config.beep_duration, 0)
 		->Add(pinBuzzer, config.beep_duration + config.beep_interval + 1, config.beep_freq)
@@ -402,7 +420,7 @@ void setupBeepers() {
 		->Add(pinBuzzer, 500, 1000)
 		->Add(pinBuzzer, 501, 0)
 		->Add(pinBuzzer, 1000, 0);
-	turnLightBeeper.debug = true;
+	turnLightBeeper.debug = true;*/
 
 }
 
@@ -479,8 +497,8 @@ void setup()
 {
 	state.serialEnabled = true;
 	Serial.end();
-	pinMode(pinBuzzer, OUTPUT);
-	digitalWrite(pinBuzzer, LOW);
+	//pinMode(pinBuzzer, OUTPUT);
+	//digitalWrite(pinBuzzer, LOW);
 	Serial.begin(115200);
 	Serial.println();
 	Serial.println();
@@ -525,7 +543,7 @@ void setup()
 
 	console.println(("Start port extender..."));
 
-	portExt.begin(pinI2C_SDA, pinI2C_SCL);
+	portExt.begin(pinI2C_SDA, pinI2C_SCL, 0x00);
 
 	console.println(("Done."));
 
@@ -538,7 +556,7 @@ void setup()
 	btn_Blink.isToggleMode = true;
 	btn_Alarm.isToggleMode = true;
 
-	out_BackLight.isToggleMode = true;
+	//out_BackLight.isToggleMode = true;
 
 	console.println(("Blinkers."));
 	setupBlinkers();
@@ -556,6 +574,7 @@ void setup()
 
 	serialController.stearing = &stearingServo;
 	serialController.motor = motor;
+	serialController.portExt = &portExt;
 
 	console.println("RemoteXY");
 
@@ -727,10 +746,8 @@ void loop()
 			stearingServo.isEnabled = false;
 		}
 	}
-	if (config.debug) {
-		serialController.loop();
-	}
-	if (state.serialEnabled) {
+	serialController.loop();
+	/*if (state.serialEnabled) {
 		if (alarmBeepOn.isRunning() || alarmBeepOff.isRunning()) {
 			//Serial.end();
 			state.serialEnabled = false;
@@ -742,7 +759,7 @@ void loop()
 			//Serial.begin(115200);
 			state.serialEnabled = true;
 		}
-	}
+	}*/
 
 	motor->loop();
 	stearingServo.loop();
@@ -767,6 +784,7 @@ void loop()
 	alarmOn.loop();
 	alarmBeepOn.loop();
 	stopLight.loop();
-
+	lightBlinker.loop();
+	//portExt.write8(portExt.valueOut());
 	webServer.loop();
 }

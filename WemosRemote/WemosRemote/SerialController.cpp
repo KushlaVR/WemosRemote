@@ -28,6 +28,9 @@ void SerialController::loop()
 				else if (s.startsWith("flash=")) {
 					cmdFlash(s.substring(6));
 				}
+				else if (s.startsWith("port=")) {
+					cmdPort(s.substring(5));
+				}
 				else if (s.startsWith("end")) {
 					isRunning = true;
 				}
@@ -66,4 +69,10 @@ void SerialController::cmdFlash(String cmd)
 	}
 	else if (cmd.startsWith("siren1"))
 		siren1->begin();
+}
+
+void SerialController::cmdPort(String cmd)
+{
+	portExt->write8(cmd.toInt());
+	Serial.println(portExt->valueOut());
 }

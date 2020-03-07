@@ -78,6 +78,23 @@ uint8_t PCF8574::read8()
 	return _dataIn;
 }
 
+void PCF8574::set(const uint8_t pin, const uint8_t value)
+{
+	if (pin > 7)
+	{
+		_error = PCF8574_PIN_ERROR;
+		return;
+	}
+	if (value == LOW)
+	{
+		_dataOut &= ~(1 << pin);
+	}
+	else
+	{
+		_dataOut |= (1 << pin);
+	}
+}
+
 void PCF8574::write8(const uint8_t value)
 {
 	_dataOut = value;

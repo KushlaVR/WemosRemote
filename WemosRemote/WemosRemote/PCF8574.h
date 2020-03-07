@@ -39,6 +39,8 @@ public:
 	uint8_t read(uint8_t pin);
 	uint8_t value() const { return _dataIn; };
 
+	void set(const uint8_t pin, const uint8_t value);
+
 	void write8(const uint8_t value);
 	void write(const uint8_t pin, const uint8_t value);
 	uint8_t valueOut() const { return _dataOut; }

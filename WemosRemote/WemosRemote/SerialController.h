@@ -10,6 +10,7 @@
 #include "Stearing.h"
 #include "Blinker.h"
 #include "Console.h"
+#include "PCF8574.h"
 
 class SerialController
 {
@@ -26,11 +27,13 @@ public:
 	Blinker * leftLight = nullptr;
 	Blinker * rightLight = nullptr;
 	Blinker  * siren1 = nullptr;
+	PCF8574  * portExt = nullptr;
 
 	void loop();
 
 	void cmdMotor(String cmd);
 	void cmdStearing(String cmd);
 	void cmdFlash(String cmd);
+	void cmdPort(String cmd);
 };
 
