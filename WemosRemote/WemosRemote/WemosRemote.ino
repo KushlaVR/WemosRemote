@@ -425,6 +425,9 @@ void setupBeepers() {
 }
 
 void setupMotor() {
+	pinMode(pinServo2, OUTPUT);
+	digitalWrite(pinServo2, LOW);
+
 	if (motor != nullptr) {
 		motor->isEnabled = false;
 		motor->reset();
@@ -464,7 +467,8 @@ void refreshConfig() {
 
 	setupMotor();
 
-	/*leftLight.item(0)->value = config.turn_light_on;
+	/*
+	leftLight.item(0)->value = config.turn_light_on;
 	rightLight.item(0)->value = config.turn_light_on;
 
 	alarmOn.item(0)->value = config.turn_light_on;
@@ -473,7 +477,8 @@ void refreshConfig() {
 	alarmOff.item(0)->value = config.turn_light_on;
 	alarmOff.item(1)->value = config.turn_light_on;
 	alarmOff.item(4)->value = config.turn_light_on;
-	alarmOff.item(5)->value = config.turn_light_on;*/
+	alarmOff.item(5)->value = config.turn_light_on;
+	*/
 
 	//stopLight.item(1)->value = config.front_light_on;
 	stopLight.item(2)->offset = config.stop_light_duration;
