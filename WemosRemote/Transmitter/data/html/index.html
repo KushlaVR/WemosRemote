@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Wemos WIFI reote controll</title>
+    <link rel="stylesheet" href="bootstrap.css" />
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="kushlavr.js"></script>
+</head>
+<body>
+    <div class="container mb-4">
+        <div class="row">
+            <div class="col-2"></div>
+            <div class="col-8">
+                <h1>Config</h1>
+                <form action="/api/setup" method="post" id="form">
+                    <h2>Servo</h2>
+                    <div class="form-group">
+                        <label>X</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="x" class="form-control" step="1" min="0" max="180" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">0<sup>o</sup>..180<sup>o</sup></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Y</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="y" class="form-control" step="1" min="0" max="180" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">0<sup>o</sup>..180<sup>o</sup></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>CH3</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="ch3" class="form-control" step="1" min="0" max="180" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">0<sup>o</sup>..180<sup>o</sup></span>
+                            </div>
+                            <div class="input-group-append">
+                                <a href="#" class="btn btn-secondary" onclick="KVR.setValue('ch3', 45)">
+                                    <span class="">45<sup>o</sup></span>
+                                </a>
+                            </div>
+                            <div class="input-group-append">
+                                <a href="#" class="btn btn-secondary" onclick="KVR.setValue('ch3', 135)">
+                                    <span class="">135<sup>o</sup></span>
+                                </a>
+                            </div>
+                        </div>
+                        
+                    </div>
+                    <div class="form-group">
+                        <label>CH4</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="ch4" class="form-control" step="1" min="0" max="180" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">0<sup>o</sup>..180<sup>o</sup></span>
+                            </div>
+                            <div class="input-group-append" onclick="KVR.setValue('ch4', 45)">
+                                <a href="#" class="btn btn-secondary">
+                                    <span class="">45<sup>o</sup></span>
+                                </a>
+                            </div>
+                            <div class="input-group-append" onclick="KVR.setValue('ch4', 90)">
+                                <a href="#" class="btn btn-secondary" >
+                                    <span class="">90<sup>o</sup></span>
+                                </a>
+                            </div>
+                            <div class="input-group-append">
+                                <a href="#" class="btn btn-secondary" onclick="KVR.setValue('ch4', 135)">
+                                    <span class="">135<sup>o</sup></span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="button" class="btn btn-primary" value="Start" onclick="KVR.Autorefresh()"/>
+                </form>
+            </div>
+            <div class="col-2"></div>
+        </div>
+    </div>
+    <div class="jumbotron">
+
+    </div>
+    <script>
+        $(document).ready(function () {
+            console.log("ready!");
+            KVR.load();
+        });
+    </script>
+</body>
+</html>

@@ -11,7 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WemosRemote_mp3", "WemosRemote_mp3\WemosRemote_mp3.vcxproj", "{988DF960-1BF0-4BD8-87CB-3FA31C5238E7}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Transmitter", "Transmitter\Transmitter.vcxproj", "{5C1E0676-FD65-4A35-9E1F-F7DE9A79C21D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +23,10 @@ Global
 		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Debug|x86.Build.0 = Debug|Win32
 		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|x86.ActiveCfg = Release|Win32
 		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|x86.Build.0 = Release|Win32
-		{988DF960-1BF0-4BD8-87CB-3FA31C5238E7}.Debug|x86.ActiveCfg = Debug|Win32
-		{988DF960-1BF0-4BD8-87CB-3FA31C5238E7}.Debug|x86.Build.0 = Debug|Win32
-		{988DF960-1BF0-4BD8-87CB-3FA31C5238E7}.Release|x86.ActiveCfg = Release|Win32
-		{988DF960-1BF0-4BD8-87CB-3FA31C5238E7}.Release|x86.Build.0 = Release|Win32
+		{5C1E0676-FD65-4A35-9E1F-F7DE9A79C21D}.Debug|x86.ActiveCfg = Debug|Win32
+		{5C1E0676-FD65-4A35-9E1F-F7DE9A79C21D}.Debug|x86.Build.0 = Debug|Win32
+		{5C1E0676-FD65-4A35-9E1F-F7DE9A79C21D}.Release|x86.ActiveCfg = Release|Win32
+		{5C1E0676-FD65-4A35-9E1F-F7DE9A79C21D}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
