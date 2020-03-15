@@ -56,7 +56,7 @@
 #define bitFogLight 7
 
 #define pinBlinker D3
-//#define pinBuzzer RX
+#define pinBuzzer RX
 
 
 // RemoteXY configurate  
@@ -257,11 +257,11 @@ void btn_Alarm_Off() {
 }
 
 void btn_Beeper_On() {
-	//tone(pinBuzzer, config.beep_freq);
+	tone(pinBuzzer, config.beep_freq);
 	console.println("btn_Beeper_On");
 }
 void btn_Beeper_Off() {
-	//noTone(pinBuzzer);
+	noTone(pinBuzzer);
 	console.println("btn_Beeper_Off");
 }
 
@@ -401,7 +401,7 @@ void setupBlinkers() {
 }
 
 void setupBeepers() {
-	/*alarmBeepOn
+	alarmBeepOn
 		.Add(pinBuzzer, 1, config.beep_freq)
 		->Add(pinBuzzer, config.beep_duration, 0)
 		->Add(pinBuzzer, config.beep_duration + config.beep_interval + 1, config.beep_freq)
@@ -420,7 +420,7 @@ void setupBeepers() {
 		->Add(pinBuzzer, 500, 1000)
 		->Add(pinBuzzer, 501, 0)
 		->Add(pinBuzzer, 1000, 0);
-	turnLightBeeper.debug = true;*/
+	turnLightBeeper.debug = true;
 
 }
 
@@ -502,9 +502,9 @@ void setup()
 {
 	state.serialEnabled = true;
 	Serial.end();
-	//pinMode(pinBuzzer, OUTPUT);
-	//digitalWrite(pinBuzzer, LOW);
-	Serial.begin(115200);
+	pinMode(pinBuzzer, OUTPUT);
+	digitalWrite(pinBuzzer, LOW);
+	//Serial.begin(115200);
 	Serial.println();
 	Serial.println();
 	console.output = &Serial;
@@ -752,7 +752,7 @@ void loop()
 		}
 	}
 	serialController.loop();
-	/*if (state.serialEnabled) {
+	if (state.serialEnabled) {
 		if (alarmBeepOn.isRunning() || alarmBeepOff.isRunning()) {
 			//Serial.end();
 			state.serialEnabled = false;
@@ -764,7 +764,7 @@ void loop()
 			//Serial.begin(115200);
 			state.serialEnabled = true;
 		}
-	}*/
+	}
 
 	motor->loop();
 	stearingServo.loop();
