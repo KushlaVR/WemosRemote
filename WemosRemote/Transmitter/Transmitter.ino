@@ -102,15 +102,9 @@ void setup() {
 	servo_CH3.attach(pinServo_CH3);
 	servo_CH4.attach(pinServo_CH4);
 
-	attachInterrupt(pinServo_X, pinServo_X_RISING, RISING);
-	attachInterrupt(pinServo_X, pinServo_X_FALLING, FALLING);
-
 }
 
 
-ulong last_servoXLen = 0;
-int lastPos = 0;
-int pos = 0;
 // the loop function runs over and over again until power down or reset
 void loop() {
 
@@ -119,24 +113,7 @@ void loop() {
 	servo_CH3.write(cfg->ch3);
 	servo_CH4.write(cfg->ch4);
 	
-	if (last_servoXLen != servoXLen) {
-		last_servoXLen = servoXLen;
-		if (last_servoXLen < 1000ul) {
-			pos = 0;
-		}
-		else if (last_servoXLen > 2000) {
-			pos = 180;
-		}
-		else
-		{
-			pos = map(last_servoXLen, 1000, 2000, 0, 180);
-		}
-	};
-
-	if (lastPos != pos) {
-		Serial.printf("Servo X = %i", pos);
-		lastPos = pos;
-	}
+	
 
 	webServer.loop();
 }
@@ -170,13 +147,4 @@ void Setup_Post()
 }
 
 
-ulong servoXStart = 0;
-ulong servoXLen = 0;
 
-void pinServo_X_RISING() {
-	servoXStart = micros();
-}
-
-void pinServo_X_FALLING() {
-	servoXLen = micros() - servoXStart;
-}

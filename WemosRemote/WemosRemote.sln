@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Transmitter", "Transmitter\Transmitter.vcxproj", "{5C1E0676-FD65-4A35-9E1F-F7DE9A79C21D}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Receiver", "Receiver\Receiver.vcxproj", "{E5C50779-40A9-4265-A8CC-C707BF8945EB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -27,6 +29,10 @@ Global
 		{5C1E0676-FD65-4A35-9E1F-F7DE9A79C21D}.Debug|x86.Build.0 = Debug|Win32
 		{5C1E0676-FD65-4A35-9E1F-F7DE9A79C21D}.Release|x86.ActiveCfg = Release|Win32
 		{5C1E0676-FD65-4A35-9E1F-F7DE9A79C21D}.Release|x86.Build.0 = Release|Win32
+		{E5C50779-40A9-4265-A8CC-C707BF8945EB}.Debug|x86.ActiveCfg = Debug|Win32
+		{E5C50779-40A9-4265-A8CC-C707BF8945EB}.Debug|x86.Build.0 = Debug|Win32
+		{E5C50779-40A9-4265-A8CC-C707BF8945EB}.Release|x86.ActiveCfg = Release|Win32
+		{E5C50779-40A9-4265-A8CC-C707BF8945EB}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
