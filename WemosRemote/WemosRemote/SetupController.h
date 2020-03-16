@@ -26,6 +26,12 @@ public:
 	int servo2_min;
 	int servo2_max;
 
+	int servo3_min;
+	int servo3_max;
+
+	int servo4_min;
+	int servo4_max;
+
 	int stop_light_duration;//в мілісекундах
 	int back_light_timeout;//в мілісекундах
 

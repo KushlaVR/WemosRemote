@@ -37,6 +37,12 @@ void SetupController::loadConfig()
 		cfg.AddValue("servo2_min", "40");
 		cfg.AddValue("servo2_max", "80");
 
+		cfg.AddValue("servo3_min", "40");
+		cfg.AddValue("servo3_max", "80");
+
+		cfg.AddValue("servo4_min", "40");
+		cfg.AddValue("servo4_max", "80");
+
 		cfg.AddValue("stop_light_duration", "2000");
 		cfg.AddValue("back_light_timeout", "500");
 		cfg.AddValue("beep_freq", "1000");
@@ -85,6 +91,12 @@ void SetupController::loadConfig()
 	this->cfg->servo2_min = cfg.getInt("servo2_min");
 	this->cfg->servo2_max = cfg.getInt("servo2_max");
 
+	this->cfg->servo3_min = cfg.getInt("servo3_min");
+	this->cfg->servo3_max = cfg.getInt("servo3_max");
+
+	this->cfg->servo4_min = cfg.getInt("servo4_min");
+	this->cfg->servo4_max = cfg.getInt("servo4_max");
+
 	this->cfg->stop_light_duration = cfg.getInt("stop_light_duration");
 	this->cfg->back_light_timeout = cfg.getInt("back_light_timeout");
 
@@ -128,6 +140,12 @@ void SetupController::printConfig(JsonString * out)
 	out->AddValue("servo2_min", String(cfg->servo2_min));
 	out->AddValue("servo2_max", String(cfg->servo2_max));
 
+	out->AddValue("servo3_min", String(cfg->servo3_min));
+	out->AddValue("servo3_max", String(cfg->servo3_max));
+
+	out->AddValue("servo4_min", String(cfg->servo4_min));
+	out->AddValue("servo4_max", String(cfg->servo4_max));
+
 	out->AddValue("stop_light_duration", String(cfg->stop_light_duration));
 	out->AddValue("back_light_timeout", String(cfg->back_light_timeout));
 
@@ -166,6 +184,12 @@ void SetupController::Setup_Post()
 	if (webServer.hasArg("servo2_min")) { setupController.cfg->servo2_min = webServer.arg("servo2_min").toInt(); }
 	if (webServer.hasArg("servo2_max")) { setupController.cfg->servo2_max = webServer.arg("servo2_max").toInt(); }
 	
+	if (webServer.hasArg("servo3_min")) { setupController.cfg->servo3_min = webServer.arg("servo3_min").toInt(); }
+	if (webServer.hasArg("servo3_max")) { setupController.cfg->servo3_max = webServer.arg("servo3_max").toInt(); }
+
+	if (webServer.hasArg("servo4_min")) { setupController.cfg->servo4_min = webServer.arg("servo4_min").toInt(); }
+	if (webServer.hasArg("servo4_max")) { setupController.cfg->servo4_max = webServer.arg("servo4_max").toInt(); }
+
 	if (webServer.hasArg("stop_light_duration")) { setupController.cfg->stop_light_duration = webServer.arg("stop_light_duration").toInt(); }
 	if (webServer.hasArg("back_light_timeout")) { setupController.cfg->back_light_timeout = webServer.arg("back_light_timeout").toInt(); }
 	

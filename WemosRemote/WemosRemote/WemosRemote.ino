@@ -5,11 +5,6 @@
 */
 
 
-
-////////////////////////////////////////////// 
-//        RemoteXY include library          // 
-////////////////////////////////////////////// 
-
 // определение режима соединения и подключение библиотеки RemoteXY  
 #define REMOTEXY_MODE__ESP8266WIFI_LIB_POINT
 
@@ -37,6 +32,8 @@
 
 #define pinServo D5
 #define pinServo2 D8
+#define pinServo3 D0
+#define pinServo4 D4
 
 #define pinMotorA D7//H bridge
 #define pinMotorB D6//H bridge
@@ -60,29 +57,36 @@
 
 
 // RemoteXY configurate  
+//////////////////////////////////////////////
+//        RemoteXY include library          //
+//////////////////////////////////////////////
+#define REMOTEXY_SERVER_PORT 6377
+
+// RemoteXY configurate  
 #pragma pack(push, 1)
 uint8_t RemoteXY_CONF[] =
-{ 255,14,0,0,0,140,0,10,8,0,
-4,128,64,1,42,7,2,26,1,1,
-31,36,22,12,134,31,226,151,132,0,
-1,1,22,49,31,12,160,31,83,0,
-1,1,56,49,31,12,48,31,65,0,
-1,1,56,36,22,12,134,31,226,150,
-186,0,1,1,56,23,22,12,2,31,
-77,0,1,1,31,23,22,12,118,31,
-76,0,1,1,22,10,31,12,132,31,
-226,152,188,0,1,1,56,10,31,12,
-175,31,72,0,5,32,1,17,36,36,
-207,26,31,5,32,71,13,46,46,207,
-26,31,1,1,42,0,17,9,101,31,
-226,153,171,0,129,0,1,1,28,8,
-40,67,76,65,65,83,0 };
+{ 255,16,0,0,0,156,0,10,8,0,
+1,1,33,32,17,10,134,31,226,151,
+132,0,1,1,33,43,17,10,160,31,
+83,0,1,1,56,43,17,10,48,31,
+65,0,1,1,56,32,17,10,134,31,
+226,150,186,0,1,1,56,21,17,10,
+2,31,77,0,1,1,33,21,17,10,
+118,31,76,0,1,1,33,10,17,10,
+132,31,226,152,188,0,1,1,56,10,
+17,10,175,31,72,0,5,32,1,13,
+36,36,207,26,31,5,32,69,10,44,
+44,207,26,31,1,1,44,0,17,9,
+248,31,226,153,171,0,129,0,1,1,
+28,8,40,67,76,65,65,83,0,4,
+128,64,1,42,7,2,26,4,128,1,
+55,42,7,119,26,4,128,57,55,42,
+7,94,26 };
 
 // this structure defines all the variables and events of your control interface 
 struct {
 
 	// input variables
-	int8_t servo2; // =0..100 slider position 
 	uint8_t leftTurn; // =1 if button pressed, else =0 
 	uint8_t fogLight; // =1 if button pressed, else =0 
 	uint8_t Alarm; // =1 if button pressed, else =0 
@@ -96,13 +100,15 @@ struct {
 	int8_t right_joy_x; // =-100..100 x-coordinate joystick position 
 	int8_t right_joy_y; // =-100..100 y-coordinate joystick position 
 	uint8_t beepButton; // =1 if button pressed, else =0 
+	int8_t servo2; // =0..100 slider position 
+	int8_t servo3; // =0..100 slider position 
+	int8_t servo4; // =0..100 slider position 
 
 	  // other variable
 	uint8_t connect_flag;  // =1 if wire connected, else =0 
 
 } RemoteXY;
 #pragma pack(pop)
-
 
 /////////////////////////////////////////////
 //           END RemoteXY include          //
@@ -146,6 +152,8 @@ RoboEffects motorEffect = RoboEffects();
 MotorBase * motor = nullptr;
 Stearing stearingServo = Stearing(pinServo);
 Servo servo2 = Servo();
+Servo servo3 = Servo();
+Servo servo4 = Servo();
 
 SerialController serialController = SerialController();
 
@@ -428,6 +436,12 @@ void setupMotor() {
 	pinMode(pinServo2, OUTPUT);
 	digitalWrite(pinServo2, LOW);
 
+	pinMode(pinServo3, OUTPUT);
+	digitalWrite(pinServo3, LOW);
+
+	pinMode(pinServo4, OUTPUT);
+	digitalWrite(pinServo4, LOW);
+
 	if (motor != nullptr) {
 		motor->isEnabled = false;
 		motor->reset();
@@ -643,6 +657,8 @@ void loop()
 			stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
 			stearingServo.isEnabled = true;
 			servo2.attach(pinServo2);
+			servo3.attach(pinServo3);
+			servo4.attach(pinServo4);
 			connected = true;
 		}
 		int pos;
@@ -722,6 +738,8 @@ void loop()
 		btn_Alarm.setValue(RemoteXY.Alarm);
 		btn_Beeper.setValue(RemoteXY.beepButton);
 		servo2.write(map(RemoteXY.servo2, 0, 100, config.servo2_min, config.servo2_max));
+		servo3.write(map(RemoteXY.servo3, 0, 100, config.servo3_min, config.servo3_max));
+		servo4.write(map(RemoteXY.servo4, 0, 100, config.servo4_min, config.servo4_max));
 		handleLight();
 	}
 	else {
@@ -737,6 +755,8 @@ void loop()
 			motor->reset();
 			stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
 			servo2.detach();
+			servo3.detach();
+			servo4.detach();
 			btn_ParkingLight.reset();
 			btn_HeadLight.reset();
 			btn_HighLight.reset();
