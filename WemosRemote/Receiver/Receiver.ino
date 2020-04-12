@@ -9,122 +9,119 @@
 #include <ESP8266mDNS.h>
 
 #include <FS.h>
+#include <Wire.h>
 #include <Servo.h>
 
 #include "Console.h"
 #include "Json.h"
+#include "Blinker.h"
+#include "Button.h"
+#include "Blinker.h"
+#include "PCF8574.h"
+#include "BenchMark.h"
 #include "WebUIController.h"
-
+#include "SetupController.h"
 
 #define pinServo_X D5
 #define pinServo_Y D6
 #define pinServo_CH3 D7
 #define pinServo_CH4 D8
 
+#define pinTest D0//Тестовий пін
+#define pinWipers D8//Дворники
 
-struct Config {
+#define pinI2C_SCL D1 //pcf8574
+#define pinI2C_SDA D2 //pcf8574
 
-	int ch1_min;
-	int ch1_max;
+//pcf8574 Port usage
+#define bitParkingLight 0
+#define bitHeadLight 1
+#define bitHighLight 2
+#define bitFogLight 3
+#define bitLeftLight 4
+#define bitRightLight 5
+#define bitBackLight 6
+#define bitStopLight 7
 
-	int ch2_min;
-	int ch2_max;
-	
-	int ch3_min;
-	int ch3_max;
-	
-	int ch4_min;
-	int ch4_max;
-} config;
-Config * _config = &config;
-
-
-struct State {
-	int ch1;
-	int ch2;
-	int ch3;
-	int ch4;
-} state;
-State * _state = &state;
-
+ConfigStruct config;
 
 
 char SSID[32];
 char SSID_password[20];
 
 
-bool interruptAttached = false;
-ulong servoXStart = 0;
-ulong servoXLen = 0;
-ulong last_servoXLen = 0;
-int lastPos = 0;
-int pos = 0;
 
+BenchMark input_X = BenchMark();
+BenchMark input_Y = BenchMark();
+BenchMark input_CH3 = BenchMark();
+BenchMark input_CH4 = BenchMark();
+
+PCF8574 portExt = PCF8574(0x27);
+
+extBlinker stopLight = extBlinker("Stop light", &portExt);
+extBlinker leftLight = extBlinker("Left light", &portExt);
+extBlinker rightLight = extBlinker("Right light", &portExt);
+
+VirtualButton out_BackLight = VirtualButton(out_BackLight_On, nullptr, out_BackLight_Off);
+
+int servoPos = 90;
+int wipersPos = 0;
+
+Servo testServo = Servo();
+Servo wipers = Servo();
+
+bool interruptAttached = false;
 
 void ICACHE_RAM_ATTR  pinServo_X_CHANGE() {
-	ulong m = micros();
-	if (digitalRead(pinServo_CH4)) {
-		servoXStart = m;
-	}
+	if (digitalRead(pinServo_X))
+		input_X.Start();
 	else
-	{
-		servoXLen = m - servoXStart;
-	}
+		input_X.Stop();
+}
+
+void ICACHE_RAM_ATTR  pinServo_Y_CHANGE() {
+	if (digitalRead(pinServo_Y))
+		input_Y.Start();
+	else
+		input_Y.Stop();
+}
+
+void ICACHE_RAM_ATTR  pinServo_CH3_CHANGE() {
+	if (digitalRead(pinServo_CH3))
+		input_CH3.Start();
+	else
+		input_CH3.Stop();
+}
+
+void ICACHE_RAM_ATTR  pinServo_CH4_CHANGE() {
+	if (digitalRead(pinServo_CH4))
+		input_CH4.Start();
+	else
+		input_CH4.Stop();
 }
 
 
-void printConfig(JsonString * out)
-{
-	out->beginObject();
-	out->AddValue("ch1_min", String(_config->ch1_min));
-	out->AddValue("ch1_max", String(_config->ch1_max));
 
-	out->AddValue("ch2_min", String(_config->ch2_min));
-	out->AddValue("ch2_max", String(_config->ch2_max));
-
-	out->AddValue("ch3_min", String(_config->ch3_min));
-	out->AddValue("ch3_max", String(_config->ch3_max));
-
-	out->AddValue("ch4_min", String(_config->ch4_min));
-	out->AddValue("ch4_max", String(_config->ch4_max));
-
-	out->endObject();
+void out_BackLight_On() {
+	portExt.write(bitBackLight, HIGH);
+	console.println("out_BackLight_On");
+}
+void out_BackLight_Off() {
+	portExt.write(bitBackLight, LOW);
+	console.println("out_BackLight_Off");
 }
 
 
 void printValues(JsonString * out)
 {
 	out->beginObject();
-	out->AddValue("ch1_val", String(_state->ch1));
-	out->AddValue("ch2_val", String(_state->ch2));
-	out->AddValue("ch3_val", String(_state->ch3));
-	out->AddValue("ch4_val", String(_state->ch4));
+	out->AddValue("ch1_val", String(input_X.ImpulsLength));
+	out->AddValue("ch2_val", String(input_Y.ImpulsLength));
+	out->AddValue("ch3_val", String(input_CH3.ImpulsLength));
+	out->AddValue("ch4_val", String(input_CH4.ImpulsLength));
 	out->endObject();
 }
 
-void Setup_Get()
-{
-	JsonString ret = JsonString();
-	printConfig(&ret);
-	webServer.jsonOk(&ret);
-}
-
-void Setup_Post()
-{
-	if (webServer.hasArg("ch1_min")) { _config->ch1_min = webServer.arg("ch1_min").toInt(); }
-	if (webServer.hasArg("ch1_max")) { _config->ch1_max = webServer.arg("ch1_min").toInt(); }
-
-	if (webServer.hasArg("ch2_min")) { _config->ch2_min = webServer.arg("ch2_min").toInt(); }
-	if (webServer.hasArg("ch2_max")) { _config->ch2_max = webServer.arg("ch2_min").toInt(); }
-
-	if (webServer.hasArg("ch3_min")) { _config->ch3_min = webServer.arg("ch3_min").toInt(); }
-	if (webServer.hasArg("ch3_max")) { _config->ch3_max = webServer.arg("ch3_min").toInt(); }
-
-	if (webServer.hasArg("ch4_min")) { _config->ch4_min = webServer.arg("ch4_min").toInt(); }
-	if (webServer.hasArg("ch4_max")) { _config->ch4_max = webServer.arg("ch4_min").toInt(); }
-
-	webServer.Ok();
-}
 
 void Values_Get() {
 	JsonString ret = JsonString();
@@ -132,12 +129,94 @@ void Values_Get() {
 	webServer.jsonOk(&ret);
 }
 
+
+void setupBlinkers() {
+	stopLight.Add(bitStopLight, 0, 0)
+		->Add(bitStopLight, 0, HIGH)
+		->Add(bitStopLight, config.stop_light_duration, 0)
+		->repeat = false;
+	stopLight.debug = true;
+
+	//Налаштування поворотників
+	leftLight
+		.Add(bitLeftLight, 0, HIGH)
+		->Add(bitLeftLight, 500, 0)
+		->Add(bitLeftLight, 1000, 0);
+	leftLight.debug = true;
+	//serialController.leftLight = &leftLight;
+
+	rightLight
+		.Add(bitRightLight, 0, HIGH)
+		->Add(bitRightLight, 500, 0)
+		->Add(bitRightLight, 1000, 0);
+	rightLight.debug = true;
+	//serialController.rightLight = &rightLight;
+
+}
+
+
+
+void refreshConfig() {
+	stopLight.item(2)->offset = config.stop_light_duration;
+}
+
+void handleTurnLight() {
+	//Проміжки включення правого/лівого поворота
+	int center = input_X.convert(config.ch1_center);
+	int leftGap = center - 0;
+	int rightGap = center - 180;
+
+	//Фактичне відхилення 
+	int leftLimit = (leftGap * config.turn_light_limit) / 100;
+	int rightLimit = (rightGap * config.turn_light_limit) / 100;
+
+	int delta = center - input_X.pos;
+
+	//Serial.printf("delta=%i;ll=%i;rl=%i;c=%i\n", delta, leftLimit, rightLimit, center);
+
+	if (delta > leftLimit) {
+		if (rightLight.isRunning()) {
+			Serial.println("right end");
+			rightLight.end();
+		}
+		if (!leftLight.isRunning())
+		{
+			Serial.println("left begin");
+			leftLight.begin();
+		}
+	}
+	else if (delta < rightLimit) {
+		if (leftLight.isRunning())
+		{
+			Serial.println("left end");
+			leftLight.end();
+		}
+		if (!rightLight.isRunning())
+		{
+			Serial.println("right begin");
+			rightLight.begin();
+		}
+	}
+	else {
+		if (leftLight.isRunning())
+		{
+			Serial.println("left end");
+			leftLight.end();
+		}
+		if (rightLight.isRunning())
+		{
+			Serial.println("right end");
+			rightLight.end();
+		}
+	}
+}
+
 // the setup function runs once when you press reset or power the board
 void setup() {
-	Serial.println("");
-	Serial.println("");
 
 	Serial.begin(115200);
+	Serial.println("");
+	Serial.println("");
 	Serial.println("Start...");
 
 	pinMode(pinServo_X, INPUT);
@@ -171,17 +250,19 @@ void setup() {
 		console.println(("Starting..."));
 	}
 
-	webServer.on("/api/setup", HTTPMethod::HTTP_GET, Setup_Get);
-	webServer.on("/api/setup", HTTPMethod::HTTP_POST, Setup_Post);
+	setupController.cfg = &config;
+	setupController.loadConfig();
+
+	portExt.begin(pinI2C_SDA, pinI2C_SCL);
+	portExt.write8(0x00);
 
 	webServer.on("/api/values", HTTPMethod::HTTP_GET, Values_Get);
 
-
-	s = "LIGHT_" + WiFi.macAddress();
+	s = config.ssid + "_" + WiFi.macAddress();
 	s.replace(":", "");
 	strcpy(&SSID[0], s.c_str());
 
-	s = "12345678";
+	s = config.password;
 	strcpy(&SSID_password[0], s.c_str());
 
 	WiFi.softAP(SSID, SSID_password);
@@ -189,36 +270,60 @@ void setup() {
 	webServer.setup();
 	webServer.apName = String(SSID);
 
+	testServo.attach(pinTest);
+	wipers.attach(pinWipers);
+
+	setupBlinkers();
+
+	setupController.reloadConfig = &refreshConfig;
+
 	Serial.println("Starting");
 }
 
 // the loop function runs over and over again until power down or reset
 void loop() {
+
 	if (!interruptAttached) {
-		Serial.println("attachInterrupt");
-		attachInterrupt(digitalPinToInterrupt(pinServo_CH4), pinServo_X_CHANGE, CHANGE);
+		Serial.println("interrupt attached");
+		attachInterrupt(digitalPinToInterrupt(pinServo_X), pinServo_X_CHANGE, CHANGE);
+		attachInterrupt(digitalPinToInterrupt(pinServo_Y), pinServo_Y_CHANGE, CHANGE);
+		attachInterrupt(digitalPinToInterrupt(pinServo_CH3), pinServo_CH3_CHANGE, CHANGE);
+		attachInterrupt(digitalPinToInterrupt(pinServo_CH4), pinServo_CH4_CHANGE, CHANGE);
 		interruptAttached = true;
 	}
 
-	if (last_servoXLen != servoXLen) {
-		Serial.printf("Servo servoXLen = %i\n", servoXLen);
-		last_servoXLen = servoXLen;
-		if (last_servoXLen < 1000UL) {
-			pos = 0;
-		}
-		else if (last_servoXLen > 2000) {
-			pos = 180;
-		}
-		else
-		{
-			pos = map(last_servoXLen, 1000, 2000, 0, 180);
-		}
-	};
-
-	if (lastPos != pos) {
-		Serial.printf("Servo X = %i\n", pos);
-		lastPos = pos;
+	if (Serial.available()) {
+		String s = Serial.readStringUntil('\n');
+		servoPos = s.toInt();
+		while (Serial.available()) Serial.read();
 	}
-	delay(1000);
+
+	testServo.write(servoPos);
+	wipers.write(wipersPos);
+
+	input_X.loop();
+	input_Y.loop();
+	input_CH3.loop();
+	input_CH4.loop();
+
+	if (input_X.isChanged) {
+		Serial.printf("Servo X = %i (%i)\n", input_X.pos, input_X.ImpulsLength);
+	}
+	if (input_Y.isChanged) {
+		Serial.printf("Servo Y = %i (%i)\n", input_Y.pos, input_X.ImpulsLength);
+	}
+	if (input_CH3.isChanged) {
+		Serial.printf("Servo CH3 = %i (%i)\n", input_CH3.pos, input_X.ImpulsLength);
+	}
+	if (input_CH4.isChanged) {
+		Serial.printf("Servo CH4 = %i (%i)\n", input_CH4.pos, input_X.ImpulsLength);
+	}
+
+	handleTurnLight();
+
+	stopLight.loop();
+	leftLight.loop();
+	rightLight.loop();
+
 }
 

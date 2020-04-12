@@ -1,0 +1,19 @@
+﻿{
+  "ssid": "GAZ13",
+  "password": "12345678",
+  "ch1_min": "550",
+  "ch1_center": "1550",
+  "ch1_max": "2550",
+  "ch2_min": "550",
+  "ch2_center": "1550",
+  "ch2_max": "2550",
+  "ch3_min": "550",
+  "ch3_max": "2550",
+  "ch4_min": "550",
+  "ch4_max": "2550",
+
+  "stop_light_duration": "2000",
+  "back_light_timeout": "500",
+
+  "turn_light_limit": "50"
+}
