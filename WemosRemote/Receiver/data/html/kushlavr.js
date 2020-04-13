@@ -20,7 +20,7 @@ KVR.Autorefresh = function () {
             $.each(data, function (name, value) {
                 console.log("Name: " + name + ", Value: " + value);
                 var form = $("#form");
-                $("[name=" + name + "]", form).val(value);
+                $("[name=" + name + "]", form).html(value);
             });
             setTimeout(function () {
                 KVR.Autorefresh();

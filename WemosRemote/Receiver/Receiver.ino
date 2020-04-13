@@ -28,7 +28,7 @@
 #define pinServo_CH4 D8
 
 #define pinTest D0//Тестовий пін
-#define pinWipers D8//Дворники
+#define pinWipers D4//Дворники
 
 #define pinI2C_SCL D1 //pcf8574
 #define pinI2C_SDA D2 //pcf8574
@@ -49,7 +49,9 @@ ConfigStruct config;
 char SSID[32];
 char SSID_password[20];
 
-
+struct {
+	int speed;
+} state;
 
 BenchMark input_X = BenchMark();
 BenchMark input_Y = BenchMark();
@@ -61,8 +63,7 @@ PCF8574 portExt = PCF8574(0x27);
 extBlinker stopLight = extBlinker("Stop light", &portExt);
 extBlinker leftLight = extBlinker("Left light", &portExt);
 extBlinker rightLight = extBlinker("Right light", &portExt);
-
-VirtualButton out_BackLight = VirtualButton(out_BackLight_On, nullptr, out_BackLight_Off);
+extBlinker BackLight = extBlinker("Back light", &portExt);
 
 int servoPos = 90;
 int wipersPos = 0;
@@ -100,18 +101,6 @@ void ICACHE_RAM_ATTR  pinServo_CH4_CHANGE() {
 		input_CH4.Stop();
 }
 
-
-
-void out_BackLight_On() {
-	portExt.write(bitBackLight, HIGH);
-	console.println("out_BackLight_On");
-}
-void out_BackLight_Off() {
-	portExt.write(bitBackLight, LOW);
-	console.println("out_BackLight_Off");
-}
-
-
 void printValues(JsonString * out)
 {
 	out->beginObject();
@@ -142,29 +131,36 @@ void setupBlinkers() {
 		.Add(bitLeftLight, 0, HIGH)
 		->Add(bitLeftLight, 500, 0)
 		->Add(bitLeftLight, 1000, 0);
-	leftLight.debug = true;
+	//leftLight.debug = true;
 	//serialController.leftLight = &leftLight;
 
 	rightLight
 		.Add(bitRightLight, 0, HIGH)
 		->Add(bitRightLight, 500, 0)
 		->Add(bitRightLight, 1000, 0);
-	rightLight.debug = true;
+	//rightLight.debug = true;
 	//serialController.rightLight = &rightLight;
 
+
+	BackLight
+		.Add(bitBackLight, 0, HIGH)
+		->Add(bitBackLight, 500, HIGH)
+		->repeat = false;
+	//BackLight.debug = true;
 }
 
 
 
 void refreshConfig() {
 	stopLight.item(2)->offset = config.stop_light_duration;
+	BackLight.item(1)->offset = config.back_light_timeout;
 }
 
-void handleTurnLight() {
+void handleStearing() {
 	//Проміжки включення правого/лівого поворота
-	int center = input_X.convert(config.ch1_center);
-	int leftGap = center - 0;
-	int rightGap = center - 180;
+	int center = 90;
+	int leftGap = center - input_X.OUT_min;
+	int rightGap = center - input_X.OUT_max;
 
 	//Фактичне відхилення 
 	int leftLimit = (leftGap * config.turn_light_limit) / 100;
@@ -211,10 +207,61 @@ void handleTurnLight() {
 	}
 }
 
+void handleSpeed() {
+
+	int center = 90;
+	int forwardGap = center - input_Y.OUT_min;
+	int reverceGap = center - input_Y.OUT_max;
+
+
+	int forward_limit = (forwardGap * config.reverce_limit) / 100;
+	int reverce_limit = (reverceGap * config.reverce_limit) / 100;
+
+
+	int speed = center - input_Y.pos;
+	if (input_Y.isChanged) {
+		Serial.printf("delta=%i;f=%i;r=%i;c=%i\n", speed, forward_limit, reverce_limit, center);
+	}
+
+	if (speed > reverce_limit) {
+		if (!BackLight.isRunning()) {
+			Serial.println("BackLight begin");
+			BackLight.begin();
+		}
+	}
+	else if (-speed > forward_limit) {
+		if (BackLight.isRunning()) {
+			Serial.println("BackLight end");
+			BackLight.end();
+		}
+	}
+
+	if (state.speed != speed) {
+		//швидкість змінилась
+		if (abs(speed) < 5) {//Зупинка
+			stopLight.begin();
+		}
+		else
+		{
+			if (abs(speed) > abs(state.speed)) {//Швидкість зросла
+				stopLight.end();
+			}
+			else {
+				if (abs(state.speed - speed) > 5) {//Швидкість впала більше ніж на 10
+					stopLight.begin();
+				}
+			}
+		}
+		state.speed = speed;
+	}
+
+}
+
 // the setup function runs once when you press reset or power the board
 void setup() {
 
 	Serial.begin(115200);
+	console.output = &Serial;
 	Serial.println("");
 	Serial.println("");
 	Serial.println("Start...");
@@ -256,7 +303,6 @@ void setup() {
 	portExt.begin(pinI2C_SDA, pinI2C_SCL);
 	portExt.write8(0x00);
 
-	webServer.on("/api/values", HTTPMethod::HTTP_GET, Values_Get);
 
 	s = config.ssid + "_" + WiFi.macAddress();
 	s.replace(":", "");
@@ -268,6 +314,7 @@ void setup() {
 	WiFi.softAP(SSID, SSID_password);
 
 	webServer.setup();
+	webServer.on("/api/values", HTTPMethod::HTTP_GET, Values_Get);
 	webServer.apName = String(SSID);
 
 	testServo.attach(pinTest);
@@ -276,6 +323,17 @@ void setup() {
 	setupBlinkers();
 
 	setupController.reloadConfig = &refreshConfig;
+	input_X.IN_max = config.ch1_max;
+	input_X.IN_min = config.ch1_min;
+
+	input_Y.IN_max = config.ch2_max;
+	input_Y.IN_min = config.ch2_min;
+
+	input_CH3.IN_max = config.ch3_max;
+	input_CH3.IN_min = config.ch3_min;
+
+	input_CH4.IN_max = config.ch3_max;
+	input_CH4.IN_min = config.ch3_min;
 
 	Serial.println("Starting");
 }
@@ -310,20 +368,23 @@ void loop() {
 		Serial.printf("Servo X = %i (%i)\n", input_X.pos, input_X.ImpulsLength);
 	}
 	if (input_Y.isChanged) {
-		Serial.printf("Servo Y = %i (%i)\n", input_Y.pos, input_X.ImpulsLength);
+		Serial.printf("Servo Y = %i (%i)\n", input_Y.pos, input_Y.ImpulsLength);
 	}
 	if (input_CH3.isChanged) {
-		Serial.printf("Servo CH3 = %i (%i)\n", input_CH3.pos, input_X.ImpulsLength);
+		Serial.printf("Servo CH3 = %i (%i)\n", input_CH3.pos, input_CH3.ImpulsLength);
 	}
 	if (input_CH4.isChanged) {
-		Serial.printf("Servo CH4 = %i (%i)\n", input_CH4.pos, input_X.ImpulsLength);
+		Serial.printf("Servo CH4 = %i (%i)\n", input_CH4.pos, input_CH4.ImpulsLength);
 	}
 
-	handleTurnLight();
+	handleStearing();
+	handleSpeed();
 
 	stopLight.loop();
 	leftLight.loop();
 	rightLight.loop();
+	BackLight.loop();
 
+	webServer.loop();
 }
 

@@ -38,6 +38,7 @@ void SetupController::loadConfig()
 		cfg.AddValue("ch4_max", "2550");
 
 		cfg.AddValue("turn_light_limit", "70");
+		cfg.AddValue("reverce_limit", "10");
 		
 		cfg.AddValue("stop_light_duration", "2000");
 		cfg.AddValue("back_light_timeout", "500");
@@ -61,11 +62,9 @@ void SetupController::loadConfig()
 	this->cfg->password = String(cfg.getValue("password"));
 
 	this->cfg->ch1_min = cfg.getInt("ch1_min");
-	this->cfg->ch1_center = cfg.getInt("ch1_center");
 	this->cfg->ch1_max = cfg.getInt("ch1_max");
 
 	this->cfg->ch2_min = cfg.getInt("ch2_min");
-	this->cfg->ch2_center = cfg.getInt("ch2_center");
 	this->cfg->ch2_max = cfg.getInt("ch2_max");
 
 	this->cfg->ch3_min = cfg.getInt("ch3_min");
@@ -75,6 +74,7 @@ void SetupController::loadConfig()
 	this->cfg->ch4_max = cfg.getInt("ch4_max");
 	
 	this->cfg->turn_light_limit = cfg.getInt("turn_light_limit");
+	this->cfg->reverce_limit = cfg.getInt("reverce_limit");
 
 	this->cfg->stop_light_duration = cfg.getInt("stop_light_duration");
 	this->cfg->back_light_timeout = cfg.getInt("back_light_timeout");
@@ -101,11 +101,9 @@ void SetupController::printConfig(JsonString * out)
 
 
 	out->AddValue("ch1_min", String(cfg->ch1_min));
-	out->AddValue("ch1_center", String(cfg->ch1_center));
 	out->AddValue("ch1_max", String(cfg->ch1_max));
 
 	out->AddValue("ch2_min", String(cfg->ch2_min));
-	out->AddValue("ch2_center", String(cfg->ch2_center));
 	out->AddValue("ch2_max", String(cfg->ch2_max));
 
 	out->AddValue("ch3_min", String(cfg->ch3_min));
@@ -115,6 +113,7 @@ void SetupController::printConfig(JsonString * out)
 	out->AddValue("ch4_max", String(cfg->ch4_max));
 
 	out->AddValue("turn_light_limit", String(cfg->turn_light_limit));
+	out->AddValue("reverce_limit", String(cfg->reverce_limit));
 	
 	out->AddValue("stop_light_duration", String(cfg->stop_light_duration));
 	out->AddValue("back_light_timeout", String(cfg->back_light_timeout));
@@ -135,20 +134,20 @@ void SetupController::Setup_Post()
 	if (webServer.hasArg("password")) { setupController.cfg->password = webServer.arg("password"); }
 	
 	if (webServer.hasArg("ch1_min")) { setupController.cfg->ch1_min = webServer.arg("ch1_min").toInt(); }
-	if (webServer.hasArg("ch1_center")) { setupController.cfg->ch1_center = webServer.arg("ch1_center").toInt(); }
-	if (webServer.hasArg("ch1_max")) { setupController.cfg->ch1_max = webServer.arg("ch1_min").toInt(); }
+	if (webServer.hasArg("ch1_max")) { setupController.cfg->ch1_max = webServer.arg("ch1_max").toInt(); }
 
 	if (webServer.hasArg("ch2_min")) { setupController.cfg->ch2_min = webServer.arg("ch2_min").toInt(); }
-	if (webServer.hasArg("ch2_center")) { setupController.cfg->ch2_center = webServer.arg("ch2_center").toInt(); }
-	if (webServer.hasArg("ch2_max")) { setupController.cfg->ch2_max = webServer.arg("ch2_min").toInt(); }
+	if (webServer.hasArg("ch2_max")) { setupController.cfg->ch2_max = webServer.arg("ch2_max").toInt(); }
 
 	if (webServer.hasArg("ch3_min")) { setupController.cfg->ch3_min = webServer.arg("ch3_min").toInt(); }
-	if (webServer.hasArg("ch3_max")) { setupController.cfg->ch3_max = webServer.arg("ch3_min").toInt(); }
+	if (webServer.hasArg("ch3_max")) { setupController.cfg->ch3_max = webServer.arg("ch3_max").toInt(); }
 
 	if (webServer.hasArg("ch4_min")) { setupController.cfg->ch4_min = webServer.arg("ch4_min").toInt(); }
-	if (webServer.hasArg("ch4_max")) { setupController.cfg->ch4_max = webServer.arg("ch4_min").toInt(); }
+	if (webServer.hasArg("ch4_max")) { setupController.cfg->ch4_max = webServer.arg("ch4_max").toInt(); }
 	
 	if (webServer.hasArg("turn_light_limit")) { setupController.cfg->turn_light_limit = webServer.arg("turn_light_limit").toInt(); }
+	if (webServer.hasArg("reverce_limit")) { setupController.cfg->reverce_limit = webServer.arg("reverce_limit").toInt(); }
+
 	if (webServer.hasArg("stop_light_duration")) { setupController.cfg->stop_light_duration = webServer.arg("stop_light_duration").toInt(); }
 	if (webServer.hasArg("back_light_timeout")) { setupController.cfg->back_light_timeout = webServer.arg("back_light_timeout").toInt(); }
 

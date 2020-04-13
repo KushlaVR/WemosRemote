@@ -13,11 +13,9 @@ public:
 	String password;
 
 	int ch1_min;
-	int ch1_center;
 	int ch1_max;
 
 	int ch2_min;
-	int ch2_center;
 	int ch2_max;
 
 	int ch3_min;
@@ -27,6 +25,7 @@ public:
 	int ch4_max;
 
 	int turn_light_limit;
+	int reverce_limit;
 
 	int stop_light_duration;//в мілісекундах
 	int back_light_timeout;//в мілісекундах
