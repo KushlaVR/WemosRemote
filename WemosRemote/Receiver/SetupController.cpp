@@ -99,7 +99,6 @@ void SetupController::printConfig(JsonString * out)
 	out->AddValue("ssid", cfg->ssid);
 	out->AddValue("password", cfg->password);
 
-
 	out->AddValue("ch1_min", String(cfg->ch1_min));
 	out->AddValue("ch1_max", String(cfg->ch1_max));
 
