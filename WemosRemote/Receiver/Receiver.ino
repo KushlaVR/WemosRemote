@@ -69,7 +69,8 @@ BenchMark input_CH4 = BenchMark();
 BenchMark * input_Wipers = &input_CH4;
 
 
-PCF8574 portExt = PCF8574(0x27);
+//PCF8574 portExt = PCF8574(0x27);
+PCF8574 portExt = PCF8574(0x3F);
 
 extBlinker stopLight = extBlinker("Stop light", &portExt);
 extBlinker leftLight = extBlinker("Left light", &portExt);
