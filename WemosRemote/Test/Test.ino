@@ -11,6 +11,7 @@
 #define pinI2C_SDA D2 //pcf8574
 
 PCF8574 portExt = PCF8574(0x27);
+PCF8574 portExtA = PCF8574(0x3F);
 
 // the setup function runs once when you press reset or power the board
 void setup() {
@@ -20,8 +21,9 @@ void setup() {
 	Serial.println("Start...");
 
 	portExt.begin(pinI2C_SDA, pinI2C_SCL);
+	portExtA.begin(pinI2C_SDA, pinI2C_SCL);
 	portExt.write8(0x00);
-
+	portExtA.write8(0x00);
 
 	pinMode(BUILTIN_LED, OUTPUT);
 }
@@ -30,9 +32,11 @@ void setup() {
 void loop() {
 	delay(1000);
 	portExt.write8(0x00);
+	portExtA.write8(0x00);
 	digitalWrite(BUILTIN_LED, HIGH);
 	delay(1000);
 	portExt.write8(0xFF);
+	portExtA.write8(0xFF);
 	digitalWrite(BUILTIN_LED, LOW);
 	Serial.println("step...");
 
