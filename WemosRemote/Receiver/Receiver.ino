@@ -51,6 +51,9 @@ char SSID_password[20];
 
 struct {
 	int speed;
+
+
+
 	int wiperPos;
 	int wiperPause;
 	int wiperDuration;
@@ -63,7 +66,7 @@ BenchMark input_Y = BenchMark();
 BenchMark input_CH3 = BenchMark();
 BenchMark input_CH4 = BenchMark();
 
-BenchMark * input_Wipers = &input_CH3;
+BenchMark * input_Wipers = &input_CH4;
 
 
 PCF8574 portExt = PCF8574(0x27);
@@ -73,8 +76,9 @@ extBlinker leftLight = extBlinker("Left light", &portExt);
 extBlinker rightLight = extBlinker("Right light", &portExt);
 extBlinker BackLight = extBlinker("Back light", &portExt);
 
+VirtualButton btnLight = VirtualButton(btnLight_Press, btnLight_Hold, btnLight_Release);
+
 int servoPos = 90;
-int wipersPos = 0;
 
 Servo testServo = Servo();
 Servo wipers = Servo();
@@ -107,6 +111,18 @@ void ICACHE_RAM_ATTR  pinServo_CH4_CHANGE() {
 		input_CH4.Start();
 	else
 		input_CH4.Stop();
+}
+
+void btnLight_Press() {
+
+}
+
+void btnLight_Hold() {
+
+}
+
+void btnLight_Release() {
+
 }
 
 void printValues(JsonString * out)
@@ -441,7 +457,6 @@ void loop() {
 	}
 
 	testServo.write(servoPos);
-	wipers.write(wipersPos);
 
 	input_X.loop();
 	input_Y.loop();
