@@ -43,13 +43,36 @@ void BenchMark::loop()
 
 int BenchMark::convert(ulong value)
 {
-	if (value < IN_min) {
-		return OUT_min;
+	if (IN_min < IN_max) {
+		if (value < IN_min) {
+			return OUT_min;
+		}
+		else if (value > IN_max) {
+			return OUT_max;
+		}
+		else {
+			return map(value, IN_min, IN_max, OUT_min, OUT_max);
+		}
 	}
-	else if (value > IN_max) {
-		return OUT_max;
+	else
+	{
+		if (value < IN_max) {
+			return OUT_max;
+		}
+		else if (value > IN_min) {
+			return OUT_min;
+		}
+		else {
+			return map(value, IN_min, IN_max, OUT_min, OUT_max);
+		}
 	}
-	else {
-		return map(value, IN_min, IN_max, OUT_min, OUT_max);
-	}
+}
+
+bool BenchMark::isValid()
+{
+	if (IN_min < IN_max)
+		return (ImpulsLength >= IN_min) && (ImpulsLength <= IN_max);
+	else
+		return (ImpulsLength >= IN_max) && (ImpulsLength <= IN_min);
+
 }

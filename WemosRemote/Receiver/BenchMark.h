@@ -31,6 +31,7 @@ public:
 
 	void loop();
 	int convert(ulong value);
+	bool isValid();
 
 };
 

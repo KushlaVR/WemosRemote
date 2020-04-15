@@ -51,12 +51,20 @@ char SSID_password[20];
 
 struct {
 	int speed;
+	int wiperPos;
+	int wiperPause;
+	int wiperDuration;
+	int wiperHalfDuration;
+	ulong wiperStartTime;
 } state;
 
 BenchMark input_X = BenchMark();
 BenchMark input_Y = BenchMark();
 BenchMark input_CH3 = BenchMark();
 BenchMark input_CH4 = BenchMark();
+
+BenchMark * input_Wipers = &input_CH3;
+
 
 PCF8574 portExt = PCF8574(0x27);
 
@@ -157,6 +165,20 @@ void refreshConfig() {
 }
 
 void handleStearing() {
+	if (!input_X.isValid()) {
+		if (leftLight.isRunning())
+		{
+			Serial.println("left end");
+			leftLight.end();
+		}
+		if (rightLight.isRunning())
+		{
+			Serial.println("right end");
+			rightLight.end();
+		}
+		return;
+	}
+
 	//Проміжки включення правого/лівого поворота
 	int center = 90;
 	int leftGap = center - input_X.OUT_min;
@@ -208,7 +230,17 @@ void handleStearing() {
 }
 
 void handleSpeed() {
-
+	if (!input_Y.isValid()) {
+		state.speed = 0;
+		if (BackLight.isRunning()) {
+			Serial.println("BackLight end");
+			BackLight.end();
+		}
+		if (stopLight.isRunning()) {
+			stopLight.end();
+		}
+		return;
+	}
 	int center = 90;
 	int forwardGap = center - input_Y.OUT_min;
 	int reverceGap = center - input_Y.OUT_max;
@@ -255,6 +287,58 @@ void handleSpeed() {
 		state.speed = speed;
 	}
 
+}
+
+void handleWipers() {
+
+	if (input_Wipers->isValid()) {
+		if (input_Wipers->pos < 70) {
+			state.wiperPos = 0;
+		}
+		else if (input_Wipers->pos < 110) {
+			if (state.wiperStartTime == 0) {
+				state.wiperPos = 1;
+				state.wiperStartTime = millis();
+				state.wiperDuration = 2000;
+				state.wiperHalfDuration = 1000;
+				state.wiperPause = 2000;
+			}
+		}
+		else {
+			if (state.wiperStartTime == 0) {
+				state.wiperPos = 2;
+				state.wiperStartTime = millis();
+				state.wiperDuration = 1400;
+				state.wiperHalfDuration = 700;
+				state.wiperPause = 200;
+			}
+		}
+	}
+
+	int angle = 0;
+
+	if (state.wiperStartTime != 0) {
+		ulong spendTime = millis() - state.wiperStartTime;
+		if (spendTime < state.wiperHalfDuration) {
+			//Рух в перед
+			angle = (spendTime * 180) / state.wiperHalfDuration;
+		}
+		else if (spendTime < state.wiperDuration) {
+			//Рух назад
+			spendTime = spendTime - state.wiperHalfDuration;
+			angle = 180 - ((spendTime * 180) / state.wiperHalfDuration);
+		}
+		else if (spendTime < (state.wiperDuration + state.wiperPause)) {
+			//Вичікування паузи
+			angle = 0;
+		}
+		else {
+			//Кінець циклу
+			state.wiperStartTime = 0;
+		}
+	}
+
+	wipers.write(angle);
 }
 
 // the setup function runs once when you press reset or power the board
@@ -379,6 +463,7 @@ void loop() {
 
 	handleStearing();
 	handleSpeed();
+	handleWipers();
 
 	stopLight.loop();
 	leftLight.loop();
