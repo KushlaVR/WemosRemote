@@ -13,6 +13,18 @@
             <div class="col-8">
                 <h1>Config</h1>
                 <form action="/api/setup" method="post" id="form">
+                    <div class="form-group">
+                        <label>SSID</label>
+                        <input type="text" maxlength="10" name="ssid" class="form-control" required="required" />
+                    </div>
+                    <div class="form-group">
+                        <label>password</label>
+                        <input type="text" maxlength="10" name="password" class="form-control" required="required" />
+                    </div>
+
+                    <h2>Inputs monitoring</h2>
+
+                    <input type="button" class="btn btn-secondary" value="Monitor" onclick="KVR.Autorefresh()" />
 
                     <h2>Ch 1</h2>
                     <div class="form-group">
@@ -26,9 +38,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label>current</label>
+                        <label>center</label>
                         <div class="input-group">
-                            <div type="number" name="ch1_val" class="form-control"></div>
+                            <input type="number" maxlength="5" name="ch1_center" class="form-control" step="1" min="0" max="3000" required="required" />
                             <div class="input-group-append">
                                 <span class="input-group-text">0<sup>ms</sup>..3000<sup>ms</sup></span>
                             </div>
@@ -45,6 +57,18 @@
                         </div>
                     </div>
 
+                    <div class="form-group">
+                        <label>current</label>
+                        <div class="input-group">
+                            <div type="number" name="ch1_val" class="form-control"></div>
+                            <div class="input-group-append">
+                                <span class="input-group-text">0<sup>ms</sup>..3000<sup>ms</sup></span>
+                            </div>
+                        </div>
+                    </div>
+
+
+
                     <h2>Ch 2</h2>
                     <div class="form-group">
                         <label>min</label>
@@ -57,9 +81,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label>current</label>
+                        <label>center</label>
                         <div class="input-group">
-                            <div type="number" name="ch2_val" class="form-control"></div>
+                            <input type="number" maxlength="5" name="ch2_center" class="form-control" step="1" min="0" max="3000" required="required" />
                             <div class="input-group-append">
                                 <span class="input-group-text">0<sup>ms</sup>..3000<sup>ms</sup></span>
                             </div>
@@ -70,6 +94,16 @@
                         <label>max</label>
                         <div class="input-group">
                             <input type="number" maxlength="5" name="ch2_max" class="form-control" step="1" min="0" max="3000" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">0<sup>ms</sup>..3000<sup>ms</sup></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>current</label>
+                        <div class="input-group">
+                            <div type="number" name="ch2_val" class="form-control"></div>
                             <div class="input-group-append">
                                 <span class="input-group-text">0<sup>ms</sup>..3000<sup>ms</sup></span>
                             </div>
@@ -88,9 +122,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label>current</label>
+                        <label>max</label>
                         <div class="input-group">
-                            <div type="number" name="ch3_val" class="form-control"></div>
+                            <input type="number" maxlength="5" name="ch3_max" class="form-control" step="1" min="0" max="3000" required="required" />
                             <div class="input-group-append">
                                 <span class="input-group-text">0<sup>ms</sup>..3000<sup>ms</sup></span>
                             </div>
@@ -98,9 +132,9 @@
                     </div>
 
                     <div class="form-group">
-                        <label>max</label>
+                        <label>current</label>
                         <div class="input-group">
-                            <input type="number" maxlength="5" name="ch3_max" class="form-control" step="1" min="0" max="3000" required="required" />
+                            <div type="number" name="ch3_val" class="form-control"></div>
                             <div class="input-group-append">
                                 <span class="input-group-text">0<sup>ms</sup>..3000<sup>ms</sup></span>
                             </div>
@@ -119,16 +153,6 @@
                     </div>
 
                     <div class="form-group">
-                        <label>current</label>
-                        <div class="input-group">
-                            <div type="number" name="ch4_val" class="form-control"></div>
-                            <div class="input-group-append">
-                                <span class="input-group-text">0<sup>ms</sup>..3000<sup>ms</sup></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
                         <label>max</label>
                         <div class="input-group">
                             <input type="number" maxlength="5" name="ch4_max" class="form-control" step="1" min="0" max="3000" required="required" />
@@ -138,8 +162,141 @@
                         </div>
                     </div>
 
+                    <div class="form-group">
+                        <label>current</label>
+                        <div class="input-group">
+                            <div type="number" name="ch4_val" class="form-control"></div>
+                            <div class="input-group-append">
+                                <span class="input-group-text">0<sup>ms</sup>..3000<sup>ms</sup></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>Light settings</h2>
+                    <div class="form-group">
+                        <label>Port address</label>
+                        <div class="input-group mb-3">
+                            <select class="custom-select" name="port_addr" id="port_addr">
+                                <option value="32">0x20 (PCF8574 pin A->000)</option>
+                                <option value="33">0x21 (PCF8574 pin A->001)</option>
+                                <option value="34">0x22 (PCF8574 pin A->010)</option>
+                                <option value="35">0x23 (PCF8574 pin A->011)</option>
+                                <option value="36">0x24 (PCF8574 pin A->100)</option>
+                                <option value="37">0x25 (PCF8574 pin A->101)</option>
+                                <option value="38">0x26 (PCF8574 pin A->110)</option>
+                                <option value="39">0x27 (PCF8574 pin A->111)</option>
+
+                                <option value="56">0x38 (PCF8574A* pin A->000)</option>
+                                <option value="57">0x39 (PCF8574A* pin A->001)</option>
+                                <option value="58">0x3A (PCF8574A* pin A->010)</option>
+                                <option value="59">0x3B (PCF8574A* pin A->011)</option>
+                                <option value="60">0x3C (PCF8574A* pin A->100)</option>
+                                <option value="61">0x3D (PCF8574A* pin A->101)</option>
+                                <option value="62">0x3E (PCF8574A* pin A->110)</option>
+                                <option value="63" selected>0x3F (PCF8574A* pin A->111)</option>
+
+                            </select>
+                            <div class="input-group-append">
+                                <label class="input-group-text" for="mode">HEX</label>
+                            </div>
+                        </div>
+                        <div>Type of port extender IC address pin configuration.</div>
+                    </div>
+
+
+                    <div class="form-group">
+                        <label>Stop light duration</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="stop_light_duration" class="form-control" step="10" min="500" max="5000" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">500..5000</span>
+                                <span class="input-group-text">milis</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Back light timeout</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="back_light_timeout" class="form-control" step="10" min="0" max="1000" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">0..1000</span>
+                                <span class="input-group-text">milis</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Reverce limit</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="reverce_limit" class="form-control" step="1" min="0" max="100" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">0..100</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Turn light limit</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="turn_light_limit" class="form-control" step="1" min="0" max="100" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">0..100</span>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <h2>Wipers settings</h2>
+
+                    <h3>Speed 1</h3>
+                    <div class="form-group">
+                        <label>Run duration</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="wiper1Duration" class="form-control" step="10" min="500" max="5000" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">500..5000</span>
+                                <span class="input-group-text">milis</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Pause</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="wiper1Pause" class="form-control" step="10" min="0" max="5000" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">0..5000</span>
+                                <span class="input-group-text">milis</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3>Speed 2</h3>
+                    <div class="form-group">
+                        <label>Run duration</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="wiper2Duration" class="form-control" step="10" min="500" max="5000" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">500..5000</span>
+                                <span class="input-group-text">milis</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Pause</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="wiper2Pause" class="form-control" step="10" min="0" max="5000" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">0..5000</span>
+                                <span class="input-group-text">milis</span>
+                            </div>
+                        </div>
+                    </div>
+
+
                     <input type="submit" class="btn btn-primary" value="Save" />
-                    <input type="button" class="btn btn-secondary" value="Monitor" onclick="KVR.Autorefresh()" />
 
                 </form>
             </div>

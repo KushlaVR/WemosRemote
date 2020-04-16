@@ -1,17 +1,32 @@
 ﻿{
   "ssid": "GAZ13",
   "password": "12345678",
-  "ch1_min": "550",
-  "ch1_max": "2550",
-  "ch2_min": "550",
-  "ch2_max": "2550",
-  "ch3_min": "550",
-  "ch3_max": "2550",
-  "ch4_min": "550",
-  "ch4_max": "2550",
+
+  "ch1_min": "878",
+  "ch1_center": "1382",
+  "ch1_max": "1885",
+
+  "ch2_min": "999",
+  "ch2_center": "1492",
+  "ch2_max": "1975",
+
+  "ch3_min": "1007",
+  "ch3_max": "2014",
+
+  "ch4_min": "1007",
+  "ch4_max": "2014",
+
+  "port_addr": "63",
 
   "stop_light_duration": "2000",
   "back_light_timeout": "500",
-  "reverce_limit": "0",
-  "turn_light_limit": "50"
+  "reverce_limit": "5",
+  "turn_light_limit": "50",
+
+  "wiper1Duration": "2000",
+  "wiper1Pause": "2000",
+
+  "wiper2Duration": "1400",
+  "wiper2Pause": "200"
+
 }

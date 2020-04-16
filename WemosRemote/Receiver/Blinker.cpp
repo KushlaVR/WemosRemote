@@ -61,7 +61,7 @@ Blinker * Blinker::end()
 	BlinkerItem * item = first;
 	while (item != nullptr)
 	{
-		write(item->pin, 0);
+		write(item->pin, offLevel);
 		item = item->next;
 	}
 	return this;

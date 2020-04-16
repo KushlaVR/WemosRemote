@@ -34,6 +34,7 @@
 #define pinI2C_SDA D2 //pcf8574
 
 //pcf8574 Port usage
+
 #define bitParkingLight 0
 #define bitHeadLight 1
 #define bitHighLight 2
@@ -42,6 +43,9 @@
 #define bitRightLight 5
 #define bitBackLight 6
 #define bitStopLight 7
+
+#define lightOFF HIGH
+#define lightON LOW
 
 ConfigStruct config;
 
@@ -52,13 +56,17 @@ char SSID_password[20];
 struct {
 	int speed;
 
-
-
 	int wiperPos;
 	int wiperPause;
 	int wiperDuration;
 	int wiperHalfDuration;
 	ulong wiperStartTime;
+
+	bool parkingLight;
+	bool headLight;
+	bool highLight;
+	bool fogLight;
+
 } state;
 
 BenchMark input_X = BenchMark();
@@ -67,15 +75,16 @@ BenchMark input_CH3 = BenchMark();
 BenchMark input_CH4 = BenchMark();
 
 BenchMark * input_Wipers = &input_CH4;
+BenchMark * input_Light = &input_CH3;
 
 
 //PCF8574 portExt = PCF8574(0x27);
-PCF8574 portExt = PCF8574(0x3F);
+PCF8574 * portExt;// = PCF8574(0x3F);
 
-extBlinker stopLight = extBlinker("Stop light", &portExt);
-extBlinker leftLight = extBlinker("Left light", &portExt);
-extBlinker rightLight = extBlinker("Right light", &portExt);
-extBlinker BackLight = extBlinker("Back light", &portExt);
+extBlinker * stopLight;// = extBlinker("Stop light", portExt);
+extBlinker * leftLight;// = extBlinker("Left light", portExt);
+extBlinker * rightLight;// = extBlinker("Right light", portExt);
+extBlinker * BackLight;// = extBlinker("Back light", portExt);
 
 VirtualButton btnLight = VirtualButton(btnLight_Press, btnLight_Hold, btnLight_Release);
 
@@ -115,11 +124,33 @@ void ICACHE_RAM_ATTR  pinServo_CH4_CHANGE() {
 }
 
 void btnLight_Press() {
-
+	if (state.parkingLight == false) {
+		state.parkingLight = true;
+		state.headLight= false;
+		state.highLight = false;
+	}
+	else if (state.headLight == false) {
+		state.parkingLight = true;
+		state.headLight = true;
+		state.highLight = false;
+	}
+	else if (state.highLight == false) {
+		state.parkingLight = true;
+		state.headLight = true;
+		state.highLight = true;
+	}
+	else {
+		state.parkingLight = false;
+		state.headLight = false;
+		state.highLight = false;
+	}
 }
 
 void btnLight_Hold() {
-
+	if (state.fogLight == true)
+		state.fogLight = false;
+	else
+		state.fogLight = true;
 }
 
 void btnLight_Release() {
@@ -145,53 +176,65 @@ void Values_Get() {
 
 
 void setupBlinkers() {
-	stopLight.Add(bitStopLight, 0, 0)
-		->Add(bitStopLight, 0, HIGH)
-		->Add(bitStopLight, config.stop_light_duration, 0)
+
+
+	stopLight = new extBlinker("Stop light", portExt);
+	leftLight = new extBlinker("Left light", portExt);
+	rightLight = new extBlinker("Right light", portExt);
+	BackLight = new extBlinker("Back light", portExt);
+
+	stopLight
+		->Add(bitStopLight, 0, lightOFF)
+		->Add(bitStopLight, 0, lightON)
+		->Add(bitStopLight, config.stop_light_duration, lightOFF)
 		->repeat = false;
-	stopLight.debug = true;
+	stopLight->debug = true;
+	stopLight->offLevel = lightOFF;
 
 	//Налаштування поворотників
 	leftLight
-		.Add(bitLeftLight, 0, HIGH)
-		->Add(bitLeftLight, 500, 0)
-		->Add(bitLeftLight, 1000, 0);
+		->Add(bitLeftLight, 0, lightON)
+		->Add(bitLeftLight, 500, lightOFF)
+		->Add(bitLeftLight, 1000, lightOFF);
+	leftLight->offLevel = lightOFF;
 	//leftLight.debug = true;
 	//serialController.leftLight = &leftLight;
 
 	rightLight
-		.Add(bitRightLight, 0, HIGH)
-		->Add(bitRightLight, 500, 0)
-		->Add(bitRightLight, 1000, 0);
+		->Add(bitRightLight, 0, lightON)
+		->Add(bitRightLight, 500, lightOFF)
+		->Add(bitRightLight, 1000, lightOFF);
+	rightLight->offLevel = lightOFF;
 	//rightLight.debug = true;
 	//serialController.rightLight = &rightLight;
 
 
 	BackLight
-		.Add(bitBackLight, 0, HIGH)
-		->Add(bitBackLight, 500, HIGH)
+		->Add(bitBackLight, 0, lightON)
+		->Add(bitBackLight, 500, lightON)
 		->repeat = false;
+	BackLight->offLevel = lightOFF;
 	//BackLight.debug = true;
 }
 
 
 
 void refreshConfig() {
-	stopLight.item(2)->offset = config.stop_light_duration;
-	BackLight.item(1)->offset = config.back_light_timeout;
+	stopLight->item(2)->offset = config.stop_light_duration;
+	BackLight->item(1)->offset = config.back_light_timeout;
 }
 
 void handleStearing() {
 	if (!input_X.isValid()) {
-		if (leftLight.isRunning())
+		if (leftLight->isRunning())
 		{
 			Serial.println("left end");
-			leftLight.end();
+			leftLight->end();
 		}
-		if (rightLight.isRunning())
+		if (rightLight->isRunning())
 		{
 			Serial.println("right end");
-			rightLight.end();
+			rightLight->end();
 		}
 		return;
 	}
@@ -210,38 +253,38 @@ void handleStearing() {
 	//Serial.printf("delta=%i;ll=%i;rl=%i;c=%i\n", delta, leftLimit, rightLimit, center);
 
 	if (delta > leftLimit) {
-		if (rightLight.isRunning()) {
+		if (rightLight->isRunning()) {
 			Serial.println("right end");
-			rightLight.end();
+			rightLight->end();
 		}
-		if (!leftLight.isRunning())
+		if (!leftLight->isRunning())
 		{
 			Serial.println("left begin");
-			leftLight.begin();
+			leftLight->begin();
 		}
 	}
 	else if (delta < rightLimit) {
-		if (leftLight.isRunning())
+		if (leftLight->isRunning())
 		{
 			Serial.println("left end");
-			leftLight.end();
+			leftLight->end();
 		}
-		if (!rightLight.isRunning())
+		if (!rightLight->isRunning())
 		{
 			Serial.println("right begin");
-			rightLight.begin();
+			rightLight->begin();
 		}
 	}
 	else {
-		if (leftLight.isRunning())
+		if (leftLight->isRunning())
 		{
 			Serial.println("left end");
-			leftLight.end();
+			leftLight->end();
 		}
-		if (rightLight.isRunning())
+		if (rightLight->isRunning())
 		{
 			Serial.println("right end");
-			rightLight.end();
+			rightLight->end();
 		}
 	}
 }
@@ -249,12 +292,12 @@ void handleStearing() {
 void handleSpeed() {
 	if (!input_Y.isValid()) {
 		state.speed = 0;
-		if (BackLight.isRunning()) {
+		if (BackLight->isRunning()) {
 			Serial.println("BackLight end");
-			BackLight.end();
+			BackLight->end();
 		}
-		if (stopLight.isRunning()) {
-			stopLight.end();
+		if (stopLight->isRunning()) {
+			stopLight->end();
 		}
 		return;
 	}
@@ -267,37 +310,41 @@ void handleSpeed() {
 	int reverce_limit = (reverceGap * config.reverce_limit) / 100;
 
 
-	int speed = center - input_Y.pos;
+	int speed = input_Y.pos - center;
 	if (input_Y.isChanged) {
 		Serial.printf("delta=%i;f=%i;r=%i;c=%i\n", speed, forward_limit, reverce_limit, center);
 	}
 
-	if (speed > reverce_limit) {
-		if (!BackLight.isRunning()) {
-			Serial.println("BackLight begin");
-			BackLight.begin();
+	if (speed > forward_limit) {
+		if (BackLight->isRunning()) {
+			Serial.println("BackLight end");
+			BackLight->end();
 		}
 	}
-	else if (-speed > forward_limit) {
-		if (BackLight.isRunning()) {
-			Serial.println("BackLight end");
-			BackLight.end();
+	else if (speed < reverce_limit) {
+		if (!BackLight->isRunning()) {
+			Serial.println("BackLight begin");
+			BackLight->begin();
 		}
 	}
 
+
 	if (state.speed != speed) {
 		//швидкість змінилась
-		if (abs(speed) < 5) {//Зупинка
-			stopLight.begin();
-		}
-		else
+		if (abs(state.speed) > 5)//передуваємо в русі
 		{
-			if (abs(speed) > abs(state.speed)) {//Швидкість зросла
-				stopLight.end();
+			if (abs(speed) < 5) {//Зупинка
+				stopLight->begin();
 			}
-			else {
-				if (abs(state.speed - speed) > 5) {//Швидкість впала більше ніж на 10
-					stopLight.begin();
+			else
+			{
+				if (abs(speed) > abs(state.speed)) {//Швидкість зросла
+					stopLight->end();
+				}
+				else {
+					if (abs(state.speed - speed) > 5) {//Швидкість впала більше ніж на 10
+						stopLight->begin();
+					}
 				}
 			}
 		}
@@ -316,18 +363,18 @@ void handleWipers() {
 			if (state.wiperStartTime == 0) {
 				state.wiperPos = 1;
 				state.wiperStartTime = millis();
-				state.wiperDuration = 2000;
-				state.wiperHalfDuration = 1000;
-				state.wiperPause = 2000;
+				state.wiperDuration = config.wiper1Duration;
+				state.wiperHalfDuration = config.wiper1Duration / 2;
+				state.wiperPause = config.wiper1Pause;
 			}
 		}
 		else {
 			if (state.wiperStartTime == 0) {
 				state.wiperPos = 2;
 				state.wiperStartTime = millis();
-				state.wiperDuration = 1400;
-				state.wiperHalfDuration = 700;
-				state.wiperPause = 200;
+				state.wiperDuration = config.wiper2Duration;
+				state.wiperHalfDuration = config.wiper2Duration / 2;
+				state.wiperPause = config.wiper2Pause;
 			}
 		}
 	}
@@ -356,6 +403,36 @@ void handleWipers() {
 	}
 
 	wipers.write(angle);
+}
+
+void handleHeadLight() {
+	if (input_Light->pos > 90) 
+		btnLight.setValue(HIGH);
+	else
+		btnLight.setValue(LOW);
+
+	if (state.parkingLight) {
+		portExt->write(bitParkingLight, lightON);
+		if (state.fogLight) 
+			portExt->write(bitFogLight, lightON);
+		else
+			portExt->write(bitFogLight, lightOFF);
+	}
+	else {
+		portExt->write(bitParkingLight, lightOFF);
+		portExt->write(bitFogLight, lightOFF);
+	}
+
+	if (state.headLight)
+		portExt->write(bitHeadLight, lightON);
+	else 
+		portExt->write(bitHeadLight, lightOFF);
+
+	if (state.highLight)
+		portExt->write(bitHighLight, lightON);
+	else
+		portExt->write(bitHighLight, lightOFF);
+
 }
 
 // the setup function runs once when you press reset or power the board
@@ -401,8 +478,9 @@ void setup() {
 	setupController.cfg = &config;
 	setupController.loadConfig();
 
-	portExt.begin(pinI2C_SDA, pinI2C_SCL);
-	portExt.write8(0x00);
+	portExt = new PCF8574(config.port_addr);
+	portExt->begin(pinI2C_SDA, pinI2C_SCL);
+	portExt->write8(0xFF);
 
 
 	s = config.ssid + "_" + WiFi.macAddress();
@@ -435,6 +513,8 @@ void setup() {
 
 	input_CH4.IN_max = config.ch3_max;
 	input_CH4.IN_min = config.ch3_min;
+
+	btnLight.condition = HIGH;
 
 	Serial.println("Starting");
 }
@@ -480,11 +560,12 @@ void loop() {
 	handleStearing();
 	handleSpeed();
 	handleWipers();
+	handleHeadLight();
 
-	stopLight.loop();
-	leftLight.loop();
-	rightLight.loop();
-	BackLight.loop();
+	stopLight->loop();
+	leftLight->loop();
+	rightLight->loop();
+	BackLight->loop();
 
 	webServer.loop();
 }
