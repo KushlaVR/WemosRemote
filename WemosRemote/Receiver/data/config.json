@@ -2,13 +2,13 @@
   "ssid": "GAZ13",
   "password": "12345678",
 
-  "ch1_min": "878",
+  "ch1_min": "978",
   "ch1_center": "1382",
-  "ch1_max": "1885",
+  "ch1_max": "1985",
 
-  "ch2_min": "999",
+  "ch2_min": "900",
   "ch2_center": "1492",
-  "ch2_max": "1975",
+  "ch2_max": "2075",
 
   "ch3_min": "1007",
   "ch3_max": "2014",
@@ -23,6 +23,8 @@
   "reverce_limit": "5",
   "turn_light_limit": "50",
 
+  "wiper0": "45",
+  "wiper180": "135",
   "wiper1Duration": "2000",
   "wiper1Pause": "2000",
 

@@ -31,6 +31,9 @@ public:
 	int turn_light_limit;
 	int reverce_limit;
 
+	int wiper0;
+	int wiper180;
+
 	int wiper1Duration;
 	int wiper1Pause;
 

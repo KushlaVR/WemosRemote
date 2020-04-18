@@ -23,27 +23,30 @@ void SetupController::loadConfig()
 		cfg.AddValue("ssid", "GAZ13");
 		cfg.AddValue("password", "12345678");
 
-		cfg.AddValue("ch1_min", "550");
-		cfg.AddValue("ch1_center", "1000");
-		cfg.AddValue("ch1_max", "2550");
+		cfg.AddValue("ch1_min", "978");
+		cfg.AddValue("ch1_center", "1382");
+		cfg.AddValue("ch1_max", "1985");
 
-		cfg.AddValue("ch2_min", "550");
-		cfg.AddValue("ch2_center", "1000");
-		cfg.AddValue("ch2_max", "2550");
+		cfg.AddValue("ch2_min", "900");
+		cfg.AddValue("ch2_center", "1492");
+		cfg.AddValue("ch2_max", "2075");
 
-		cfg.AddValue("ch3_min", "550");
-		cfg.AddValue("ch3_max", "2550");
+		cfg.AddValue("ch3_min", "1007");
+		cfg.AddValue("ch3_max", "2014");
 
-		cfg.AddValue("ch4_min", "550");
-		cfg.AddValue("ch4_max", "2550");
+		cfg.AddValue("ch4_min", "1007");
+		cfg.AddValue("ch4_max", "2014");
 
 		cfg.AddValue("turn_light_limit", "50");
 		cfg.AddValue("reverce_limit", "5");
-		
+
 		cfg.AddValue("stop_light_duration", "2000");
 		cfg.AddValue("back_light_timeout", "500");
-		
+
 		cfg.AddValue("port_addr", "63");
+
+		cfg.AddValue("wiper0", "45");
+		cfg.AddValue("wiper180", "135");
 
 		cfg.AddValue("wiper1Duration", "2000");
 		cfg.AddValue("wiper1Pause", "2000");
@@ -82,13 +85,16 @@ void SetupController::loadConfig()
 
 	this->cfg->ch4_min = cfg.getInt("ch4_min");
 	this->cfg->ch4_max = cfg.getInt("ch4_max");
-	
+
 	this->cfg->turn_light_limit = cfg.getInt("turn_light_limit");
 	this->cfg->reverce_limit = cfg.getInt("reverce_limit");
 	this->cfg->port_addr = cfg.getInt("port_addr");
 
 	this->cfg->stop_light_duration = cfg.getInt("stop_light_duration");
 	this->cfg->back_light_timeout = cfg.getInt("back_light_timeout");
+
+	this->cfg->wiper0 = cfg.getInt("wiper0");
+	this->cfg->wiper180 = cfg.getInt("wiper180");
 
 	this->cfg->wiper1Duration = cfg.getInt("wiper1Duration");
 	this->cfg->wiper1Pause = cfg.getInt("wiper1Pause");
@@ -133,10 +139,13 @@ void SetupController::printConfig(JsonString * out)
 	out->AddValue("turn_light_limit", String(cfg->turn_light_limit));
 	out->AddValue("reverce_limit", String(cfg->reverce_limit));
 	out->AddValue("port_addr", String(cfg->port_addr));
-	
+
 	out->AddValue("stop_light_duration", String(cfg->stop_light_duration));
 	out->AddValue("back_light_timeout", String(cfg->back_light_timeout));
 
+	out->AddValue("wiper0", String(cfg->wiper0));
+	out->AddValue("wiper180", String(cfg->wiper180));
+	
 	out->AddValue("wiper1Duration", String(cfg->wiper1Duration));
 	out->AddValue("wiper1Pause", String(cfg->wiper1Pause));
 
@@ -157,7 +166,7 @@ void SetupController::Setup_Post()
 {
 	if (webServer.hasArg("ssid")) { setupController.cfg->ssid = webServer.arg("ssid"); }
 	if (webServer.hasArg("password")) { setupController.cfg->password = webServer.arg("password"); }
-	
+
 	if (webServer.hasArg("ch1_min")) { setupController.cfg->ch1_min = webServer.arg("ch1_min").toInt(); }
 	if (webServer.hasArg("ch1_center")) { setupController.cfg->ch1_center = webServer.arg("ch1_center").toInt(); }
 	if (webServer.hasArg("ch1_max")) { setupController.cfg->ch1_max = webServer.arg("ch1_max").toInt(); }
@@ -171,7 +180,7 @@ void SetupController::Setup_Post()
 
 	if (webServer.hasArg("ch4_min")) { setupController.cfg->ch4_min = webServer.arg("ch4_min").toInt(); }
 	if (webServer.hasArg("ch4_max")) { setupController.cfg->ch4_max = webServer.arg("ch4_max").toInt(); }
-	
+
 	if (webServer.hasArg("turn_light_limit")) { setupController.cfg->turn_light_limit = webServer.arg("turn_light_limit").toInt(); }
 	if (webServer.hasArg("reverce_limit")) { setupController.cfg->reverce_limit = webServer.arg("reverce_limit").toInt(); }
 	if (webServer.hasArg("port_addr")) { setupController.cfg->port_addr = webServer.arg("port_addr").toInt(); }
@@ -179,6 +188,9 @@ void SetupController::Setup_Post()
 	if (webServer.hasArg("stop_light_duration")) { setupController.cfg->stop_light_duration = webServer.arg("stop_light_duration").toInt(); }
 	if (webServer.hasArg("back_light_timeout")) { setupController.cfg->back_light_timeout = webServer.arg("back_light_timeout").toInt(); }
 
+	if (webServer.hasArg("wiper0")) { setupController.cfg->wiper0 = webServer.arg("wiper0").toInt(); }
+	if (webServer.hasArg("wiper180")) { setupController.cfg->wiper180 = webServer.arg("wiper180").toInt(); }
+	
 	if (webServer.hasArg("wiper1Duration")) { setupController.cfg->wiper1Duration = webServer.arg("wiper1Duration").toInt(); }
 	if (webServer.hasArg("wiper1Pause")) { setupController.cfg->wiper1Pause = webServer.arg("wiper1Pause").toInt(); }
 

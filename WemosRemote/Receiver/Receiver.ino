@@ -124,29 +124,35 @@ void ICACHE_RAM_ATTR  pinServo_CH4_CHANGE() {
 }
 
 void btnLight_Press() {
+	Serial.println("btnLight_Press");
 	if (state.parkingLight == false) {
 		state.parkingLight = true;
 		state.headLight= false;
 		state.highLight = false;
+		Serial.println("parking");
 	}
 	else if (state.headLight == false) {
 		state.parkingLight = true;
 		state.headLight = true;
 		state.highLight = false;
+		Serial.println("head");
 	}
 	else if (state.highLight == false) {
 		state.parkingLight = true;
 		state.headLight = true;
 		state.highLight = true;
+		Serial.println("high");
 	}
 	else {
 		state.parkingLight = false;
 		state.headLight = false;
 		state.highLight = false;
+		Serial.println("off");
 	}
 }
 
 void btnLight_Hold() {
+	Serial.println("btnLight_Hold");
 	if (state.fogLight == true)
 		state.fogLight = false;
 	else
@@ -154,7 +160,7 @@ void btnLight_Hold() {
 }
 
 void btnLight_Release() {
-
+	Serial.println("btnLight_Release");
 }
 
 void printValues(JsonString * out)
@@ -355,6 +361,10 @@ void handleSpeed() {
 
 void handleWipers() {
 
+	if (!wipers.attached()) {
+		wipers.attach(pinWipers);
+	}
+
 	if (input_Wipers->isValid()) {
 		if (input_Wipers->pos < 70) {
 			state.wiperPos = 0;
@@ -379,22 +389,23 @@ void handleWipers() {
 		}
 	}
 
-	int angle = 0;
+	int angle = config.wiper0;
 
 	if (state.wiperStartTime != 0) {
+		int gap = config.wiper180 - config.wiper0;
 		ulong spendTime = millis() - state.wiperStartTime;
 		if (spendTime < state.wiperHalfDuration) {
 			//Рух в перед
-			angle = (spendTime * 180) / state.wiperHalfDuration;
+			angle = config.wiper0 + ((spendTime * gap) / state.wiperHalfDuration);
 		}
 		else if (spendTime < state.wiperDuration) {
 			//Рух назад
 			spendTime = spendTime - state.wiperHalfDuration;
-			angle = 180 - ((spendTime * 180) / state.wiperHalfDuration);
+			angle = config.wiper180 - ((spendTime * gap) / state.wiperHalfDuration);
 		}
 		else if (spendTime < (state.wiperDuration + state.wiperPause)) {
 			//Вичікування паузи
-			angle = 0;
+			angle = config.wiper0;
 		}
 		else {
 			//Кінець циклу
@@ -496,8 +507,7 @@ void setup() {
 	webServer.on("/api/values", HTTPMethod::HTTP_GET, Values_Get);
 	webServer.apName = String(SSID);
 
-	testServo.attach(pinTest);
-	wipers.attach(pinWipers);
+	testServo.attach(pinTest, 1000, 2000);
 
 	setupBlinkers();
 
