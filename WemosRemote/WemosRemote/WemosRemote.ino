@@ -55,6 +55,9 @@
 #define pinBlinker D3
 #define pinBuzzer RX
 
+#define LIGHT_ON LOW
+#define LIGHT_OFF HIGH
+
 
 // RemoteXY configurate  
 //////////////////////////////////////////////
@@ -180,38 +183,38 @@ VirtualButton btn_Beeper = VirtualButton(btn_Beeper_On, nullptr, btn_Beeper_Off)
 VirtualButton out_BackLight = VirtualButton(out_BackLight_On, nullptr, out_BackLight_Off);
 
 void btn_ParkingLight_On() {
-	portExt.write(bitParkingLight, HIGH);
+	portExt.write(bitParkingLight, LIGHT_ON);
 	console.println("btn_ParkingLight_On");
 }
 void btn_ParkingLight_Off() {
-	portExt.write(bitParkingLight, LOW);
+	portExt.write(bitParkingLight, LIGHT_OFF);
 	console.println("btn_ParkingLight_Off");
 }
 
 void btn_HeadLight_On() {
-	portExt.write(bitHeadLight, HIGH);
+	portExt.write(bitHeadLight, LIGHT_ON);
 	console.println("btn_HeadLight_On");
 }
 void btn_HeadLight_Off() {
-	portExt.write(bitHeadLight, LOW);
+	portExt.write(bitHeadLight, LIGHT_OFF);
 	console.println("btn_HeadLight_Off");
 }
 
 void btn_HighLight_On() {
-	portExt.write(bitHighLight, HIGH);
+	portExt.write(bitHighLight, LIGHT_ON);
 	console.println("btn_HighLight_On");
 }
 void btn_HighLight_Off() {
-	portExt.write(bitHighLight, LOW);
+	portExt.write(bitHighLight, LIGHT_OFF);
 	console.println("btn_HighLight_Off");
 }
 
 void btn_FogLight_On() {
-	portExt.write(bitFogLight, HIGH);
+	portExt.write(bitFogLight, LIGHT_ON);
 	console.println("btn_FogLight_On");
 }
 void btn_FogLight_Off() {
-	portExt.write(bitFogLight, LOW);
+	portExt.write(bitFogLight, LIGHT_OFF);
 	console.println("btn_FogLight_Off");
 }
 
@@ -275,11 +278,11 @@ void btn_Beeper_Off() {
 
 
 void out_BackLight_On() {
-	portExt.write(bitBackLight, HIGH);
+	portExt.write(bitBackLight, LIGHT_ON);
 	console.println("out_BackLight_On");
 }
 void out_BackLight_Off() {
-	portExt.write(bitBackLight, LOW);
+	portExt.write(bitBackLight, LIGHT_OFF);
 	console.println("out_BackLight_Off");
 }
 
@@ -346,44 +349,44 @@ void handleLight() {
 void setupBlinkers() {
 
 	console.println("Stop");
-	stopLight.Add(bitStopLight, 0, LOW)
-		->Add(bitStopLight, 0, HIGH)
-		->Add(bitStopLight, config.stop_light_duration, LOW)
+	stopLight.Add(bitStopLight, 0, LIGHT_OFF)
+		->Add(bitStopLight, 0, LIGHT_ON)
+		->Add(bitStopLight, config.stop_light_duration, LIGHT_OFF)
 		->repeat = false;
 	stopLight.debug = true;
 
 	//Налаштування поворотників
 	leftLight
-		.Add(bitLeftLight, 0, HIGH)
-		->Add(bitLeftLight, 500, LOW)
-		->Add(bitLeftLight, 1000, LOW);
+		.Add(bitLeftLight, 0, LIGHT_ON)
+		->Add(bitLeftLight, 500, LIGHT_OFF)
+		->Add(bitLeftLight, 1000, LIGHT_OFF);
 	leftLight.debug = true;
 	serialController.leftLight = &leftLight;
 
 	rightLight
-		.Add(bitRightLight, 0, HIGH)
-		->Add(bitRightLight, 500, LOW)
-		->Add(bitRightLight, 1000, LOW);
+		.Add(bitRightLight, 0, LIGHT_ON)
+		->Add(bitRightLight, 500, LIGHT_OFF)
+		->Add(bitRightLight, 1000, LIGHT_OFF);
 	rightLight.debug = true;
 	serialController.rightLight = &rightLight;
 
 	alarmOff
-		.Add(bitLeftLight, 0, HIGH)
-		->Add(bitRightLight, 0, HIGH)
-		->Add(bitLeftLight, 300, 0)
-		->Add(bitRightLight, 300, 0)
-		->Add(bitLeftLight, 600, HIGH)
-		->Add(bitRightLight, 600, HIGH)
-		->Add(bitLeftLight, 900, 0)
-		->Add(bitRightLight, 900, 0);
+		.Add(bitLeftLight, 0, LIGHT_ON)
+		->Add(bitRightLight, 0, LIGHT_ON)
+		->Add(bitLeftLight, 300, LIGHT_OFF)
+		->Add(bitRightLight, 300, LIGHT_OFF)
+		->Add(bitLeftLight, 600, LIGHT_ON)
+		->Add(bitRightLight, 600, LIGHT_ON)
+		->Add(bitLeftLight, 900, LIGHT_OFF)
+		->Add(bitRightLight, 900, LIGHT_OFF);
 	alarmOff.repeat = false;
 	alarmOff.debug = true;
 
 	alarmOn
-		.Add(bitLeftLight, 0, HIGH)
-		->Add(bitRightLight, 0, HIGH)
-		->Add(bitLeftLight, 600, 0)
-		->Add(bitRightLight, 600, 0);
+		.Add(bitLeftLight, 0, LIGHT_ON)
+		->Add(bitRightLight, 0, LIGHT_ON)
+		->Add(bitLeftLight, 600, LIGHT_OFF)
+		->Add(bitRightLight, 600, LIGHT_OFF);
 	alarmOn.repeat = false;
 	alarmOn.debug = true;
 
