@@ -165,7 +165,7 @@ extBlinker leftLight = extBlinker("Left light", &portExt);
 extBlinker rightLight = extBlinker("Right light", &portExt);
 extBlinker alarmOn = extBlinker("Alarm on", &portExt);
 extBlinker alarmOff = extBlinker("Alarm of", &portExt);
-Blinker lightBlinker = Blinker("Light Blinker");
+//Blinker lightBlinker = Blinker("Light Blinker");
 Beeper alarmBeepOn = Beeper("Alarm beep on");
 Beeper alarmBeepOff = Beeper("Alarm beep of");
 Beeper turnLightBeeper = Beeper("Turn light beep");
@@ -242,11 +242,13 @@ void btn_RightLight_Off() {
 }
 
 void btn_Blink_On() {
-	if (!lightBlinker.isRunning()) lightBlinker.begin();
+	//if (!lightBlinker.isRunning()) lightBlinker.begin();
+	digitalWrite(pinBlinker, HIGH);
 	console.println("btn_Blink_On");
 }
 void btn_Blink_Off() {
-	if (lightBlinker.isRunning()) lightBlinker.end();
+	//if (lightBlinker.isRunning()) lightBlinker.end();
+	digitalWrite(pinBlinker, LOW);
 	console.println("btn_Blink_Off");
 }
 
@@ -390,7 +392,7 @@ void setupBlinkers() {
 	alarmOn.repeat = false;
 	alarmOn.debug = true;
 
-	lightBlinker
+	/*lightBlinker
 		.Add(pinBlinker, 0, HIGH)
 		->Add(pinBlinker, 200, LOW)
 		->Add(pinBlinker, 300, HIGH)
@@ -407,8 +409,8 @@ void setupBlinkers() {
 		->Add(pinBlinker, 2500, LOW)
 		->Add(pinBlinker, 2700, HIGH)
 		->Add(pinBlinker, 2900, LOW)
-		->Add(pinBlinker, 3000, LOW);
-	lightBlinker.debug = true;
+		->Add(pinBlinker, 3000, LOW);*/
+	//lightBlinker.debug = true;
 }
 
 void setupBeepers() {
@@ -812,7 +814,7 @@ void loop()
 	alarmOn.loop();
 	alarmBeepOn.loop();
 	stopLight.loop();
-	lightBlinker.loop();
+	//lightBlinker.loop();
 	//portExt.write8(portExt.valueOut());
 	webServer.loop();
 }
