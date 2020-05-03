@@ -567,7 +567,7 @@ void setup()
 
 	console.println(("Start port extender..."));
 
-	portExt.begin(pinI2C_SDA, pinI2C_SCL, 0x00);
+	portExt.begin(pinI2C_SDA, pinI2C_SCL, 0xFF);
 
 	console.println(("Done."));
 

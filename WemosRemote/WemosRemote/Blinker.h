@@ -30,6 +30,7 @@ class Blinker
 	unsigned long startTime = 0;
 
 public:
+	int defaultValue = 0;
 	bool debug = false;
 	bool repeat = true;
 	Blinker(String name);
@@ -56,10 +57,10 @@ public:
 
 class extBlinker : public Blinker {
 
-public :
+public:
 	PCF8574 * extPort = nullptr;
 
-	extBlinker(String name, PCF8574 * extPort) : Blinker(name) { this->extPort = extPort; };
+	extBlinker(String name, PCF8574 * extPort) : Blinker(name) { this->extPort = extPort; defaultValue = HIGH; };
 	~extBlinker() {};
 	virtual void write(int pin, int value);
 	virtual void setupPin(int pin);
