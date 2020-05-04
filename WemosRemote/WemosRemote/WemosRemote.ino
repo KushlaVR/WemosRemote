@@ -392,6 +392,7 @@ void setupBlinkers() {
 	alarmOn.repeat = false;
 	alarmOn.debug = true;
 
+	pinMode(pinBlinker, OUTPUT);
 	/*lightBlinker
 		.Add(pinBlinker, 0, HIGH)
 		->Add(pinBlinker, 200, LOW)
