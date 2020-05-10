@@ -54,6 +54,19 @@ Blinker * Blinker::Add(int pin, unsigned long offset, uint8_t value)
 	return this;
 }
 
+Blinker * Blinker::AddPuls(int pin, unsigned long len)
+{
+	Add(pin, timelineOffset, 0xFF);
+	timelineOffset += len;
+	return Add(pin, timelineOffset, 0);
+}
+
+Blinker * Blinker::AddPause(int pin, unsigned long len)
+{
+	timelineOffset += len;
+	return Add(pin, timelineOffset, 0);
+}
+
 Blinker * Blinker::end()
 {
 	current = nullptr;

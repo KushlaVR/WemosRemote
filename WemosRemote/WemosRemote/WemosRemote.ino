@@ -165,7 +165,11 @@ extBlinker leftLight = extBlinker("Left light", &portExt);
 extBlinker rightLight = extBlinker("Right light", &portExt);
 extBlinker alarmOn = extBlinker("Alarm on", &portExt);
 extBlinker alarmOff = extBlinker("Alarm of", &portExt);
-//Blinker lightBlinker = Blinker("Light Blinker");
+Blinker blinkerSOS = Blinker("SOS Blinker");
+Blinker blinkerSimple = Blinker("Simple Blinker");
+Blinker blinkerStrobe = Blinker("Strobe Blinker");
+Blinker * blinkers[] = { &blinkerStrobe , &blinkerSimple , &blinkerSOS };
+int blinkerIndex = 0;
 Beeper alarmBeepOn = Beeper("Alarm beep on");
 Beeper alarmBeepOff = Beeper("Alarm beep of");
 Beeper turnLightBeeper = Beeper("Turn light beep");
@@ -176,7 +180,7 @@ VirtualButton btn_HighLight = VirtualButton(btn_HighLight_On, nullptr, btn_HighL
 VirtualButton btn_FogLight = VirtualButton(btn_FogLight_On, nullptr, btn_FogLight_Off);
 VirtualButton btn_LeftLight = VirtualButton(btn_LeftLight_On, nullptr, btn_LeftLight_Off);
 VirtualButton btn_RightLight = VirtualButton(btn_RightLight_On, nullptr, btn_RightLight_Off);
-VirtualButton btn_Blink = VirtualButton(btn_Blink_On, nullptr, btn_Blink_Off);
+VirtualButton btn_Blink = VirtualButton(btn_Blink_On, btn_Blink_Hold, btn_Blink_Off);
 VirtualButton btn_Alarm = VirtualButton(btn_Alarm_On, nullptr, btn_Alarm_Off);
 VirtualButton btn_Beeper = VirtualButton(btn_Beeper_On, nullptr, btn_Beeper_Off);
 
@@ -242,14 +246,24 @@ void btn_RightLight_Off() {
 }
 
 void btn_Blink_On() {
-	//if (!lightBlinker.isRunning()) lightBlinker.begin();
-	digitalWrite(pinBlinker, HIGH);
-	console.println("btn_Blink_On");
+	if (blinkers[blinkerIndex]->isRunning()) {
+		blinkers[blinkerIndex]->end();
+		console.println("btn_Blink_Off");
+	}
+	else {
+		blinkers[blinkerIndex]->begin();
+		console.println("btn_Blink_On");
+	}
 }
 void btn_Blink_Off() {
-	//if (lightBlinker.isRunning()) lightBlinker.end();
-	digitalWrite(pinBlinker, LOW);
-	console.println("btn_Blink_Off");
+	//digitalWrite(pinBlinker, LOW);
+}
+void btn_Blink_Hold() {
+	bool isRunning = blinkers[blinkerIndex]->isRunning();
+	if (isRunning) blinkers[blinkerIndex]->end();
+	blinkerIndex++;
+	if (blinkerIndex == 3) blinkerIndex = 0;
+	if (isRunning) blinkers[blinkerIndex]->begin();
 }
 
 void btn_Alarm_On() {
@@ -350,7 +364,7 @@ void handleLight() {
 
 void setupBlinkers() {
 
-	console.println("Stop");
+	//console.println("Stop");
 	stopLight.Add(bitStopLight, 0, LIGHT_OFF)
 		->Add(bitStopLight, 0, LIGHT_ON)
 		->Add(bitStopLight, config.stop_light_duration, LIGHT_OFF)
@@ -393,24 +407,43 @@ void setupBlinkers() {
 	alarmOn.debug = true;
 
 	pinMode(pinBlinker, OUTPUT);
-	/*lightBlinker
-		.Add(pinBlinker, 0, HIGH)
-		->Add(pinBlinker, 200, LOW)
-		->Add(pinBlinker, 300, HIGH)
-		->Add(pinBlinker, 500, LOW)
-		->Add(pinBlinker, 700, HIGH)
-		->Add(pinBlinker, 900, LOW)
-		->Add(pinBlinker, 1000, HIGH)
-		->Add(pinBlinker, 1400, LOW)
-		->Add(pinBlinker, 1500, HIGH)
-		->Add(pinBlinker, 1900, LOW)
-		->Add(pinBlinker, 2000, HIGH)
-		->Add(pinBlinker, 2200, LOW)
-		->Add(pinBlinker, 2300, HIGH)
-		->Add(pinBlinker, 2500, LOW)
-		->Add(pinBlinker, 2700, HIGH)
-		->Add(pinBlinker, 2900, LOW)
-		->Add(pinBlinker, 3000, LOW);*/
+	blinkerSimple
+		.AddPuls(pinBlinker, 600)
+		->AddPause(pinBlinker, 400);
+
+	//blinkerSimple.debug = true;
+
+	blinkerSOS
+		.AddPuls(pinBlinker, 150)
+		->AddPause(pinBlinker, 50)
+		->AddPuls(pinBlinker, 150)
+		->AddPause(pinBlinker, 50)
+		->AddPuls(pinBlinker, 150)
+		->AddPause(pinBlinker, 400)
+		->AddPuls(pinBlinker, 300)
+		->AddPause(pinBlinker, 100)
+		->AddPuls(pinBlinker, 300)
+		->AddPause(pinBlinker, 400)
+		->AddPuls(pinBlinker, 150)
+		->AddPause(pinBlinker, 50)
+		->AddPuls(pinBlinker, 150)
+		->AddPause(pinBlinker, 50)
+		->AddPuls(pinBlinker, 150)
+		->AddPause(pinBlinker, 800);
+	//blinkerSOS.debug = true;
+
+	blinkerStrobe
+		.AddPuls(pinBlinker, 100)
+		->AddPause(pinBlinker, 50)
+		->AddPuls(pinBlinker, 100)
+		->AddPause(pinBlinker, 50)
+		->AddPuls(pinBlinker, 100)
+		->AddPause(pinBlinker, 50)
+		->AddPuls(pinBlinker, 100)
+		->AddPause(pinBlinker, 500);
+
+	//blinkerStrobe.debug = true;
+
 	//lightBlinker.debug = true;
 }
 
@@ -524,7 +557,7 @@ void setup()
 	Serial.end();
 	pinMode(pinBuzzer, OUTPUT);
 	digitalWrite(pinBuzzer, LOW);
-	//Serial.begin(115200);
+	Serial.begin(115200);
 	Serial.println();
 	Serial.println();
 	console.output = &Serial;
@@ -578,7 +611,7 @@ void setup()
 	btn_FogLight.isToggleMode = true;
 	btn_LeftLight.isToggleMode = true;
 	btn_RightLight.isToggleMode = true;
-	btn_Blink.isToggleMode = true;
+	//btn_Blink.isToggleMode = true;
 	btn_Alarm.isToggleMode = true;
 
 	//out_BackLight.isToggleMode = true;
@@ -644,6 +677,7 @@ void loop()
 			leftLight.end();
 			rightLight.end();
 			turnLightBeeper.end();
+			blinkers[blinkerIndex]->end();
 
 			btn_ParkingLight.reset();
 			btn_HeadLight.reset();
@@ -755,6 +789,7 @@ void loop()
 			leftLight.end();
 			rightLight.end();
 			turnLightBeeper.end();
+			blinkers[blinkerIndex]->end();
 			alarmOn.begin();
 			alarmBeepOff.begin();
 			motor->isEnabled = false;
@@ -815,7 +850,7 @@ void loop()
 	alarmOn.loop();
 	alarmBeepOn.loop();
 	stopLight.loop();
-	//lightBlinker.loop();
+	blinkers[blinkerIndex]->loop();
 	//portExt.write8(portExt.valueOut());
 	webServer.loop();
 }

@@ -28,6 +28,7 @@ class Blinker
 
 	String name;
 	unsigned long startTime = 0;
+	unsigned long timelineOffset = 0;
 
 public:
 	int defaultValue = 0;
@@ -37,6 +38,8 @@ public:
 	~Blinker();
 	void loop();
 	Blinker * Add(int pin, unsigned long offset, uint8_t value);
+	Blinker * AddPuls(int pin, unsigned long len);
+	Blinker * AddPause(int pin, unsigned long len);
 	Blinker * begin() { current = first; startTime = millis(); return this; };
 	Blinker * end();
 	virtual void setupPin(int pin);
