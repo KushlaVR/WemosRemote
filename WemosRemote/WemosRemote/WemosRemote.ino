@@ -557,7 +557,7 @@ void setup()
 	Serial.end();
 	pinMode(pinBuzzer, OUTPUT);
 	digitalWrite(pinBuzzer, LOW);
-	Serial.begin(115200);
+	//Serial.begin(115200);
 	Serial.println();
 	Serial.println();
 	console.output = &Serial;
