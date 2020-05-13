@@ -385,7 +385,7 @@ void handleWipers() {
 		}
 	}
 
-	int angle = config.wiper0;
+	int angle = config.wiper180;
 	if (state.wiperStartTime != 0) {
 		if (!wipers.attached()) {
 			wipers.attach(pinWipers, 1000, 2000);
@@ -394,16 +394,16 @@ void handleWipers() {
 		ulong spendTime = millis() - state.wiperStartTime;
 		if (spendTime < state.wiperHalfDuration) {
 			//Рух в перед
-			angle = config.wiper0 + ((spendTime * gap) / state.wiperHalfDuration);
+			angle = config.wiper180 - ((spendTime * gap) / state.wiperHalfDuration);
 		}
 		else if (spendTime < state.wiperDuration) {
 			//Рух назад
 			spendTime = spendTime - state.wiperHalfDuration;
-			angle = config.wiper180 - ((spendTime * gap) / state.wiperHalfDuration);
+			angle = config.wiper0 + ((spendTime * gap) / state.wiperHalfDuration);
 		}
 		else if (spendTime < (state.wiperDuration + state.wiperPause)) {
 			//Вичікування паузи
-			angle = config.wiper0;
+			angle = config.wiper180;
 		}
 		else {
 			//Кінець циклу
