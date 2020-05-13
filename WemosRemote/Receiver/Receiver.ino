@@ -127,7 +127,7 @@ void btnLight_Press() {
 	Serial.println("btnLight_Press");
 	if (state.parkingLight == false) {
 		state.parkingLight = true;
-		state.headLight= false;
+		state.headLight = false;
 		state.highLight = false;
 		Serial.println("parking");
 	}
@@ -360,11 +360,6 @@ void handleSpeed() {
 }
 
 void handleWipers() {
-
-	if (!wipers.attached()) {
-		wipers.attach(pinWipers);
-	}
-
 	if (input_Wipers->isValid()) {
 		if (input_Wipers->pos < 70) {
 			state.wiperPos = 0;
@@ -390,8 +385,10 @@ void handleWipers() {
 	}
 
 	int angle = config.wiper0;
-
 	if (state.wiperStartTime != 0) {
+		if (!wipers.attached()) {
+			wipers.attach(pinWipers);
+		}
 		int gap = config.wiper180 - config.wiper0;
 		ulong spendTime = millis() - state.wiperStartTime;
 		if (spendTime < state.wiperHalfDuration) {
@@ -411,20 +408,25 @@ void handleWipers() {
 			//Кінець циклу
 			state.wiperStartTime = 0;
 		}
+		wipers.write(angle);
+	}
+	else {
+		if (wipers.attached()) {
+			wipers.detach();
+		}
 	}
 
-	wipers.write(angle);
 }
 
 void handleHeadLight() {
-	if (input_Light->pos > 90) 
+	if (input_Light->pos > 90)
 		btnLight.setValue(HIGH);
 	else
 		btnLight.setValue(LOW);
 
 	if (state.parkingLight) {
 		portExt->write(bitParkingLight, lightON);
-		if (state.fogLight) 
+		if (state.fogLight)
 			portExt->write(bitFogLight, lightON);
 		else
 			portExt->write(bitFogLight, lightOFF);
@@ -436,7 +438,7 @@ void handleHeadLight() {
 
 	if (state.headLight)
 		portExt->write(bitHeadLight, lightON);
-	else 
+	else
 		portExt->write(bitHeadLight, lightOFF);
 
 	if (state.highLight)
