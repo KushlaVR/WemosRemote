@@ -18,6 +18,7 @@ public:
 	bool isChanged;
 
 	ulong IN_min = 550;
+	ulong IN_center = 1475;
 	ulong IN_max = 2400;
 
 	int OUT_min = 0;

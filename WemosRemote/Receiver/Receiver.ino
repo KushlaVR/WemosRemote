@@ -387,7 +387,7 @@ void handleWipers() {
 	int angle = config.wiper0;
 	if (state.wiperStartTime != 0) {
 		if (!wipers.attached()) {
-			wipers.attach(pinWipers);
+			wipers.attach(pinWipers, 1000, 2000);
 		}
 		int gap = config.wiper180 - config.wiper0;
 		ulong spendTime = millis() - state.wiperStartTime;
@@ -515,16 +515,20 @@ void setup() {
 
 	setupController.reloadConfig = &refreshConfig;
 	input_X.IN_max = config.ch1_max;
+	input_X.IN_center = config.ch1_center;
 	input_X.IN_min = config.ch1_min;
 
 	input_Y.IN_max = config.ch2_max;
+	input_Y.IN_center = config.ch2_center;
 	input_Y.IN_min = config.ch2_min;
 
 	input_CH3.IN_max = config.ch3_max;
+	input_CH3.IN_center = config.ch3_min + ((config.ch3_max - config.ch3_min) / 2);
 	input_CH3.IN_min = config.ch3_min;
 
-	input_CH4.IN_max = config.ch3_max;
-	input_CH4.IN_min = config.ch3_min;
+	input_CH4.IN_max = config.ch4_max;
+	input_CH4.IN_center = config.ch4_min + ((config.ch4_max - config.ch4_min) / 2);
+	input_CH4.IN_min = config.ch4_min;
 
 	btnLight.condition = HIGH;
 
