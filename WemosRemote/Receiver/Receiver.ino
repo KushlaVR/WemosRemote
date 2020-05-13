@@ -56,6 +56,7 @@ char SSID_password[20];
 struct {
 	int speed;
 
+	int wiperAngle;
 	int wiperPos;
 	int wiperPause;
 	int wiperDuration;
@@ -408,14 +409,16 @@ void handleWipers() {
 			//Кінець циклу
 			state.wiperStartTime = 0;
 		}
-		wipers.write(angle);
+		if (state.wiperAngle != angle) {
+			wipers.write(angle);
+			state.wiperAngle = angle;
+		}
 	}
 	else {
 		if (wipers.attached()) {
 			wipers.detach();
 		}
 	}
-
 }
 
 void handleHeadLight() {
