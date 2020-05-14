@@ -27,8 +27,8 @@
 #define pinServo_CH3 D7
 #define pinServo_CH4 D8
 
-#define pinTest D0//Тестовий пін
-#define pinWipers D4//Дворники
+#define pinTest D4//Тестовий пін
+#define pinWipers D0//Дворники
 
 #define pinI2C_SCL D1 //pcf8574
 #define pinI2C_SDA D2 //pcf8574
