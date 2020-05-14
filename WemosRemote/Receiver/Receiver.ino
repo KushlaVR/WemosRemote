@@ -27,8 +27,8 @@
 #define pinServo_CH3 D7
 #define pinServo_CH4 D8
 
-#define pinTest D4//Тестовий пін
-#define pinWipers D0//Дворники
+#define pinTest D0//Тестовий пін
+#define pinWipers D4//Дворники
 
 #define pinI2C_SCL D1 //pcf8574
 #define pinI2C_SDA D2 //pcf8574
@@ -389,6 +389,8 @@ void handleWipers() {
 	if (state.wiperStartTime != 0) {
 		if (!wipers.attached()) {
 			wipers.attach(pinWipers);
+			Serial.printf("Wiper attached\n");
+
 		}
 		int gap = config.wiper180 - config.wiper0;
 		ulong spendTime = millis() - state.wiperStartTime;
@@ -412,11 +414,13 @@ void handleWipers() {
 		if (state.wiperAngle != angle) {
 			wipers.write(angle);
 			state.wiperAngle = angle;
+			Serial.printf("Wiper angle = %i\n", angle);
 		}
 	}
 	else {
 		if (wipers.attached()) {
 			wipers.detach();
+			Serial.printf("Wiper detached\n");
 		}
 	}
 }
