@@ -388,7 +388,7 @@ void handleWipers() {
 	int angle = config.wiper180;
 	if (state.wiperStartTime != 0) {
 		if (!wipers.attached()) {
-			wipers.attach(pinWipers, 1000, 2000);
+			wipers.attach(pinWipers);
 		}
 		int gap = config.wiper180 - config.wiper0;
 		ulong spendTime = millis() - state.wiperStartTime;
