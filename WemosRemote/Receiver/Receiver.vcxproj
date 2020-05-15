@@ -148,6 +148,9 @@
   <ItemGroup>
     <Text Include="data\intro.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="data\html\gaz13.jpg" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
