@@ -174,13 +174,11 @@ void printValues(JsonString * out)
 	out->endObject();
 }
 
-
 void Values_Get() {
 	JsonString ret = JsonString();
 	printValues(&ret);
 	webServer.jsonOk(&ret);
 }
-
 
 void setupBlinkers() {
 
@@ -223,8 +221,6 @@ void setupBlinkers() {
 	BackLight->offLevel = lightOFF;
 	//BackLight.debug = true;
 }
-
-
 
 void refreshConfig() {
 	stopLight->item(2)->offset = config.stop_light_duration;
