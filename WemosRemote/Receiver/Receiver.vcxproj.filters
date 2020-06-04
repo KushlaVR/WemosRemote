@@ -87,4 +87,9 @@
       <Filter>Misc Files</Filter>
     </Text>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="data\html\gaz13.jpg">
+      <Filter>Misc Files</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

@@ -174,13 +174,11 @@ void printValues(JsonString * out)
 	out->endObject();
 }
 
-
 void Values_Get() {
 	JsonString ret = JsonString();
 	printValues(&ret);
 	webServer.jsonOk(&ret);
 }
-
 
 void setupBlinkers() {
 
@@ -223,8 +221,6 @@ void setupBlinkers() {
 	BackLight->offLevel = lightOFF;
 	//BackLight.debug = true;
 }
-
-
 
 void refreshConfig() {
 	stopLight->item(2)->offset = config.stop_light_duration;
@@ -388,7 +384,9 @@ void handleWipers() {
 	int angle = config.wiper180;
 	if (state.wiperStartTime != 0) {
 		if (!wipers.attached()) {
-			wipers.attach(pinWipers, 1000, 2000);
+			wipers.attach(pinWipers);
+			Serial.printf("Wiper attached\n");
+
 		}
 		int gap = config.wiper180 - config.wiper0;
 		ulong spendTime = millis() - state.wiperStartTime;
@@ -412,11 +410,13 @@ void handleWipers() {
 		if (state.wiperAngle != angle) {
 			wipers.write(angle);
 			state.wiperAngle = angle;
+			Serial.printf("Wiper angle = %i\n", angle);
 		}
 	}
 	else {
 		if (wipers.attached()) {
 			wipers.detach();
+			Serial.printf("Wiper detached\n");
 		}
 	}
 }

@@ -1,12 +1,10 @@
 var KVR = {};
 
 KVR.load = function () {
-    var jqxhr = $.get("/api/setup")
+    $.get("/api/setup")
         .done(function (data) {
             $.each(data, function (name, value) {
-                console.log("Name: " + name + ", Value: " + value);
-                var form = $("#form");
-                $("[name=" + name + "]", form).val(value);
+                KVR.setValue(name, value);
             });
         })
         .fail(function () {
@@ -15,12 +13,10 @@ KVR.load = function () {
 };
 
 KVR.Autorefresh = function () {
-    var jqxhr = $.get("/api/values")
+    $.get("/api/values")
         .done(function (data) {
             $.each(data, function (name, value) {
-                console.log("Name: " + name + ", Value: " + value);
-                var form = $("#form");
-                $("[name=" + name + "]", form).html(value);
+                KVR.setValue(name, value);
             });
             setTimeout(function () {
                 KVR.Autorefresh();
@@ -35,5 +31,14 @@ KVR.Autorefresh = function () {
 };
 
 KVR.setValue = function (inputName, value) {
-    $("[name=" + inputName + "]").val(value);
-}
+    console.log("Name: " + inputName + ", Value: " + value);
+    var form = $("#form");
+    var input = $("[name=" + inputName + "]", form);
+    if (input.length > 0) {
+        if (input[0].tagName === "INPUT") {
+            input.val(value);
+        } else {
+            input.html(value);
+        }
+    }
+};

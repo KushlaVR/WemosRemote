@@ -23,12 +23,10 @@ void SetupController::loadConfig()
 		cfg.AddValue("ssid", "GAZ13");
 		cfg.AddValue("password", "12345678");
 
-		cfg.AddValue("ch1_min", "978");
-		cfg.AddValue("ch1_center", "1382");
-		cfg.AddValue("ch1_max", "1985");
+		cfg.AddValue("ch1_min", "1114");
+		cfg.AddValue("ch1_max", "2314");
 
 		cfg.AddValue("ch2_min", "900");
-		cfg.AddValue("ch2_center", "1492");
 		cfg.AddValue("ch2_max", "2075");
 
 		cfg.AddValue("ch3_min", "1007");
@@ -73,12 +71,12 @@ void SetupController::loadConfig()
 	this->cfg->password = String(cfg.getValue("password"));
 
 	this->cfg->ch1_min = cfg.getInt("ch1_min");
-	this->cfg->ch1_center = cfg.getInt("ch1_center");
 	this->cfg->ch1_max = cfg.getInt("ch1_max");
+	this->cfg->ch1_center = this->cfg->ch1_min + ((this->cfg->ch1_max - this->cfg->ch1_min) / 2);
 
 	this->cfg->ch2_min = cfg.getInt("ch2_min");
-	this->cfg->ch2_center = cfg.getInt("ch2_center");
 	this->cfg->ch2_max = cfg.getInt("ch2_max");
+	this->cfg->ch2_center = this->cfg->ch2_min + ((this->cfg->ch2_max - this->cfg->ch2_min) / 2);
 
 	this->cfg->ch3_min = cfg.getInt("ch3_min");
 	this->cfg->ch3_max = cfg.getInt("ch3_max");
@@ -145,7 +143,7 @@ void SetupController::printConfig(JsonString * out)
 
 	out->AddValue("wiper0", String(cfg->wiper0));
 	out->AddValue("wiper180", String(cfg->wiper180));
-	
+
 	out->AddValue("wiper1Duration", String(cfg->wiper1Duration));
 	out->AddValue("wiper1Pause", String(cfg->wiper1Pause));
 
@@ -168,12 +166,12 @@ void SetupController::Setup_Post()
 	if (webServer.hasArg("password")) { setupController.cfg->password = webServer.arg("password"); }
 
 	if (webServer.hasArg("ch1_min")) { setupController.cfg->ch1_min = webServer.arg("ch1_min").toInt(); }
-	if (webServer.hasArg("ch1_center")) { setupController.cfg->ch1_center = webServer.arg("ch1_center").toInt(); }
 	if (webServer.hasArg("ch1_max")) { setupController.cfg->ch1_max = webServer.arg("ch1_max").toInt(); }
+	setupController.cfg->ch1_center = setupController.cfg->ch1_min + ((setupController.cfg->ch1_max - setupController.cfg->ch1_min) / 2);
 
 	if (webServer.hasArg("ch2_min")) { setupController.cfg->ch2_min = webServer.arg("ch2_min").toInt(); }
-	if (webServer.hasArg("ch2_center")) { setupController.cfg->ch2_center = webServer.arg("ch2_center").toInt(); }
 	if (webServer.hasArg("ch2_max")) { setupController.cfg->ch2_max = webServer.arg("ch2_max").toInt(); }
+	setupController.cfg->ch2_center = setupController.cfg->ch2_min + ((setupController.cfg->ch2_max - setupController.cfg->ch2_min) / 2);
 
 	if (webServer.hasArg("ch3_min")) { setupController.cfg->ch3_min = webServer.arg("ch3_min").toInt(); }
 	if (webServer.hasArg("ch3_max")) { setupController.cfg->ch3_max = webServer.arg("ch3_max").toInt(); }
@@ -190,7 +188,7 @@ void SetupController::Setup_Post()
 
 	if (webServer.hasArg("wiper0")) { setupController.cfg->wiper0 = webServer.arg("wiper0").toInt(); }
 	if (webServer.hasArg("wiper180")) { setupController.cfg->wiper180 = webServer.arg("wiper180").toInt(); }
-	
+
 	if (webServer.hasArg("wiper1Duration")) { setupController.cfg->wiper1Duration = webServer.arg("wiper1Duration").toInt(); }
 	if (webServer.hasArg("wiper1Pause")) { setupController.cfg->wiper1Pause = webServer.arg("wiper1Pause").toInt(); }
 
