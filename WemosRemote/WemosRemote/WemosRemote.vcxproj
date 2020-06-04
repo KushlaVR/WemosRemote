@@ -122,6 +122,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Blinker.h" />
+    <ClInclude Include="Button.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="Json.h" />
     <ClInclude Include="mp3.h" />
@@ -134,6 +135,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Blinker.cpp" />
+    <ClCompile Include="Button.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="Json.cpp" />
     <ClCompile Include="RoboconMotor.cpp" />

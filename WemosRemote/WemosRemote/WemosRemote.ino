@@ -24,6 +24,7 @@
 #include "RoboconMotor.h"
 #include "Stearing.h"
 #include "Json.h"
+#include "Button.h"
 #include "SerialController.h"
 #include "Blinker.h"
 #include <RemoteXY.h> 
@@ -32,7 +33,7 @@
 
 #define pinServo D5
 #define pinMotorA D7//назад
-#define pinMotorB D6//вперед
+#define pinHighLight D6
 #define pinFrontLight D4
 #define pinLeftLight D2
 #define pinRightLight D1
@@ -47,12 +48,12 @@
 // RemoteXY configurate   
 #pragma pack(push, 1) 
 uint8_t RemoteXY_CONF[] = {
-  255,7,0,0,0,51,0,8,25,0,
-  1,0,36,18,20,20,36,31,65,0,
-  1,0,54,-2,19,19,177,31,72,0,
-  1,0,54,44,20,20,132,16,76,0,
-  5,43,-10,5,52,52,2,26,31,5,
-  32,61,0,63,63,176,26,31
+  255,7,0,0,0,51,0,10,25,0,
+  1,0,30,42,17,17,36,31,65,0,
+  1,0,51,1,19,19,177,31,72,0,
+  1,0,52,42,20,20,132,16,76,0,
+  5,1,0,12,42,42,2,26,31,5,
+  32,58,6,49,49,176,26,31
 };
 
 
@@ -79,7 +80,8 @@ enum LightMode {
 	OFF = 0,
 	Parking = 1,
 	ON = 2,
-	WAIT_FOR_TIMEOUT = 3
+	HIGH_LIGHT = 3,
+	WAIT_FOR_TIMEOUT = 4
 };
 
 struct StateStructure {
@@ -92,8 +94,6 @@ struct StateStructure {
 	bool stopped;
 	bool emergency;
 	bool emergency_btn_pressed;
-	bool light_btn;
-	bool high_light_btn;
 
 	bool serialEnabled;
 
@@ -127,6 +127,35 @@ Blinker alarmOff = Blinker("Alarm of");
 Beeper alarmBeepOn = Beeper("Alarm beep on");
 Beeper alarmBeepOff = Beeper("Alarm beep of");
 Beeper turnLightBeeper = Beeper("Turn light beep");
+
+VirtualButton btn_HeadLight = VirtualButton(btn_HeadLight_Pressed, btn_HeadLight_Released, btn_HeadLight_Hold);
+VirtualButton btn_HighLight = VirtualButton(btn_HighLight_Pressed, btn_HighLight_Released);
+
+void btn_HeadLight_Pressed() {
+	state.LightMode++;
+	if (state.LightMode == LightMode::WAIT_FOR_TIMEOUT) state.LightMode = LightMode::OFF;
+}
+void btn_HeadLight_Released() {
+
+}
+void btn_HeadLight_Hold() {
+	state.LightMode = LightMode::OFF;
+}
+
+void btn_HighLight_Pressed() {
+	tone(pinBuzzer, config.beep_freq);
+	analogWrite(pinHighLight, map(config.high_light_pwm, 0, 100, 0, 255));
+}
+
+void btn_HighLight_Released() {
+	noTone(pinBuzzer);
+	if (state.LightMode == LightMode::HIGH_LIGHT) {
+		analogWrite(pinHighLight, map(config.high_light_pwm, 0, 100, 0, 255));
+	}
+	else {
+		digitalWrite(pinHighLight, LOW);
+	}
+}
 
 bool turnOffTurnLights = false;
 int turnLightsCondition = 10;
@@ -166,52 +195,46 @@ void handleTurnLight(int stearing) {
 	}
 }
 
-bool handledhigh_light_btn_state = false;
 int handledLightMode = 0;
 int handledBackLightMode = 0;
 void handleLight() {
 	if (!RemoteXY.connect_flag) {
 		state.LightMode = LightMode::OFF;
 	};
-	if (handledLightMode != state.LightMode || handledhigh_light_btn_state != state.high_light_btn) {
+	if (handledLightMode != state.LightMode) {
 		handledLightMode = state.LightMode;
-
-		if (handledhigh_light_btn_state != state.high_light_btn) {
-			handledhigh_light_btn_state = state.high_light_btn;
-			if (state.high_light_btn) {
-				//Бібікаємо
-				//analogWriteFreq(config.beep_freq);
-				tone(pinBuzzer, config.beep_freq);
-			}
-			else
-			{
-				noTone(pinBuzzer);
-			}
-		}
 
 		int val;
 		switch (state.LightMode)
 		{
 		case LightMode::OFF:
-			if (state.high_light_btn)
-				analogWrite(pinFrontLight, map(config.high_light_on, 0, 100, 0, 255));
+			if (btn_HighLight.isPressed())
+				analogWrite(pinHighLight, map(config.high_light_pwm, 0, 100, 0, 255));
 			else
-				digitalWrite(pinFrontLight, LOW);
+				digitalWrite(pinHighLight, LOW);
+			digitalWrite(pinFrontLight, LOW);
 			digitalWrite(pinParkingLight, LOW);
 			break;
 		case LightMode::Parking:
-			if (state.high_light_btn)
-				analogWrite(pinFrontLight, map(config.high_light_on, 0, 100, 0, 255));
+			if (btn_HighLight.isPressed())
+				analogWrite(pinHighLight, map(config.high_light_pwm, 0, 100, 0, 255));
 			else
-				analogWrite(pinFrontLight, map(config.parking_light_on, 0, 100, 0, 255));
-			analogWrite(pinParkingLight, map(config.parking_light_on, 0, 100, 0, 255));
+				analogWrite(pinHighLight, LOW);
+			digitalWrite(pinFrontLight, LOW);
+			analogWrite(pinParkingLight, map(config.parking_light_pwm, 0, 100, 0, 255));
 			break;
 		case LightMode::ON:
-			if (state.high_light_btn)
-				analogWrite(pinFrontLight, map(config.high_light_on, 0, 100, 0, 255));
+			if (btn_HighLight.isPressed())
+				analogWrite(pinHighLight, map(config.high_light_pwm, 0, 100, 0, 255));
 			else
-				analogWrite(pinFrontLight, map(config.front_light_on, 0, 100, 0, 255));
-			analogWrite(pinParkingLight, map(config.parking_light_on, 0, 100, 0, 255));
+				analogWrite(pinHighLight, LOW);
+			analogWrite(pinFrontLight, map(config.front_light_pwm, 0, 100, 0, 255));
+			analogWrite(pinParkingLight, map(config.parking_light_pwm, 0, 100, 0, 255));
+			break;
+		case LightMode::HIGH_LIGHT:
+			analogWrite(pinHighLight, map(config.high_light_pwm, 0, 100, 0, 255));
+			analogWrite(pinFrontLight, map(config.front_light_pwm, 0, 100, 0, 255));
+			analogWrite(pinParkingLight, map(config.parking_light_pwm, 0, 100, 0, 255));
 			break;
 		default:
 			break;
@@ -261,38 +284,38 @@ void setupBlinkers() {
 
 	//Налаштування поворотників
 	leftLight
-		.Add(pinLeftLight, 0, config.turn_light_on)
+		.Add(pinLeftLight, 0, config.turn_light_pwm)
 		->Add(pinLeftLight, 500, 0)
 		->Add(pinLeftLight, 1000, 0);
 	serialController.leftLight = &leftLight;
 	rightLight
-		.Add(pinRightLight, 0, config.turn_light_on)
+		.Add(pinRightLight, 0, config.turn_light_pwm)
 		->Add(pinRightLight, 500, 0)
 		->Add(pinRightLight, 1000, 0);
 	serialController.rightLight = &rightLight;
 
 	alarmOff
-		.Add(pinLeftLight, 0, config.turn_light_on)
-		->Add(pinRightLight, 0, config.turn_light_on)
+		.Add(pinLeftLight, 0, config.turn_light_pwm)
+		->Add(pinRightLight, 0, config.turn_light_pwm)
 		->Add(pinLeftLight, 300, 0)
 		->Add(pinRightLight, 300, 0)
-		->Add(pinLeftLight, 600, config.turn_light_on)
-		->Add(pinRightLight, 600, config.turn_light_on)
+		->Add(pinLeftLight, 600, config.turn_light_pwm)
+		->Add(pinRightLight, 600, config.turn_light_pwm)
 		->Add(pinLeftLight, 900, 0)
 		->Add(pinRightLight, 900, 0);
 	alarmOff.repeat = false;
 	//alarmOff.debug = true;
 
 	alarmOn
-		.Add(pinLeftLight, 0, config.turn_light_on)
-		->Add(pinRightLight, 0, config.turn_light_on)
+		.Add(pinLeftLight, 0, config.turn_light_pwm)
+		->Add(pinRightLight, 0, config.turn_light_pwm)
 		->Add(pinLeftLight, 600, 0)
 		->Add(pinRightLight, 600, 0);
 	alarmOn.repeat = false;
 	//alarmOn.debug = true;
 
 	stopLight.Add(pinStopLight, 0, 0)
-		->Add(pinStopLight, 0, config.front_light_on)
+		->Add(pinStopLight, 0, config.stop_light_pwm)
 		->Add(pinStopLight, config.stop_light_duration, 0)
 		->repeat = false;
 	stopLight.debug = true;
@@ -330,27 +353,9 @@ void setupMotor() {
 		motor->isEnabled = false;
 		motor->reset();
 		motor->loop();
-		if (motor->controllerType != config.controller_type) {
-			delete motor;
-			motor = nullptr;
-		}
 	}
 	if (motor == nullptr) {
-		switch (config.controller_type)
-		{
-		case 0:
-			motor = new HBridge("H-Bridge", pinMotorA, pinMotorB, &motorEffect);
-			break;
-		case 1:
-			motor = new SpeedController("Speed reg D6", pinMotorB, &motorEffect);
-			break;
-		case 2:
-			motor = new SpeedController("Speed reg D7", pinMotorA, &motorEffect);
-			break;
-		default:
-			return;
-			break;
-		}
+		motor = new SpeedController("Speed reg D7", pinMotorA, &motorEffect);
 	}
 
 	motor->responder = &console;
@@ -365,18 +370,18 @@ void refreshConfig() {
 
 	setupMotor();
 
-	leftLight.item(0)->value = config.turn_light_on;
-	rightLight.item(0)->value = config.turn_light_on;
+	leftLight.item(0)->value = config.turn_light_pwm;
+	rightLight.item(0)->value = config.turn_light_pwm;
 
-	alarmOn.item(0)->value = config.turn_light_on;
-	alarmOn.item(1)->value = config.turn_light_on;
+	alarmOn.item(0)->value = config.turn_light_pwm;
+	alarmOn.item(1)->value = config.turn_light_pwm;
 
-	alarmOff.item(0)->value = config.turn_light_on;
-	alarmOff.item(1)->value = config.turn_light_on;
-	alarmOff.item(4)->value = config.turn_light_on;
-	alarmOff.item(5)->value = config.turn_light_on;
+	alarmOff.item(0)->value = config.turn_light_pwm;
+	alarmOff.item(1)->value = config.turn_light_pwm;
+	alarmOff.item(4)->value = config.turn_light_pwm;
+	alarmOff.item(5)->value = config.turn_light_pwm;
 
-	stopLight.item(1)->value = config.front_light_on;
+	stopLight.item(1)->value = config.stop_light_pwm;
 	stopLight.item(2)->offset = config.stop_light_duration;
 
 	backLight.item(0)->offset = map(100 - config.back_light_pwm, 0, 100, 0, 20);
@@ -600,16 +605,7 @@ void loop()
 				state.emergency_btn_pressed = false;
 			}
 		}
-		if (RemoteXY.Light_low != state.light_btn) {
-			if (RemoteXY.Light_low) {
-				state.LightMode++;
-				if (state.LightMode > LightMode::ON) state.LightMode = 0;
-			}
-			state.light_btn = RemoteXY.Light_low;
-		}
-		if (RemoteXY.Light_high != state.high_light_btn) {
-			state.high_light_btn = RemoteXY.Light_high;
-		}
+
 
 		handleLight();
 	}
@@ -627,6 +623,7 @@ void loop()
 			motor->reset();
 			stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
 			state.LightMode = 0;
+			btn_HeadLight.setValue(RemoteXY.Light_low);
 			handleLight();
 			stearingServo.isEnabled = false;
 		}
@@ -659,5 +656,6 @@ void loop()
 	alarmBeepOn.loop();
 	stopLight.loop();
 	backLight.loop();
+	btn_HeadLight.handle();
 	webServer.loop();
 }

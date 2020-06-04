@@ -29,18 +29,20 @@ void SetupController::loadConfig()
 		cfg.AddValue("max_right", "60");
 		cfg.AddValue("stearing_linearity", "1");
 
-		cfg.AddValue("controller_type", "2");
 		cfg.AddValue("min_speed", "20");
 		cfg.AddValue("inertion", "800");
 		cfg.AddValue("potentiometer_linearity", "1");
 
-		cfg.AddValue("front_light_on", "40");
-		cfg.AddValue("high_light_on", "80");
-		cfg.AddValue("parking_light_on", "10");
-		cfg.AddValue("turn_light_on", "80");
+		cfg.AddValue("front_light_pwm", "40");
+		cfg.AddValue("high_light_pwm", "80");
+		cfg.AddValue("parking_light_pwm", "10");
+		cfg.AddValue("turn_light_pwm", "80");
+		cfg.AddValue("stop_light_pwm", "80");
+		cfg.AddValue("back_light_pwm", "70");
+
 		cfg.AddValue("stop_light_duration", "2000");
 		cfg.AddValue("back_light_timeout", "500");
-		cfg.AddValue("back_light_pwm", "70");
+
 		cfg.AddValue("beep_freq", "1000");
 		cfg.AddValue("beep_duration", "150");
 		cfg.AddValue("beep_interval", "50");
@@ -77,19 +79,19 @@ void SetupController::loadConfig()
 	this->cfg->stearing_linearity = cfg.getInt("stearing_linearity");
 
 	//motor config reading
-	this->cfg->controller_type = cfg.getInt("controller_type");
 	this->cfg->min_speed = cfg.getInt("min_speed");
 	this->cfg->inertion = cfg.getInt("inertion");
 	this->cfg->potentiometer_linearity = cfg.getInt("potentiometer_linearity");
 
-	this->cfg->front_light_on = cfg.getInt("front_light_on");
-	this->cfg->high_light_on = cfg.getInt("high_light_on");
-	this->cfg->parking_light_on = cfg.getInt("parking_light_on");
-	this->cfg->turn_light_on = cfg.getInt("turn_light_on");
+	this->cfg->front_light_pwm = cfg.getInt("front_light_pwm");
+	this->cfg->high_light_pwm = cfg.getInt("high_light_pwm");
+	this->cfg->parking_light_pwm = cfg.getInt("parking_light_pwm");
+	this->cfg->turn_light_pwm = cfg.getInt("turn_light_pwm");
+	this->cfg->stop_light_pwm = cfg.getInt("stop_light_pwm");
+	this->cfg->back_light_pwm = cfg.getInt("back_light_pwm");
 
 	this->cfg->stop_light_duration = cfg.getInt("stop_light_duration");
 	this->cfg->back_light_timeout = cfg.getInt("back_light_timeout");
-	this->cfg->back_light_pwm = cfg.getInt("back_light_pwm");
 
 	this->cfg->beep_freq = cfg.getInt("beep_freq");
 	this->cfg->beep_duration = cfg.getInt("beep_duration");
@@ -121,18 +123,19 @@ void SetupController::printConfig(JsonString * out)
 	out->AddValue("max_right", String(cfg->max_right));
 	out->AddValue("stearing_linearity", String(cfg->stearing_linearity));
 
-	out->AddValue("controller_type", String(cfg->controller_type));
 	out->AddValue("min_speed", String(cfg->min_speed));
 	out->AddValue("inertion", String(cfg->inertion));
 	out->AddValue("potentiometer_linearity", String(cfg->potentiometer_linearity));
 
-	out->AddValue("front_light_on", String(cfg->front_light_on));
-	out->AddValue("high_light_on", String(cfg->high_light_on));
-	out->AddValue("parking_light_on", String(cfg->parking_light_on));
-	out->AddValue("turn_light_on", String(cfg->turn_light_on));
+	out->AddValue("front_light_pwm", String(cfg->front_light_pwm));
+	out->AddValue("high_light_pwm", String(cfg->high_light_pwm));
+	out->AddValue("parking_light_pwm", String(cfg->parking_light_pwm));
+	out->AddValue("turn_light_pwm", String(cfg->turn_light_pwm));
+	out->AddValue("stop_light_pwm", String(cfg->stop_light_pwm));
+	out->AddValue("back_light_pwm", String(cfg->back_light_pwm));
+	
 	out->AddValue("stop_light_duration", String(cfg->stop_light_duration));
 	out->AddValue("back_light_timeout", String(cfg->back_light_timeout));
-	out->AddValue("back_light_pwm", String(cfg->back_light_pwm));
 
 	out->AddValue("beep_freq", String(cfg->beep_freq));
 	out->AddValue("beep_duration", String(cfg->beep_duration));
@@ -161,18 +164,19 @@ void SetupController::Setup_Post()
 	if (webServer.hasArg("max_right")) { setupController.cfg->max_right = webServer.arg("max_right").toInt(); }
 	if (webServer.hasArg("stearing_linearity")) { setupController.cfg->stearing_linearity = webServer.arg("stearing_linearity").toInt(); }
 
-	if (webServer.hasArg("controller_type")) { setupController.cfg->controller_type = webServer.arg("controller_type").toInt(); }
 	if (webServer.hasArg("inertion")) { setupController.cfg->inertion = webServer.arg("inertion").toInt(); }
 	if (webServer.hasArg("min_speed")) { setupController.cfg->min_speed = webServer.arg("min_speed").toInt(); }
 	if (webServer.hasArg("potentiometer_linearity")) { setupController.cfg->potentiometer_linearity = webServer.arg("potentiometer_linearity").toInt(); }
 
-	if (webServer.hasArg("front_light_on")) { setupController.cfg->front_light_on = webServer.arg("front_light_on").toInt(); }
-	if (webServer.hasArg("high_light_on")) { setupController.cfg->high_light_on = webServer.arg("high_light_on").toInt(); }
-	if (webServer.hasArg("parking_light_on")) { setupController.cfg->parking_light_on = webServer.arg("parking_light_on").toInt(); }
-	if (webServer.hasArg("turn_light_on")) { setupController.cfg->turn_light_on = webServer.arg("turn_light_on").toInt(); }
+	if (webServer.hasArg("front_light_pwm")) { setupController.cfg->front_light_pwm = webServer.arg("front_light_pwm").toInt(); }
+	if (webServer.hasArg("high_light_pwm")) { setupController.cfg->high_light_pwm = webServer.arg("high_light_pwm").toInt(); }
+	if (webServer.hasArg("parking_light_pwm")) { setupController.cfg->parking_light_pwm = webServer.arg("parking_light_pwm").toInt(); }
+	if (webServer.hasArg("turn_light_pwm")) { setupController.cfg->turn_light_pwm = webServer.arg("turn_light_pwm").toInt(); }
+	if (webServer.hasArg("stop_light_pwm")) { setupController.cfg->stop_light_pwm = webServer.arg("stop_light_pwm").toInt(); }
+	if (webServer.hasArg("back_light_pwm")) { setupController.cfg->back_light_pwm = webServer.arg("back_light_pwm").toInt(); }
+
 	if (webServer.hasArg("stop_light_duration")) { setupController.cfg->stop_light_duration = webServer.arg("stop_light_duration").toInt(); }
 	if (webServer.hasArg("back_light_timeout")) { setupController.cfg->back_light_timeout = webServer.arg("back_light_timeout").toInt(); }
-	if (webServer.hasArg("back_light_pwm")) { setupController.cfg->back_light_pwm = webServer.arg("back_light_pwm").toInt(); }
 	
 	if (webServer.hasArg("beep_freq")) { setupController.cfg->beep_freq = webServer.arg("beep_freq").toInt(); }
 	if (webServer.hasArg("beep_duration")) { setupController.cfg->beep_duration = webServer.arg("beep_duration").toInt(); }
@@ -185,6 +189,7 @@ void SetupController::Setup_Post()
 	webServer.sendHeader("Location", String("http://") + WebUIController::ipToString(webServer.client().localIP()), true);
 	webServer.send(302, "text/plain", "");   // Empty content inhibits Content-length header so we have to close the socket ourselves.
 	webServer.client().stop(); // Stop is needed because we sent no content length
+
 }
 
 

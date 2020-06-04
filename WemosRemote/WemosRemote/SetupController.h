@@ -18,19 +18,19 @@ public:
 	int max_right;//градусів
 	int stearing_linearity;//Тип керування
 
-	int controller_type;
 	int min_speed;//від 0 до 256
 	int inertion;//від 0 до 10000
 	int potentiometer_linearity;//Тип керування
 
-	int front_light_on;//в процентах
-	int high_light_on;//в процентах
-	int parking_light_on;//в процентах
-	int turn_light_on;//в процентах
+	int front_light_pwm;//в процентах
+	int high_light_pwm;//в процентах
+	int parking_light_pwm;//в процентах
+	int turn_light_pwm;//в процентах
+	int stop_light_pwm;//в процентах
+	int back_light_pwm;//в процентах
 
 	int stop_light_duration;//в мілісекундах
 	int back_light_timeout;//в мілісекундах
-	int back_light_pwm;
 
 	int beep_freq;
 	int beep_duration;

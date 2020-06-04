@@ -21,20 +21,6 @@
                         <label>password</label>
                         <input type="text" maxlength="10" name="password" class="form-control" required="required" />
                     </div>
-                    <div class="form-group">
-                        <label>Operation mode</label>
-                        <div class="input-group mb-3">
-                            <select class="custom-select" name="mode" id="mode">
-                                <option value="1" selected>Setup</option>
-                                <option value="2">Run</option>
-                            </select>
-                            <div class="input-group-append">
-                                <label class="input-group-text" for="mode">Mode</label>
-                            </div>
-                        </div>
-                        <div>In setup mode some function may be disabled.</div>
-                    </div>
-
 
                     <h2>Servo</h2>
                     <div class="form-group">
@@ -82,20 +68,6 @@
                     <h2>Engine</h2>
 
                     <div class="form-group">
-                        <label>Type of controller</label>
-                        <div class="input-group">
-                            <select class="custom-select" name="controller_type" id="controller_type">
-                                <option value="0" selected>H bridge (pinA = D7, pinB = D6)</option>
-                                <option value="1">Speed controller (pin D6)</option>
-                                <option value="2">Speed controller (pin D7)</option>
-                            </select>
-                            <div class="input-group-append">
-                                <span class="input-group-text">Select one</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
                         <label>Minimum PWM speed</label>
                         <div class="input-group">
                             <input type="number" maxlength="5" name="min_speed" class="form-control" step="1" min="0" max="255" required="required" />
@@ -132,7 +104,7 @@
                     <div class="form-group">
                         <label>Head light PWM</label>
                         <div class="input-group">
-                            <input type="number" maxlength="5" name="front_light_on" class="form-control" step="1" min="0" max="100" required="required" />
+                            <input type="number" maxlength="5" name="front_light_pwm" class="form-control" step="1" min="0" max="100" required="required" />
                             <div class="input-group-append">
                                 <span class="input-group-text">0..100</span>
                             </div>
@@ -142,7 +114,7 @@
                     <div class="form-group">
                         <label>High light PWM</label>
                         <div class="input-group">
-                            <input type="number" maxlength="5" name="high_light_on" class="form-control" step="1" min="0" max="100" required="required" />
+                            <input type="number" maxlength="5" name="high_light_pwm" class="form-control" step="1" min="0" max="100" required="required" />
                             <div class="input-group-append">
                                 <span class="input-group-text">0..100</span>
                             </div>
@@ -152,7 +124,7 @@
                     <div class="form-group">
                         <label>Parking light PWM</label>
                         <div class="input-group">
-                            <input type="number" maxlength="5" name="parking_light_on" class="form-control" step="1" min="0" max="100" required="required" />
+                            <input type="number" maxlength="5" name="parking_light_pwm" class="form-control" step="1" min="0" max="100" required="required" />
                             <div class="input-group-append">
                                 <span class="input-group-text">0..100</span>
                             </div>
@@ -162,7 +134,17 @@
                     <div class="form-group">
                         <label>Turn light PWM</label>
                         <div class="input-group">
-                            <input type="number" maxlength="5" name="turn_light_on" class="form-control" step="1" min="0" max="100" required="required" />
+                            <input type="number" maxlength="5" name="turn_light_pwm" class="form-control" step="1" min="0" max="100" required="required" />
+                            <div class="input-group-append">
+                                <span class="input-group-text">0..100</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Stop light PWM</label>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="stop_light_pwm" class="form-control" step="1" min="0" max="100" required="required" />
                             <div class="input-group-append">
                                 <span class="input-group-text">0..100</span>
                             </div>
