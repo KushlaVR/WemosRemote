@@ -128,8 +128,8 @@ Beeper alarmBeepOn = Beeper("Alarm beep on");
 Beeper alarmBeepOff = Beeper("Alarm beep of");
 Beeper turnLightBeeper = Beeper("Turn light beep");
 
-VirtualButton btn_HeadLight = VirtualButton(btn_HeadLight_Pressed, btn_HeadLight_Released, btn_HeadLight_Hold);
-VirtualButton btn_HighLight = VirtualButton(btn_HighLight_Pressed, btn_HighLight_Released);
+VirtualButton btn_HeadLight = VirtualButton(btn_HeadLight_Pressed, btn_HeadLight_Hold, btn_HeadLight_Released);
+VirtualButton btn_HighLight = VirtualButton(btn_HighLight_Pressed, nullptr, btn_HighLight_Released);
 
 void btn_HeadLight_Pressed() {
 	state.LightMode++;
@@ -208,6 +208,7 @@ void handleLight() {
 		switch (state.LightMode)
 		{
 		case LightMode::OFF:
+			Serial.println("Light OFF");
 			if (btn_HighLight.isPressed())
 				analogWrite(pinHighLight, map(config.high_light_pwm, 0, 100, 0, 255));
 			else
@@ -216,6 +217,7 @@ void handleLight() {
 			digitalWrite(pinParkingLight, LOW);
 			break;
 		case LightMode::Parking:
+			Serial.println("Light Parking");
 			if (btn_HighLight.isPressed())
 				analogWrite(pinHighLight, map(config.high_light_pwm, 0, 100, 0, 255));
 			else
@@ -224,6 +226,7 @@ void handleLight() {
 			analogWrite(pinParkingLight, map(config.parking_light_pwm, 0, 100, 0, 255));
 			break;
 		case LightMode::ON:
+			Serial.println("Light ON");
 			if (btn_HighLight.isPressed())
 				analogWrite(pinHighLight, map(config.high_light_pwm, 0, 100, 0, 255));
 			else
@@ -232,6 +235,7 @@ void handleLight() {
 			analogWrite(pinParkingLight, map(config.parking_light_pwm, 0, 100, 0, 255));
 			break;
 		case LightMode::HIGH_LIGHT:
+			Serial.println("Light HIGH");
 			analogWrite(pinHighLight, map(config.high_light_pwm, 0, 100, 0, 255));
 			analogWrite(pinFrontLight, map(config.front_light_pwm, 0, 100, 0, 255));
 			analogWrite(pinParkingLight, map(config.parking_light_pwm, 0, 100, 0, 255));
@@ -405,9 +409,9 @@ void setup()
 	Serial.end();
 	pinMode(pinBuzzer, OUTPUT);
 	digitalWrite(pinBuzzer, LOW);
-	//Serial.begin(115200);
-	//Serial.println();
-	//Serial.println();
+	Serial.begin(115200);
+	Serial.println();
+	Serial.println();
 	console.output = &Serial;
 	analogWriteRange(255);
 	String s;
@@ -505,6 +509,8 @@ void loop()
 			alarmBeepOn.begin();
 			motor->isEnabled = true;
 			motor->reset();
+			btn_HeadLight.reset();
+			btn_HighLight.reset();
 			state.stopped = true;
 			stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
 			stearingServo.isEnabled = true;
@@ -605,8 +611,8 @@ void loop()
 				state.emergency_btn_pressed = false;
 			}
 		}
-
-
+		btn_HeadLight.setValue(RemoteXY.Light_low);
+		btn_HighLight.setValue(RemoteXY.Light_high);
 		handleLight();
 	}
 	else {
@@ -623,7 +629,8 @@ void loop()
 			motor->reset();
 			stearingServo.setPosition(0, (PotentiometerLinearity)config.stearing_linearity);
 			state.LightMode = 0;
-			btn_HeadLight.setValue(RemoteXY.Light_low);
+			btn_HeadLight.reset();
+			btn_HeadLight.reset();
 			handleLight();
 			stearingServo.isEnabled = false;
 		}
@@ -657,5 +664,6 @@ void loop()
 	stopLight.loop();
 	backLight.loop();
 	btn_HeadLight.handle();
+	btn_HighLight.handle();
 	webServer.loop();
 }
