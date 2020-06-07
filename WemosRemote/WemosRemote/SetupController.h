@@ -26,7 +26,9 @@ public:
 	int high_light_pwm;//в процентах
 	int parking_light_pwm;//в процентах
 	int turn_light_pwm;//в процентах
+	int turn_light_2_in_1_lamp;//габарити в лампі поворотів
 	int stop_light_pwm;//в процентах
+	int stop_light_2_in_1_lamp;////габарити в лампі стопсигналу
 	int back_light_pwm;//в процентах
 
 	int stop_light_duration;//в мілісекундах

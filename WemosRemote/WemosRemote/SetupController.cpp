@@ -37,7 +37,9 @@ void SetupController::loadConfig()
 		cfg.AddValue("high_light_pwm", "80");
 		cfg.AddValue("parking_light_pwm", "10");
 		cfg.AddValue("turn_light_pwm", "80");
+		cfg.AddValue("turn_light_2_in_1_lamp", "1");
 		cfg.AddValue("stop_light_pwm", "80");
+		cfg.AddValue("stop_light_2_in_1_lamp", "1");
 		cfg.AddValue("back_light_pwm", "70");
 
 		cfg.AddValue("stop_light_duration", "2000");
@@ -87,7 +89,9 @@ void SetupController::loadConfig()
 	this->cfg->high_light_pwm = cfg.getInt("high_light_pwm");
 	this->cfg->parking_light_pwm = cfg.getInt("parking_light_pwm");
 	this->cfg->turn_light_pwm = cfg.getInt("turn_light_pwm");
+	this->cfg->turn_light_2_in_1_lamp = cfg.getInt("turn_light_2_in_1_lamp");
 	this->cfg->stop_light_pwm = cfg.getInt("stop_light_pwm");
+	this->cfg->stop_light_2_in_1_lamp = cfg.getInt("stop_light_2_in_1_lamp");
 	this->cfg->back_light_pwm = cfg.getInt("back_light_pwm");
 
 	this->cfg->stop_light_duration = cfg.getInt("stop_light_duration");
@@ -131,7 +135,9 @@ void SetupController::printConfig(JsonString * out)
 	out->AddValue("high_light_pwm", String(cfg->high_light_pwm));
 	out->AddValue("parking_light_pwm", String(cfg->parking_light_pwm));
 	out->AddValue("turn_light_pwm", String(cfg->turn_light_pwm));
+	out->AddValue("turn_light_2_in_1_lamp", String(cfg->turn_light_2_in_1_lamp));
 	out->AddValue("stop_light_pwm", String(cfg->stop_light_pwm));
+	out->AddValue("stop_light_2_in_1_lamp", String(cfg->stop_light_2_in_1_lamp));
 	out->AddValue("back_light_pwm", String(cfg->back_light_pwm));
 	
 	out->AddValue("stop_light_duration", String(cfg->stop_light_duration));
@@ -172,7 +178,9 @@ void SetupController::Setup_Post()
 	if (webServer.hasArg("high_light_pwm")) { setupController.cfg->high_light_pwm = webServer.arg("high_light_pwm").toInt(); }
 	if (webServer.hasArg("parking_light_pwm")) { setupController.cfg->parking_light_pwm = webServer.arg("parking_light_pwm").toInt(); }
 	if (webServer.hasArg("turn_light_pwm")) { setupController.cfg->turn_light_pwm = webServer.arg("turn_light_pwm").toInt(); }
+	if (webServer.hasArg("turn_light_2_in_1_lamp")) { setupController.cfg->turn_light_2_in_1_lamp = webServer.arg("turn_light_2_in_1_lamp").toInt(); }
 	if (webServer.hasArg("stop_light_pwm")) { setupController.cfg->stop_light_pwm = webServer.arg("stop_light_pwm").toInt(); }
+	if (webServer.hasArg("stop_light_2_in_1_lamp")) { setupController.cfg->stop_light_2_in_1_lamp = webServer.arg("stop_light_2_in_1_lamp").toInt(); }
 	if (webServer.hasArg("back_light_pwm")) { setupController.cfg->back_light_pwm = webServer.arg("back_light_pwm").toInt(); }
 
 	if (webServer.hasArg("stop_light_duration")) { setupController.cfg->stop_light_duration = webServer.arg("stop_light_duration").toInt(); }

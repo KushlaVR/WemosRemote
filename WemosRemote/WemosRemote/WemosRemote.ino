@@ -90,6 +90,10 @@ struct StateStructure {
 	unsigned long stoppedTime;
 	int backLightMode;
 
+	int handledLeftState;
+	int handledRightState;
+	int handledStopLightState;
+
 	int speed;
 	bool stopped;
 	bool emergency;
@@ -166,12 +170,24 @@ void handleTurnLight(int stearing) {
 		return;
 	}
 	if (stearing < -turnLightsCondition) { //Включений лівий поворот
-		if (!leftLight.isRunning()) { leftLight.begin(); turnLightBeeper.begin(); }
-		rightLight.end();
+		if (!leftLight.isRunning()) {
+			leftLight.begin();
+			turnLightBeeper.begin();
+			state.handledLeftState = 0;
+			state.handledRightState = 0;
+		}
+		if (rightLight.isRunning()) rightLight.end();
+		handleParkingLight();
 	}
 	if (stearing > turnLightsCondition) { //Включений правий поворот
-		if (!rightLight.isRunning()) { rightLight.begin(); turnLightBeeper.begin(); }
-		leftLight.end();
+		if (!rightLight.isRunning()) {
+			rightLight.begin();
+			turnLightBeeper.begin();
+			state.handledLeftState = 0;
+			state.handledRightState = 0;
+		}
+		if (leftLight.isRunning()) leftLight.end();
+		handleParkingLight();
 	}
 	if (leftLight.isRunning()) {
 		if (stearing < -turnLightsCondition) turnOffTurnLights = true;//ставимо флажок, щоб вимкнути поворот після того як руль вернеться в прямк положенн
@@ -182,12 +198,18 @@ void handleTurnLight(int stearing) {
 	if (turnOffTurnLights && stearing > -turnLightsCondition && stearing < turnLightsCondition) {//Повернули руль в стартове положення
 		if (leftLight.isRunning() && !rightLight.isRunning()) {//блимає лівий поворот
 			leftLight.end();
+			state.handledLeftState = 0;
+			state.handledRightState = 0;
+			handleParkingLight();
 			turnLightBeeper.end();
 			turnOffTurnLights = false;
 			console.println("Лівий поворот вимкнено.");
 		}
 		else if (!leftLight.isRunning() && rightLight.isRunning()) {//блимає правий поворот
 			rightLight.end();
+			state.handledLeftState = 0;
+			state.handledRightState = 0;
+			handleParkingLight();
 			turnLightBeeper.end();
 			turnOffTurnLights = false;
 			console.println("Правий поворот вимкнено.");
@@ -214,7 +236,8 @@ void handleLight() {
 			else
 				digitalWrite(pinHighLight, LOW);
 			digitalWrite(pinFrontLight, LOW);
-			digitalWrite(pinParkingLight, LOW);
+			setupTurnLight();
+			handleParkingLight();
 			break;
 		case LightMode::Parking:
 			Serial.println("Light Parking");
@@ -223,7 +246,8 @@ void handleLight() {
 			else
 				analogWrite(pinHighLight, LOW);
 			digitalWrite(pinFrontLight, LOW);
-			analogWrite(pinParkingLight, map(config.parking_light_pwm, 0, 100, 0, 255));
+			setupTurnLight();
+			handleParkingLight();
 			break;
 		case LightMode::ON:
 			Serial.println("Light ON");
@@ -232,18 +256,25 @@ void handleLight() {
 			else
 				analogWrite(pinHighLight, LOW);
 			analogWrite(pinFrontLight, map(config.front_light_pwm, 0, 100, 0, 255));
-			analogWrite(pinParkingLight, map(config.parking_light_pwm, 0, 100, 0, 255));
+			setupTurnLight();
+			handleParkingLight();
 			break;
 		case LightMode::HIGH_LIGHT:
 			Serial.println("Light HIGH");
 			analogWrite(pinHighLight, map(config.high_light_pwm, 0, 100, 0, 255));
 			analogWrite(pinFrontLight, map(config.front_light_pwm, 0, 100, 0, 255));
-			analogWrite(pinParkingLight, map(config.parking_light_pwm, 0, 100, 0, 255));
+			setupTurnLight();
+			handleParkingLight();
 			break;
 		default:
 			break;
 		}
 	}
+
+	handleBackLight();
+}
+
+void handleBackLight() {
 	if (state.backLightMode != handledBackLightMode) {
 		switch (state.backLightMode)
 		{
@@ -267,6 +298,109 @@ void handleLight() {
 	}
 }
 
+void handleStopLight(int speed) {
+
+	if (!stopLight.isRunning()) {
+		if (state.LightMode >= LightMode::Parking) {
+			if (state.handledStopLightState != config.parking_light_pwm) {
+				analogWrite(pinStopLight, config.parking_light_pwm);
+				state.handledStopLightState = config.parking_light_pwm;
+			}
+		}
+		else
+		{
+			if (state.handledStopLightState != 0) {
+				digitalWrite(pinStopLight, LOW);
+				state.handledStopLightState = 0;
+			}
+		}
+	}
+
+	if (state.speed != speed) {
+		//швидкість змінилась
+		if (speed == 0) {//Зупинка
+			state.handledStopLightState = 0;
+			stopLight.begin();
+		}
+		else {
+			if (abs(speed) > abs(state.speed)) {//Швидкість зросла
+				state.handledStopLightState = 0;
+				stopLight.end();
+			}
+			else {
+				if (abs(state.speed - speed) > 10) {//Швидкість впала більше ніж на 10
+					state.handledStopLightState = 0;
+					stopLight.begin();
+				}
+			}
+		}
+		state.speed = speed;
+	}
+
+}
+
+void handleParkingLight() {
+	if (state.LightMode >= LightMode::Parking) {
+		analogWrite(pinParkingLight, map(config.parking_light_pwm, 0, 100, 0, 255));
+	}
+	else
+	{
+		digitalWrite(pinParkingLight, LOW);
+	}
+
+	if (config.turn_light_2_in_1_lamp == 1) {
+		if (!leftLight.isRunning()) {
+			if (state.LightMode >= LightMode::Parking) {
+				if (state.handledLeftState != config.parking_light_pwm) {
+					analogWrite(pinLeftLight, config.parking_light_pwm);
+					state.handledLeftState = config.parking_light_pwm;
+				}
+			}
+			else
+			{
+				if (state.handledLeftState != 0) {
+					digitalWrite(pinLeftLight, LOW);
+					state.handledLeftState = 0;
+				}
+			}
+		}
+
+		if (!rightLight.isRunning()) {
+			if (state.LightMode >= LightMode::Parking) {
+				if (state.handledRightState != config.parking_light_pwm) {
+					analogWrite(pinRightLight, config.parking_light_pwm);
+					state.handledRightState = config.parking_light_pwm;
+				}
+			}
+			else
+			{
+				if (state.handledRightState != 0) {
+					digitalWrite(pinRightLight, LOW);
+					state.handledRightState = 0;
+				}
+			}
+		}
+	}
+
+}
+
+void setupTurnLight() {
+	if (state.LightMode >= LightMode::Parking && config.turn_light_2_in_1_lamp == 1) {
+		leftLight.item(1)->value = config.parking_light_pwm;
+		leftLight.item(2)->value = config.parking_light_pwm;
+
+		rightLight.item(1)->value = config.parking_light_pwm;
+		rightLight.item(2)->value = config.parking_light_pwm;
+	}
+	else
+	{
+		leftLight.item(1)->value = 0;
+		leftLight.item(2)->value = 0;
+
+		rightLight.item(1)->value = 0;
+		rightLight.item(2)->value = 0;
+	}
+}
 
 void setupBlinkers() {
 	//Налаштування фар
@@ -373,6 +507,7 @@ void setupMotor() {
 void refreshConfig() {
 
 	setupMotor();
+	setupTurnLight();
 
 	leftLight.item(0)->value = config.turn_light_pwm;
 	rightLight.item(0)->value = config.turn_light_pwm;
@@ -534,13 +669,11 @@ void loop()
 
 			if (RemoteXY.right_joy_y > -10 && RemoteXY.right_joy_y < 10) {
 				if (!state.stopped) {
-					//stopLight.begin();
 					state.stopped = true;
 					state.stoppedTime = millis();
 				}
 			}
 			else {
-				//stopLight.end();
 				state.stopped = false;
 			}
 			stearingServo.setPosition(RemoteXY.left_joy_x, (PotentiometerLinearity)config.stearing_linearity);
@@ -557,36 +690,16 @@ void loop()
 
 			if (RemoteXY.left_joy_y > -5 && RemoteXY.left_joy_y < 5) {
 				if (!state.stopped) {
-					//stopLight.begin();
 					state.stopped = true;
 					state.stoppedTime = millis();
 				}
 			}
 			else {
-				//stopLight.end();
 				state.stopped = false;
 			}
 			stearingServo.setPosition(RemoteXY.left_joy_x, (PotentiometerLinearity)config.stearing_linearity);
 			handleTurnLight(RemoteXY.left_joy_x);
 			break;
-		}
-
-		if (state.speed != speed) {
-			//швидкість змінилась
-			if (speed == 0) {//Зупинка
-				stopLight.begin();
-			}
-			else {
-				if (abs(speed) > abs(state.speed)) {//Швидкість зросла
-					stopLight.end();
-				}
-				else {
-					if (abs(state.speed - speed) > 10) {//Швидкість впала більше ніж на 10
-						stopLight.begin();
-					}
-				}
-			}
-			state.speed = speed;
 		}
 
 		if (RemoteXY.Alarm) {
@@ -596,11 +709,14 @@ void loop()
 					leftLight.end();
 					rightLight.end();
 					turnLightBeeper.end();
+					handleParkingLight();
 					state.emergency = false;
 				}
 				else {
 					leftLight.begin();
 					rightLight.begin();
+					state.handledLeftState = 0;
+					state.handledRightState = 0;
 					turnLightBeeper.begin();
 					state.emergency = true;
 				}
@@ -614,6 +730,7 @@ void loop()
 		btn_HeadLight.setValue(RemoteXY.Light_low);
 		btn_HighLight.setValue(RemoteXY.Light_high);
 		handleLight();
+		handleStopLight(speed);
 	}
 	else {
 		if (connected) {
@@ -621,6 +738,7 @@ void loop()
 			connected = false;
 			leftLight.end();
 			rightLight.end();
+			handleParkingLight();
 			turnLightBeeper.end();
 			state.emergency = false;
 			alarmOn.begin();
