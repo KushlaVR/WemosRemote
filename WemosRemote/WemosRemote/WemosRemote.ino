@@ -66,46 +66,54 @@
 #define REMOTEXY_SERVER_PORT 6377
 
 // RemoteXY configurate  
+// конфигурация интерфейса  
 #pragma pack(push, 1)
 uint8_t RemoteXY_CONF[] =
-{ 255,16,0,0,0,156,0,10,8,0,
-1,1,33,32,17,10,134,31,226,151,
-132,0,1,1,33,43,17,10,160,31,
-83,0,1,1,56,43,17,10,48,31,
-65,0,1,1,56,32,17,10,134,31,
-226,150,186,0,1,1,56,21,17,10,
-2,31,77,0,1,1,33,21,17,10,
-118,31,76,0,1,1,33,10,17,10,
-132,31,226,152,188,0,1,1,56,10,
-17,10,175,31,72,0,5,32,1,13,
-36,36,207,26,31,5,32,69,10,44,
-44,207,26,31,1,1,44,0,17,9,
-248,31,226,153,171,0,129,0,1,1,
-28,8,40,67,76,65,65,83,0,4,
-128,64,1,42,7,2,26,4,128,1,
-55,42,7,119,26,4,128,57,55,42,
-7,94,26 };
+{ 255,18,0,0,0,212,0,10,8,0,
+130,1,57,55,29,7,94,130,1,22,
+55,29,7,94,1,1,33,32,17,10,
+134,31,226,135,166,0,1,1,33,43,
+17,10,160,31,226,152,128,0,1,1,
+56,43,17,10,48,31,226,151,172,0,
+1,1,56,32,17,10,134,31,226,135,
+168,0,1,1,56,21,17,10,2,31,
+240,159,154,168,0,1,1,33,21,17,
+10,118,31,76,0,1,1,33,10,17,
+10,132,31,226,152,188,0,1,1,56,
+10,17,10,175,31,226,152,188,0,5,
+32,1,13,36,36,207,26,31,5,32,
+69,10,44,44,207,26,31,1,1,44,
+0,17,9,248,31,240,159,148,148,0,
+129,0,1,1,28,8,31,67,76,65,
+65,83,0,4,128,64,1,42,7,2,
+26,1,2,23,55,13,7,2,31,226,
+134,186,0,1,2,37,55,13,7,2,
+31,226,134,187,0,1,2,58,55,13,
+7,2,31,226,134,186,0,1,2,72,
+55,13,7,2,31,226,134,187,0 };
 
-// this structure defines all the variables and events of your control interface 
+// структура определяет все переменные и события вашего интерфейса управления 
 struct {
 
 	// input variables
-	uint8_t leftTurn; // =1 if button pressed, else =0 
-	uint8_t fogLight; // =1 if button pressed, else =0 
-	uint8_t Alarm; // =1 if button pressed, else =0 
-	uint8_t rightTurn; // =1 if button pressed, else =0 
-	uint8_t Blink; // =1 if button pressed, else =0 
-	uint8_t headLight; // =1 if button pressed, else =0 
-	uint8_t parkingLight; // =1 if button pressed, else =0 
-	uint8_t highLight; // =1 if button pressed, else =0 
-	int8_t left_joy_x; // =-100..100 x-coordinate joystick position 
-	int8_t left_joy_y; // =-100..100 y-coordinate joystick position 
-	int8_t right_joy_x; // =-100..100 x-coordinate joystick position 
-	int8_t right_joy_y; // =-100..100 y-coordinate joystick position 
-	uint8_t beepButton; // =1 if button pressed, else =0 
-	int8_t servo2; // =0..100 slider position 
-	int8_t servo3; // =0..100 slider position 
-	int8_t servo4; // =0..100 slider position 
+	uint8_t leftTurn; // =1 если кнопка нажата, иначе =0 
+	uint8_t fogLight; // =1 если кнопка нажата, иначе =0 
+	uint8_t Alarm; // =1 если кнопка нажата, иначе =0 
+	uint8_t rightTurn; // =1 если кнопка нажата, иначе =0 
+	uint8_t Blink; // =1 если кнопка нажата, иначе =0 
+	uint8_t headLight; // =1 если кнопка нажата, иначе =0 
+	uint8_t parkingLight; // =1 если кнопка нажата, иначе =0 
+	uint8_t highLight; // =1 если кнопка нажата, иначе =0 
+	int8_t left_joy_x; // =-100..100 координата x положения джойстика 
+	int8_t left_joy_y; // =-100..100 координата y положения джойстика 
+	int8_t right_joy_x; // =-100..100 координата x положения джойстика 
+	int8_t right_joy_y; // =-100..100 координата y положения джойстика 
+	uint8_t beepButton; // =1 если кнопка нажата, иначе =0 
+	int8_t servo2; // =0..100 положение слайдера 
+	uint8_t servo3_ccw; // =1 если кнопка нажата, иначе =0 
+	uint8_t servo3_cw; // =1 если кнопка нажата, иначе =0 
+	uint8_t servo4_ccw; // =1 если кнопка нажата, иначе =0 
+	uint8_t servo4_cw; // =1 если кнопка нажата, иначе =0 
 
 	  // other variable
 	uint8_t connect_flag;  // =1 if wire connected, else =0 
@@ -134,12 +142,61 @@ struct StateStructure {
 	bool stopped;
 	bool serialEnabled;
 
+	int servo3;
+	int servo4;
+
 } state;
 
 
 
 
 ConfigStruct config;
+
+
+
+
+
+void btn_ParkingLight_On();
+void btn_ParkingLight_Off();
+
+void btn_HeadLight_On();
+void btn_HeadLight_Off();
+
+void btn_HighLight_On();
+void btn_HighLight_Off();
+
+void btn_FogLight_On();
+void btn_FogLight_Off();
+
+void btn_LeftLight_On();
+void btn_LeftLight_Off();
+
+void btn_RightLight_On();
+void btn_RightLight_Off();
+void btn_Blink_On();
+void btn_Blink_Off();
+void btn_Blink_Hold();
+
+void btn_Alarm_On();
+void btn_Alarm_Off();
+
+void btn_Beeper_On();
+void btn_Beeper_Off();
+
+
+void btn_Servo3_cw_On();
+void btn_Servo3_ccw_On();
+void btn_Servo3_Off();
+
+
+void btn_Servo4_cw_On();
+void btn_Servo4_ccw_On();
+void btn_Servo4_Off();
+
+
+void out_BackLight_On();
+void out_BackLight_Off();
+
 
 ///////////////////////////////////////////// 
 //           END RemoteXY include          // 
@@ -183,6 +240,13 @@ VirtualButton btn_RightLight = VirtualButton(btn_RightLight_On, nullptr, btn_Rig
 VirtualButton btn_Blink = VirtualButton(btn_Blink_On, btn_Blink_Hold, btn_Blink_Off);
 VirtualButton btn_Alarm = VirtualButton(btn_Alarm_On, nullptr, btn_Alarm_Off);
 VirtualButton btn_Beeper = VirtualButton(btn_Beeper_On, nullptr, btn_Beeper_Off);
+
+VirtualButton btn_Servo3_cw = VirtualButton(btn_Servo3_cw_On, nullptr, btn_Servo3_Off);
+VirtualButton btn_Servo3_ccw = VirtualButton(btn_Servo3_ccw_On, nullptr, btn_Servo3_Off);
+
+VirtualButton btn_Servo4_cw = VirtualButton(btn_Servo4_cw_On, nullptr, btn_Servo4_Off);
+VirtualButton btn_Servo4_ccw = VirtualButton(btn_Servo4_ccw_On, nullptr, btn_Servo4_Off);
+
 
 VirtualButton out_BackLight = VirtualButton(out_BackLight_On, nullptr, out_BackLight_Off);
 
@@ -291,6 +355,36 @@ void btn_Beeper_Off() {
 	noTone(pinBuzzer);
 	console.println("btn_Beeper_Off");
 }
+
+
+void btn_Servo3_cw_On() {
+	console.println("btn_Servo3_cw_On");
+	state.servo3 = config.servo3_min;
+}
+void btn_Servo3_ccw_On() {
+	console.println("btn_Servo3_cw_On");
+	state.servo3 = config.servo3_max;
+}
+void btn_Servo3_Off() {
+	console.println("btn_Servo3_Off");
+	state.servo3 = config.servo3_center;
+}
+
+
+
+void btn_Servo4_cw_On() {
+	console.println("btn_Servo4_cw_On");
+	state.servo4 = config.servo4_min;
+}
+void btn_Servo4_ccw_On() {
+	console.println("btn_Servo4_cw_On");
+	state.servo4 = config.servo4_max;
+}
+void btn_Servo4_Off() {
+	console.println("btn_Servo4_Off");
+	state.servo4 = config.servo4_center;
+}
+
 
 
 void out_BackLight_On() {
@@ -688,6 +782,13 @@ void loop()
 			btn_Blink.reset();
 			btn_Alarm.reset();
 			btn_Beeper.reset();
+			
+			btn_Servo3_cw.reset();
+			btn_Servo3_ccw.reset();
+
+			btn_Servo4_cw.reset();
+			btn_Servo4_ccw.reset();
+
 
 			alarmOff.begin();
 			alarmBeepOn.begin();
@@ -777,9 +878,17 @@ void loop()
 		btn_Blink.setValue(RemoteXY.Blink);
 		btn_Alarm.setValue(RemoteXY.Alarm);
 		btn_Beeper.setValue(RemoteXY.beepButton);
+		
+		btn_Servo3_cw.setValue(RemoteXY.servo3_cw);
+		btn_Servo3_ccw.setValue(RemoteXY.servo3_ccw);
+
+		btn_Servo4_ccw.setValue(RemoteXY.servo4_ccw);
+		btn_Servo4_cw.setValue(RemoteXY.servo4_cw);
+
+
 		servo2.write(map(RemoteXY.servo2, 0, 100, config.servo2_min, config.servo2_max));
-		servo3.write(map(RemoteXY.servo3, 0, 100, config.servo3_min, config.servo3_max));
-		servo4.write(map(RemoteXY.servo4, 0, 100, config.servo4_min, config.servo4_max));
+		servo3.write(state.servo3);
+		servo4.write(state.servo4);
 		handleLight();
 	}
 	else {
@@ -841,6 +950,14 @@ void loop()
 	btn_Beeper.handle();
 
 	out_BackLight.handle();
+
+	btn_Servo3_cw.handle();
+	btn_Servo3_ccw.handle();
+
+	btn_Servo4_cw.handle();
+	btn_Servo4_ccw.handle();
+
+
 
 	leftLight.loop();
 	rightLight.loop();

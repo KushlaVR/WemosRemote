@@ -38,9 +38,11 @@ void SetupController::loadConfig()
 		cfg.AddValue("servo2_max", "80");
 
 		cfg.AddValue("servo3_min", "40");
+		cfg.AddValue("servo3_center", "60");
 		cfg.AddValue("servo3_max", "80");
 
 		cfg.AddValue("servo4_min", "40");
+		cfg.AddValue("servo4_center", "60");
 		cfg.AddValue("servo4_max", "80");
 
 		cfg.AddValue("stop_light_duration", "2000");
@@ -92,9 +94,11 @@ void SetupController::loadConfig()
 	this->cfg->servo2_max = cfg.getInt("servo2_max");
 
 	this->cfg->servo3_min = cfg.getInt("servo3_min");
+	this->cfg->servo3_center = cfg.getInt("servo3_center");
 	this->cfg->servo3_max = cfg.getInt("servo3_max");
 
 	this->cfg->servo4_min = cfg.getInt("servo4_min");
+	this->cfg->servo4_center = cfg.getInt("servo4_center");
 	this->cfg->servo4_max = cfg.getInt("servo4_max");
 
 	this->cfg->stop_light_duration = cfg.getInt("stop_light_duration");
@@ -141,9 +145,11 @@ void SetupController::printConfig(JsonString * out)
 	out->AddValue("servo2_max", String(cfg->servo2_max));
 
 	out->AddValue("servo3_min", String(cfg->servo3_min));
+	out->AddValue("servo3_center", String(cfg->servo3_center));
 	out->AddValue("servo3_max", String(cfg->servo3_max));
 
 	out->AddValue("servo4_min", String(cfg->servo4_min));
+	out->AddValue("servo4_center", String(cfg->servo4_center));
 	out->AddValue("servo4_max", String(cfg->servo4_max));
 
 	out->AddValue("stop_light_duration", String(cfg->stop_light_duration));
@@ -185,9 +191,11 @@ void SetupController::Setup_Post()
 	if (webServer.hasArg("servo2_max")) { setupController.cfg->servo2_max = webServer.arg("servo2_max").toInt(); }
 	
 	if (webServer.hasArg("servo3_min")) { setupController.cfg->servo3_min = webServer.arg("servo3_min").toInt(); }
+	if (webServer.hasArg("servo3_center")) { setupController.cfg->servo3_center = webServer.arg("servo3_center").toInt(); }
 	if (webServer.hasArg("servo3_max")) { setupController.cfg->servo3_max = webServer.arg("servo3_max").toInt(); }
 
 	if (webServer.hasArg("servo4_min")) { setupController.cfg->servo4_min = webServer.arg("servo4_min").toInt(); }
+	if (webServer.hasArg("servo4_center")) { setupController.cfg->servo4_center = webServer.arg("servo4_center").toInt(); }
 	if (webServer.hasArg("servo4_max")) { setupController.cfg->servo4_max = webServer.arg("servo4_max").toInt(); }
 
 	if (webServer.hasArg("stop_light_duration")) { setupController.cfg->stop_light_duration = webServer.arg("stop_light_duration").toInt(); }

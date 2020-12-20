@@ -27,9 +27,11 @@ public:
 	int servo2_max;
 
 	int servo3_min;
+	int servo3_center;
 	int servo3_max;
 
 	int servo4_min;
+	int servo4_center;
 	int servo4_max;
 
 	int stop_light_duration;//в мілісекундах
