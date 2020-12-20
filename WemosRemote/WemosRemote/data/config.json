@@ -1,5 +1,5 @@
 ﻿{
-  "ssid": "WEMOS",
+  "ssid": "CLAAS",
   "password": "12345678",
   "mode": "debug",
   "center": "90",
@@ -13,8 +13,10 @@
   "servo2_min": "40",
   "servo2_max": "80",
   "servo3_min": "40",
+  "servo3_center": "60",
   "servo3_max": "80",
   "servo4_min": "40",
+  "servo4_center": "60",
   "servo4_max": "80",
   "stop_light_duration": "2000",
   "back_light_timeout": "500",
