@@ -25,15 +25,19 @@
 #define pinServo_X D5
 #define pinServo_Y D6
 #define pinServo_CH3 D7
-#define pinServo_CH4 D8
+#define pinServo_CH4 D0
+#define pinServo_CH5 D4
+#define pinServo_CH6 D8
 
-#define pinTest D0//Тестовий пін
-#define pinWipers D4//Дворники
+#define pinTest pinServo_CH5//Тестовий пін
+#define pinGearbox pinServo_CH6//Дворники
+//#define pinWipers pinServo_CH6//Дворники
 
 #define pinI2C_SCL D1 //pcf8574
 #define pinI2C_SDA D2 //pcf8574
 
 //pcf8574 Port usage
+
 
 #define bitParkingLight 0
 #define bitHeadLight 1
@@ -56,12 +60,12 @@ char SSID_password[20];
 struct {
 	int speed;
 
-	int wiperAngle;
-	int wiperPos;
-	int wiperPause;
-	int wiperDuration;
-	int wiperHalfDuration;
-	ulong wiperStartTime;
+	//int wiperAngle;
+	int Gear;
+	//int wiperPause;
+	//int wiperDuration;
+	//int wiperHalfDuration;
+	//ulong wiperStartTime;
 
 	bool parkingLight;
 	bool headLight;
@@ -75,7 +79,8 @@ BenchMark input_Y = BenchMark();
 BenchMark input_CH3 = BenchMark();
 BenchMark input_CH4 = BenchMark();
 
-BenchMark * input_Wipers = &input_CH4;
+BenchMark * input_GearBox = &input_CH4;
+//BenchMark * input_Wipers = &input_CH4;
 BenchMark * input_Light = &input_CH3;
 
 
@@ -87,12 +92,18 @@ extBlinker * leftLight;// = extBlinker("Left light", portExt);
 extBlinker * rightLight;// = extBlinker("Right light", portExt);
 extBlinker * BackLight;// = extBlinker("Back light", portExt);
 
+
+void btnLight_Press();
+void btnLight_Hold();
+void btnLight_Release();
+
 VirtualButton btnLight = VirtualButton(btnLight_Press, btnLight_Hold, btnLight_Release);
 
 int servoPos = 90;
 
 Servo testServo = Servo();
-Servo wipers = Servo();
+//Servo wipers = Servo();
+Servo gearbox = Servo();
 
 bool interruptAttached = false;
 
@@ -355,7 +366,7 @@ void handleSpeed() {
 	}
 
 }
-
+/*
 void handleWipers() {
 	if (input_Wipers->isValid()) {
 		if (input_Wipers->pos < 70) {
@@ -420,6 +431,40 @@ void handleWipers() {
 		}
 	}
 }
+*/
+
+void handleGearBox() {
+	int gear = 0;
+	if (input_GearBox->isValid()) {
+		if (input_GearBox->pos < 70) {
+			gear = 1;
+		}
+		else if (input_GearBox->pos < 110) {
+			gear = 0;
+		}
+		else {
+			gear = 2;
+		}
+	}
+
+	if (!gearbox.attached()) {
+		gearbox.attach(pinGearbox);
+	}
+	if (state.Gear != gear) {
+		state.Gear = gear;
+		Serial.printf("Gear%i\n", gear);
+		if (state.Gear == 0) {
+			gearbox.write(config.gear0);
+		}
+		else if (state.Gear == 1) {
+			gearbox.write(config.gear1);
+		}
+		else if (state.Gear == 2) {
+			gearbox.write(config.gear2);
+		}
+	}
+}
+
 
 void handleHeadLight() {
 	if (input_Light->pos > 90)
@@ -496,6 +541,8 @@ void setup() {
 
 	portExt = new PCF8574(config.port_addr);
 	portExt->begin(pinI2C_SDA, pinI2C_SCL);
+	portExt->write8(0x00);
+	delay(1000);
 	portExt->write8(0xFF);
 
 
@@ -578,7 +625,8 @@ void loop() {
 
 	handleStearing();
 	handleSpeed();
-	handleWipers();
+	//handleWipers();
+	handleGearBox();
 	handleHeadLight();
 
 	stopLight->loop();

@@ -31,14 +31,18 @@ public:
 	int turn_light_limit;
 	int reverce_limit;
 
-	int wiper0;
+	int gear0;
+	int gear1;
+	int gear2;
+
+	/*int wiper0;
 	int wiper180;
 
 	int wiper1Duration;
 	int wiper1Pause;
 
 	int wiper2Duration;
-	int wiper2Pause;
+	int wiper2Pause;*/
 
 	int stop_light_duration;//в мілісекундах
 	int back_light_timeout;//в мілісекундах

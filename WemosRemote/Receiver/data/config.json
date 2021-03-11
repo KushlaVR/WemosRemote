@@ -21,12 +21,9 @@
   "reverce_limit": "5",
   "turn_light_limit": "50",
 
-  "wiper0": "45",
-  "wiper180": "135",
-  "wiper1Duration": "2000",
-  "wiper1Pause": "2000",
+  "gear0": "90",
+  "gear1": "60",
+  "gear2": "120"
 
-  "wiper2Duration": "1400",
-  "wiper2Pause": "200"
 
 }

@@ -43,14 +43,19 @@ void SetupController::loadConfig()
 
 		cfg.AddValue("port_addr", "63");
 
-		cfg.AddValue("wiper0", "45");
+		cfg.AddValue("gear0", "90");
+		cfg.AddValue("gear1", "60");
+		cfg.AddValue("gear2", "120");
+
+
+		/*cfg.AddValue("wiper0", "45");
 		cfg.AddValue("wiper180", "135");
 
 		cfg.AddValue("wiper1Duration", "2000");
 		cfg.AddValue("wiper1Pause", "2000");
 
 		cfg.AddValue("wiper2Duration", "1400");
-		cfg.AddValue("wiper2Pause", "200");
+		cfg.AddValue("wiper2Pause", "200");*/
 
 		cfg.endObject();
 
@@ -91,14 +96,19 @@ void SetupController::loadConfig()
 	this->cfg->stop_light_duration = cfg.getInt("stop_light_duration");
 	this->cfg->back_light_timeout = cfg.getInt("back_light_timeout");
 
-	this->cfg->wiper0 = cfg.getInt("wiper0");
+	this->cfg->gear0 = cfg.getInt("gear0");
+	this->cfg->gear1 = cfg.getInt("gear1");
+	this->cfg->gear2 = cfg.getInt("gear2");
+
+
+	/*this->cfg->wiper0 = cfg.getInt("wiper0");
 	this->cfg->wiper180 = cfg.getInt("wiper180");
 
 	this->cfg->wiper1Duration = cfg.getInt("wiper1Duration");
 	this->cfg->wiper1Pause = cfg.getInt("wiper1Pause");
 
 	this->cfg->wiper2Duration = cfg.getInt("wiper2Duration");
-	this->cfg->wiper2Pause = cfg.getInt("wiper2Pause");
+	this->cfg->wiper2Pause = cfg.getInt("wiper2Pause");*/
 
 }
 
@@ -141,14 +151,19 @@ void SetupController::printConfig(JsonString * out)
 	out->AddValue("stop_light_duration", String(cfg->stop_light_duration));
 	out->AddValue("back_light_timeout", String(cfg->back_light_timeout));
 
-	out->AddValue("wiper0", String(cfg->wiper0));
+
+	out->AddValue("gear0", String(cfg->gear0));
+	out->AddValue("gear1", String(cfg->gear1));
+	out->AddValue("gear2", String(cfg->gear2));
+
+	/*out->AddValue("wiper0", String(cfg->wiper0));
 	out->AddValue("wiper180", String(cfg->wiper180));
 
 	out->AddValue("wiper1Duration", String(cfg->wiper1Duration));
 	out->AddValue("wiper1Pause", String(cfg->wiper1Pause));
 
 	out->AddValue("wiper2Duration", String(cfg->wiper2Duration));
-	out->AddValue("wiper2Pause", String(cfg->wiper2Pause));
+	out->AddValue("wiper2Pause", String(cfg->wiper2Pause));*/
 
 	out->endObject();
 }
@@ -186,14 +201,18 @@ void SetupController::Setup_Post()
 	if (webServer.hasArg("stop_light_duration")) { setupController.cfg->stop_light_duration = webServer.arg("stop_light_duration").toInt(); }
 	if (webServer.hasArg("back_light_timeout")) { setupController.cfg->back_light_timeout = webServer.arg("back_light_timeout").toInt(); }
 
-	if (webServer.hasArg("wiper0")) { setupController.cfg->wiper0 = webServer.arg("wiper0").toInt(); }
+	if (webServer.hasArg("gear0")) { setupController.cfg->gear0 = webServer.arg("gear0").toInt(); }
+	if (webServer.hasArg("gear1")) { setupController.cfg->gear1 = webServer.arg("gear1").toInt(); }
+	if (webServer.hasArg("gear2")) { setupController.cfg->gear2 = webServer.arg("gear2").toInt(); }
+
+	/*if (webServer.hasArg("wiper0")) { setupController.cfg->wiper0 = webServer.arg("wiper0").toInt(); }
 	if (webServer.hasArg("wiper180")) { setupController.cfg->wiper180 = webServer.arg("wiper180").toInt(); }
 
 	if (webServer.hasArg("wiper1Duration")) { setupController.cfg->wiper1Duration = webServer.arg("wiper1Duration").toInt(); }
 	if (webServer.hasArg("wiper1Pause")) { setupController.cfg->wiper1Pause = webServer.arg("wiper1Pause").toInt(); }
 
 	if (webServer.hasArg("wiper2Duration")) { setupController.cfg->wiper2Duration = webServer.arg("wiper2Duration").toInt(); }
-	if (webServer.hasArg("wiper2Pause")) { setupController.cfg->wiper2Pause = webServer.arg("wiper2Pause").toInt(); }
+	if (webServer.hasArg("wiper2Pause")) { setupController.cfg->wiper2Pause = webServer.arg("wiper2Pause").toInt(); }*/
 
 	setupController.saveConfig();
 

@@ -13,32 +13,52 @@
 
             <div class="col-8">
 
-                <h1>√¿«-13 "◊‡ÈÍ‡"</h1>
+                <h1>RC - car Light & Gearbox Controller</h1>
                 <div class="card" style="width: 100%;">
-                    <img id="svg2" class="card-img-top" src="gaz13.jpg" />
+                    <img id="svg2" class="card-img-top" src="pcb.jpg" />
                     <div class="card-body">
-                        <h5 class="card-title">Specifications</h5>
+                        <h5 class="card-title">Inputs</h5>
                         <p class="card-text">
                             <table>
-                                <tr><td> Manufacturer:         </td><td> √¿«                                  </td></tr>
-                                <tr><td> Production:    	   </td><td> 1959ó1981                            </td></tr>
-                                <tr><td> Place of producion:   </td><td> —–—–                                 </td></tr>
-                                <tr><td> Class:      	       </td><td> Full-size luxury car                 </td></tr>
-                                <tr><td> Engine:	           </td><td> 5.5L M-13 V8                         </td></tr>
-                                <tr><td> Transmission:  	   </td><td> 3-speed automatic                    </td></tr>
-                                <tr><td> Wheelbase: 	       </td><td> 3250 mm                              </td></tr>
-                                <tr><td> Length:	           </td><td> 5600 mm                              </td></tr>
-                                <tr><td> Width: 	           </td><td> 2000 mm                              </td></tr>
-                                <tr><td> Height:	           </td><td> 1580 mm                              </td></tr>
-                                <tr><td> Clearance:	           </td><td> 180 mm                               </td></tr>
-                                <tr><td> Front track:	       </td><td> 1540 mm                              </td></tr>
-                                <tr><td> Rear track:	       </td><td> 1530 mm                              </td></tr>
-                                <tr><td> Weight:               </td><td> 2100 kg                               </td></tr>
-                                <tr><td> Max speed:     	   </td><td> 160 km/h                             </td></tr>
-                                <tr><td> Tank:          	   </td><td> 80 l                                 </td></tr>
+                                <tr><td> X-1:                  </td><td> Ch1 - Stearing                       </td></tr>
+                                <tr><td> Y-2:    	           </td><td> CH2 - Speed/Direction                </td></tr>
+                                <tr><td> 3:                    </td><td> CH3 - Light                          </td></tr>
+                                <tr><td> 4:      	           </td><td> CH4 - Gearbox                        </td></tr>
+                                <tr><td> 5:	                   </td><td> CH5 - Reserved                       </td></tr>
+                                <tr><td> 6:	                   </td><td> CH6 - Reserved                       </td></tr>
                             </table>
 
                         </p>
+
+                        <h5 class="card-title">Outputs</h5>
+                        <p class="card-text">
+                            <table>
+                                <tr><td>+: </td><td>+4V2 OUT </td></tr>
+                                <tr><td>S: </td><td>Stop light </td></tr>
+                                <tr><td>B: </td><td>Back light </td></tr>
+                                <tr><td>L: </td><td>Left Turn light </td></tr>
+                                <tr><td>R: </td><td>Right Turn Light </td></tr>
+                                <tr><td>F: </td><td>Fog light </td></tr>
+                                <tr><td>H: </td><td>High Light </td></tr>
+                                <tr><td>h: </td><td>Head Light </td></tr>
+                                <tr><td>+: </td><td>+4V2 OUT </td></tr>
+                                <tr><td>P: </td><td>Parking light </td></tr>
+                            </table>
+
+                        </p>
+
+                        <h5 class="card-title">Extends</h5>
+                        <p class="card-text">
+                            <table>
+                                <tr><td>On/Off:</td><td>Power button connector </td></tr>
+                                <tr><td>+4V2:</td><td>+4V2 OUT </td></tr>
+                                <tr><td>GND:</td><td>Ground out </td></tr>
+                                <tr><td>SDA:</td><td>I2B bus Serial Data </td></tr>
+                                <tr><td>SCL:</td><td>I2C Clock Out </td></tr>
+                            </table>
+
+                        </p>
+
                     </div>
                 </div>
 
@@ -209,34 +229,37 @@
                     <h2>Light settings</h2>
                     <div class="form-group">
                         <label>Port address</label>
-                        <div class="input-group mb-3">
-                            <select class="custom-select" name="port_addr" id="port_addr">
-                                <option value="32">0x20 (PCF8574 pin A->000)</option>
-                                <option value="33">0x21 (PCF8574 pin A->001)</option>
-                                <option value="34">0x22 (PCF8574 pin A->010)</option>
-                                <option value="35">0x23 (PCF8574 pin A->011)</option>
-                                <option value="36">0x24 (PCF8574 pin A->100)</option>
-                                <option value="37">0x25 (PCF8574 pin A->101)</option>
-                                <option value="38">0x26 (PCF8574 pin A->110)</option>
-                                <option value="39">0x27 (PCF8574 pin A->111)</option>
-
-                                <option value="56">0x38 (PCF8574A* pin A->000)</option>
-                                <option value="57">0x39 (PCF8574A* pin A->001)</option>
-                                <option value="58">0x3A (PCF8574A* pin A->010)</option>
-                                <option value="59">0x3B (PCF8574A* pin A->011)</option>
-                                <option value="60">0x3C (PCF8574A* pin A->100)</option>
-                                <option value="61">0x3D (PCF8574A* pin A->101)</option>
-                                <option value="62">0x3E (PCF8574A* pin A->110)</option>
-                                <option value="63" selected>0x3F (PCF8574A* pin A->111)</option>
-
-                            </select>
+                        <div class="input-group">
+                            <input type="number" maxlength="5" name="port_addr" class="form-control" step="1" min="32" max="63" required="required" />
                             <div class="input-group-append">
-                                <label class="input-group-text" for="mode">HEX</label>
+                                <span class="input-group-text">32..63</span>
                             </div>
                         </div>
-                        <div>Type of port extender IC address pin configuration.</div>
                     </div>
 
+                    <div>Type of port extender IC address pin configuration.</div>
+                    <div class="row">
+                        <div class="col-6">
+                            <p>32 - 0x20 (PCF8574 pin A->000)</p>
+                            <p>33 - 0x21 (PCF8574 pin A->001)</p>
+                            <p>34 - 0x22 (PCF8574 pin A->010)</p>
+                            <p>35 - 0x23 (PCF8574 pin A->011)</p>
+                            <p>36 - 0x24 (PCF8574 pin A->100)</p>
+                            <p>37 - 0x25 (PCF8574 pin A->101)</p>
+                            <p>38 - 0x26 (PCF8574 pin A->110)</p>
+                            <p>39 - 0x27 (PCF8574 pin A->111)</p>
+                        </div>
+                        <div class="col-6">
+                            <p>56 - 0x38 (PCF8574A* pin A->000)</p>
+                            <p>57 - 0x39 (PCF8574A* pin A->001)</p>
+                            <p>58 - 0x3A (PCF8574A* pin A->010)</p>
+                            <p>59 - 0x3B (PCF8574A* pin A->011)</p>
+                            <p>60 - 0x3C (PCF8574A* pin A->100)</p>
+                            <p>61 - 0x3D (PCF8574A* pin A->101)</p>
+                            <p>62 - 0x3E (PCF8574A* pin A->110)</p>
+                            <p>63 - 0x3F (PCF8574A* pin A->111)</p>
+                        </div>
+                    </div>
 
                     <div class="form-group">
                         <label>Stop light duration</label>
@@ -280,72 +303,38 @@
                         </div>
                     </div>
 
+                    <h2>Gearbox settings</h2>
 
-                    <h2>Wipers settings</h2>
-
-                    <h3>Range</h3>
+                    <h3>Neutral</h3>
                     <div class="form-group">
-                        <label>min</label>
+                        <label>servo position</label>
                         <div class="input-group">
-                            <input type="number" maxlength="5" name="wiper0" class="form-control" step="1" min="0" max="180" required="required" />
+                            <input type="number" maxlength="5" name="gear0" class="form-control" step="1" min="0" max="180" required="required" />
                             <div class="input-group-append">
                                 <span class="input-group-text">0<sup>o</sup>..180<sup>o</sup></span>
                             </div>
                         </div>
                     </div>
 
+
+                    <h3>Gear 1</h3>
                     <div class="form-group">
-                        <label>max</label>
+                        <label>servo position</label>
                         <div class="input-group">
-                            <input type="number" maxlength="5" name="wiper180" class="form-control" step="1" min="0" max="180" required="required" />
+                            <input type="number" maxlength="5" name="gear1" class="form-control" step="1" min="0" max="180" required="required" />
                             <div class="input-group-append">
                                 <span class="input-group-text">0<sup>o</sup>..180<sup>o</sup></span>
                             </div>
                         </div>
                     </div>
 
-                    <h3>Speed 1</h3>
+                    <h3>Gear 2</h3>
                     <div class="form-group">
-                        <label>Run duration</label>
+                        <label>servo position</label>
                         <div class="input-group">
-                            <input type="number" maxlength="5" name="wiper1Duration" class="form-control" step="10" min="500" max="5000" required="required" />
+                            <input type="number" maxlength="5" name="gear2" class="form-control" step="1" min="0" max="180" required="required" />
                             <div class="input-group-append">
-                                <span class="input-group-text">500..5000</span>
-                                <span class="input-group-text">milis</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Pause</label>
-                        <div class="input-group">
-                            <input type="number" maxlength="5" name="wiper1Pause" class="form-control" step="10" min="0" max="5000" required="required" />
-                            <div class="input-group-append">
-                                <span class="input-group-text">0..5000</span>
-                                <span class="input-group-text">milis</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <h3>Speed 2</h3>
-                    <div class="form-group">
-                        <label>Run duration</label>
-                        <div class="input-group">
-                            <input type="number" maxlength="5" name="wiper2Duration" class="form-control" step="10" min="500" max="5000" required="required" />
-                            <div class="input-group-append">
-                                <span class="input-group-text">500..5000</span>
-                                <span class="input-group-text">milis</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Pause</label>
-                        <div class="input-group">
-                            <input type="number" maxlength="5" name="wiper2Pause" class="form-control" step="10" min="0" max="5000" required="required" />
-                            <div class="input-group-append">
-                                <span class="input-group-text">0..5000</span>
-                                <span class="input-group-text">milis</span>
+                                <span class="input-group-text">0<sup>o</sup>..180<sup>o</sup></span>
                             </div>
                         </div>
                     </div>
