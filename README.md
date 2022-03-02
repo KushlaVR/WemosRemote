@@ -4,21 +4,6 @@ Wemos remote - проект для автоматичного керування
 
 Проект зроблено спеціально для моделеі ГАЗ13 з Youtube каналу Евгения Былеева https://www.youtube.com/channel/UC27d-7p-ovLAEvgUijC3Dwg
 
-Усі етапи переобки моделі:
-* Частина 1 https://www.youtube.com/watch?v=YaWISeNnW-Y
-* Частина 2 https://www.youtube.com/watch?v=_9iZ8m-Jo94
-* Частина 3 https://www.youtube.com/watch?v=CbGfEdLAH0U
-* Частина 4 https://www.youtube.com/watch?v=SgVseJ60G0s
-* Частина 5 https://www.youtube.com/watch?v=5hFmwyWWN0M
-* Частина 6 https://www.youtube.com/watch?v=KGiXMOKt4lY
-* Частина 7 https://www.youtube.com/watch?v=0yMU2JMWXjI
-* Частина 8 https://www.youtube.com/watch?v=B5Zz-SQ5nLo
-* Частина 9 
-* Частина 10
-* Частина 11
-* Частина 12
-* Тест драйв
-
 Керування реалізовано на процесорі ESP8266. Цей процесор компактний, має вбудований Wi-Fi модуль і адаповане ядро під фреймворк Arduino. Прошивка реалізована у середовищі Visual Studio 2019 з використанням фреймворків:
 * Arduino https://www.arduino.cc/en/Main/Software
 * ESP8266 https://github.com/esp8266/Arduino
