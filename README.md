@@ -2,21 +2,10 @@
 
 Wemos remote - проект для керування авто моделлю з додатку на телефоні. 
 
-Проект зроблено спеціально для моделеі ЗАЗ965А з Youtube каналу Евгения Былеева https://www.youtube.com/channel/UC27d-7p-ovLAEvgUijC3Dwg
 
 ![ЗАЗ965А](/img/zaz3.png)
 
 
-
-
-Усі етапи переобки моделі:
-* Частина 1 https://www.youtube.com/watch?v=Rnvk8hbOn04
-* Частина 2 https://www.youtube.com/watch?v=U9sRm0HNj2A
-* Частина 3 https://www.youtube.com/watch?v=dFrtj1GCY1U
-* Частина 4 https://www.youtube.com/watch?v=j8VWTGg8k7Q
-* Частина 5 https://www.youtube.com/watch?v=8Ac1_ibX0vs
-* Частина 6 https://www.youtube.com/watch?v=4UJPeQdWuXQ
-* Тестдрайв https://www.youtube.com/watch?v=QYZCElwuE6M
 
 
 Керування реалізовано на процесорі ESP8266. Цей процесор компактний, має вбудований WIFI модуль і адаповане ядро під фреймворк Arduino. Прошивка реалізована у середовищі VisualStudio 2019 з використанням фреймворків:
