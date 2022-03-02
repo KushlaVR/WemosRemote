@@ -2,8 +2,6 @@
 
 Wemos remote - проект для автоматичного керування освітлювальними приборами радіомоделі. 
 
-Проект зроблено спеціально для моделеі ГАЗ13 з Youtube каналу Евгения Былеева https://www.youtube.com/channel/UC27d-7p-ovLAEvgUijC3Dwg
-
 Керування реалізовано на процесорі ESP8266. Цей процесор компактний, має вбудований Wi-Fi модуль і адаповане ядро під фреймворк Arduino. Прошивка реалізована у середовищі Visual Studio 2019 з використанням фреймворків:
 * Arduino https://www.arduino.cc/en/Main/Software
 * ESP8266 https://github.com/esp8266/Arduino
